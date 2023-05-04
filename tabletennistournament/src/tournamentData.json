@@ -1,0 +1,9 @@
+[
+    {"name": "SummerTennisFiesta", "dateFrom": "2023-06-10T09:00", "dateTo": "2023-06-12T18:00", "location": "Oakland Park Tennis Club", "players": "John Doe, Jane Smith, Adam Lee, Emily Wong", "format": "round-robin", "numberInGroup": "8", "tournamentId": "1"},
+    
+    {"name": "BeachVolleyballBlast", "dateFrom": "2023-07-16T14:00", "dateTo": "2023-07-16T18:00", "location": "Santa Monica Beach", "players": "Mike Johnson, Sarah Lee, Tom Davis, Rachel Kim", "format": "double elimination", "numberInGroup": "4","tournamentId": "2"},
+    
+    {"name": "CitySoccerShowdown", "dateFrom": "2023-08-05T17:30", "dateTo": "2023-08-05T20:30", "location": "Central Park Soccer Fields", "players": "David Rodriguez, Anna Chen, Eric Johnson, Olivia Smith", "format": "knockout", "numberInGroup": "16","tournamentId": "3"},
+    
+    {"name": "BasketballBonanza", "dateFrom": "2023-09-22T10:00", "dateTo": "2023-09-23T17:00", "location": "Madison Square Garden", "players": "Alex Brown, Lily Kim, Ben Davis, Zoe Lee", "format": "group stage followed by knockout", "numberInGroup": "6","tournamentId": "4"}
+    ]
