@@ -3,7 +3,7 @@ import { ref, set, get } from "firebase/database";
 
 interface Tournament {
     tournamentId?: string;
-    userId?: string;
+    uid?: string;
     name?: string;
     dateFrom?: string;
     dateTo?: string;
@@ -35,9 +35,8 @@ async function writeTournament(tournament: Tournament): Promise<void>  {
     players: tournament.players,
     format: tournament.format,
     numberInGroup: tournament.numberInGroup,
-    userId: tournament.userId
+    uid: tournament.uid
   });
-
 }
 
 export default writeTournament;

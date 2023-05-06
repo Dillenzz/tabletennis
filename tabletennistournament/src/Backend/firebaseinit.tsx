@@ -12,7 +12,11 @@ const firebaseConfig = {
     databaseURL: "https://firsttoeleven-b5ade-default-rtdb.europe-west1.firebasedatabase.app"
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 export default db;
+
+
+
+
