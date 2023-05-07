@@ -7,9 +7,11 @@ import Tournament from "../components/Tournament";
 async function writeTournament(tournament: Tournament): Promise<void> {
   const tournamentRef = ref(db, `tournament/${tournament.tournamentId}`);
   const tournamentSnapshot = await get(tournamentRef);
-  console.log(tournament.seededPlayers)
+  console.log(tournament.seededPlayers);
+  
 
   if (tournamentSnapshot.exists()) {
+    console.log("Tournament already exists");
     // Tournament already exists, update it
     await update(tournamentRef, {
       name: tournament.name,

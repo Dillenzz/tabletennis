@@ -1,12 +1,16 @@
 import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
-import Tournament from "./components/Tournament";
+
 import Class from "./components/Class";
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase";
 import writeTournament from "./Backend/updateFirebase";
 import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_create";
 import login from "./Backend/auth_google_provider_create";
+
+import Tournament from "./components/Tournament";
+import Match from "./components/Match";
+import Group from "./components/Group";
 
 import "./App.css";
 import {
@@ -76,6 +80,8 @@ function App() {
   const [showMyTournaments, setShowMyTournament] = useState(false);
   const [showTournamentInfo, setShowTournamentInfo] = useState(false);
   const [showPlayers, setShowPlayer] = useState(false);
+  const [showEditTournament, setShowEditTournament] = useState(false);
+  const [showDrawTournament, setShowDrawTournament] = useState(false);
 
   // define state variables for player search
   const [players, setPlayers] = useState(realPlayers);
@@ -254,7 +260,12 @@ function App() {
   // save tournament to firebase
   function saveTournament() {
     if (currentTournament) {
-      writeTournament(currentTournament);
+      const newTournament: Tournament = {
+        ...currentTournament,
+        players: tournamentPlayers,
+        seededPlayers: tournamentSeededPlayers,
+      };
+      writeTournament(newTournament);
     }
   }
   // delete player from tournament
@@ -272,7 +283,9 @@ function App() {
   }
 
   function handleSetTournamentSeededPlayers(players: Player[]) {
+    console.log(players);
     const totalPlayers = players.length;
+
     let numSeeds = 0;
 
     if (totalPlayers <= 4) {
@@ -290,10 +303,38 @@ function App() {
     }
 
     const seededPlayers = players.slice(0, numSeeds);
-
     setTournamentSeededPlayers(seededPlayers);
     console.log(tournamentSeededPlayers);
   }
+
+  function handleEditTournaments(tournament: Tournament) {
+    setShowMyTournament(false);
+    setShowStartMenu(false);
+    setShowCreateTournament(false);
+    setShowTournamentInfo(false);
+    setShowPlayer(false);
+    setShowEditTournament(true);
+    setCurrentTournament(tournament);
+  }
+
+  function handleDrawTournament(tournament: Tournament) {
+    setShowMyTournament(false);
+    setShowStartMenu(false);
+    setShowCreateTournament(false);
+    setShowTournamentInfo(false);
+    setShowPlayer(false);
+    setShowEditTournament(false);
+    setShowDrawTournament(true);
+    setCurrentTournament(tournament);
+    drawTournament(tournament);
+  }
+
+  function drawTournament(tournament: Tournament): void {
+    const players = tournament.players;
+    const seededPlayers = tournament.seededPlayers;
+    
+  }
+
 
   return (
     <Flex
@@ -384,6 +425,11 @@ function App() {
                           location={tournament.location}
                         ></Tournament>
                       </Center>
+                    </Box>
+                    <Box p={1}>
+                      <Button onClick={() => handleEditTournaments(tournament)}>
+                        Edit tournament
+                      </Button>
                     </Box>
                   </Center>
                 );
@@ -577,7 +623,7 @@ function App() {
                   </ModalBody>
 
                   <ModalFooter>
-                    <Button colorScheme="blue" mr={3}>
+                    <Button onClick={onClose} colorScheme="blue" mr={3}>
                       Done
                     </Button>
                     <Button variant="ghost">More players</Button>
@@ -589,52 +635,75 @@ function App() {
         )}
         {showPlayers && (
           <Box width="35%">
-            <Button onClick={() => saveTournament()}>Save Tournament</Button>
-            {currentTournament && currentTournament.players ? (
-              <Text>
-                {/**TODO */}
-                Number of players: {currentTournament?.players?.length ?? 0}
-              </Text>
-            ) : null}
-            <Input width={"25%"} placeholder="Number of seeds?" />
-            <Button
-              onClick={() =>
-                handleSetTournamentSeededPlayers(
-                  currentTournament?.players || []
-                )
-              }
+            <Flex>
+              <Button onClick={() => saveTournament()}>Save Tournament</Button>
+
+              <Button
+                onClick={() =>
+                  handleSetTournamentSeededPlayers(
+                    currentTournament?.players || []
+                  )
+                }
+              >
+                Seed players
+              </Button>
+
+              {currentTournament && (
+                <Button onClick={() => handleDrawTournament(currentTournament)}>
+                  Draw Tournament
+                </Button>
+              )}
+            </Flex>
+            <Box
+              style={{
+                overflow: "auto",
+                maxHeight: "400px",
+                maxWidth: "400px",
+              }}
             >
-              Seed players
-            </Button>
-            {currentTournament &&
-              currentTournament.players &&
-              currentTournament.players
-                .sort((a, b) => {
-                  if (!a.points || !b.points) {
-                    return 0;
-                  }
-                  return parseInt(b.points) - parseInt(a.points);
-                })
-                .map((player) => {
-                  return (
-                    <Box key={player.id} display="flex" alignItems="center">
-                     
-                      <Player
-                        name={player.name}
-                        club={player.club}
-                        points={player.points}
-                      ></Player>
-                      <IconButton
-                        aria-label="Open chat"
-                        icon={<DeleteIcon />}
-                        onClick={() => {
-                          deletePlayerFromTournament(player);
-                        }}
-                        size={"sm"}
-                      />
-                    </Box>
-                  );
-                })}
+              {currentTournament &&
+                currentTournament.players &&
+                currentTournament.players
+                  .sort((a, b) => {
+                    if (!a.points || !b.points) {
+                      return 0;
+                    }
+                    return parseInt(b.points) - parseInt(a.points);
+                  })
+                  .map((player) => {
+                    const isSeeded =
+                      currentTournament.seededPlayers?.includes(player);
+                    return (
+                      <Box
+                        p={[0, 0.5]}
+                        key={player.id}
+                        display="flex"
+                        alignItems="horizontal"
+                      >
+                        <div
+                          style={{ fontWeight: isSeeded ? "bold" : "normal" }}
+                        >
+                          <Flex>
+                            <IconButton
+                              aria-label="Open chat"
+                              icon={<DeleteIcon />}
+                              colorScheme="red"
+                              onClick={() => {
+                                deletePlayerFromTournament(player);
+                              }}
+                              size={"sm"}
+                            />
+                            <Player
+                              name={player.name}
+                              club={player.club}
+                              points={player.points}
+                            ></Player>
+                          </Flex>
+                        </div>
+                      </Box>
+                    );
+                  })}
+            </Box>
           </Box>
         )}
       </ChakraProvider>
