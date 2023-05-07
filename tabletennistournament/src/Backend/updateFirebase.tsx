@@ -1,42 +1,74 @@
 import db from "./firebaseinit";
-import { ref, set, get } from "firebase/database";
+import { ref, set, get, update } from "firebase/database";
+import Tournament from "../components/Tournament";
 
-interface Tournament {
-    tournamentId?: string;
-    uid?: string;
-    name?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    location?: string;
-    players?: string;
-    format?: string;
-    numberInGroup?: string;
-  }
-
-
-async function writeTournament(tournament: Tournament): Promise<void>  {
-  const tournamentRef = ref(db, 'tournament');
+// function that writes a tournament to the database
+// if tournament exists, update it
+async function writeTournament(tournament: Tournament): Promise<void> {
+  const tournamentRef = ref(db, `tournament/${tournament.tournamentId}`);
   const tournamentSnapshot = await get(tournamentRef);
-  const tournamentList = tournamentSnapshot.val() || {};
-  const maxTournamentId = Object.keys(tournamentList).reduce((maxId, id) => {
-    const tournamentId = parseInt(id);
-    return tournamentId > maxId ? tournamentId : maxId;
-  }, 0);
+  console.log(tournament.seededPlayers)
 
-  const newTournamentId = maxTournamentId + 1;
-  const reference = ref(db, `tournament/${newTournamentId}`);
+  if (tournamentSnapshot.exists()) {
+    // Tournament already exists, update it
+    await update(tournamentRef, {
+      name: tournament.name,
+      dateFrom: tournament.dateFrom,
+      dateTo: tournament.dateTo,
+      location: tournament.location,
+      players: tournament.players,
+      format: tournament.format,
+      numberInGroup: tournament.numberInGroup,
+      uid: tournament.uid,
+      seeds: tournament.seeds,
+      seededPlayers: tournament.seededPlayers,
+    });
+  } else {
+    // Tournament does not exist, create it
+    const tournamentListRef = ref(db, 'tournament');
+    const tournamentListSnapshot = await get(tournamentListRef);
+    const tournamentList = tournamentListSnapshot.val() || {};
+    const maxTournamentId = Object.keys(tournamentList).reduce(
+      (maxId, id) => {
+        const tournamentId = parseInt(id);
+        return tournamentId > maxId ? tournamentId : maxId;
+      },
+      0
+    );
+    const newTournamentId = Math.max(maxTournamentId + 1, tournament.tournamentId ?? 0);
 
-  set(reference, {
-    tournamentId: newTournamentId,
-    name: tournament.name,
-    dateFrom: tournament.dateFrom,
-    dateTo: tournament.dateTo,
-    location: tournament.location,
-    players: tournament.players,
-    format: tournament.format,
-    numberInGroup: tournament.numberInGroup,
-    uid: tournament.uid
-  });
+    await set(tournamentRef, {
+      tournamentId: newTournamentId,
+      name: tournament.name,
+      dateFrom: tournament.dateFrom,
+      dateTo: tournament.dateTo,
+      location: tournament.location,
+      players: tournament.players,
+      format: tournament.format,
+      numberInGroup: tournament.numberInGroup,
+      uid: tournament.uid,
+      seeds: tournament.seeds,
+      seededPlayers: tournament.seededPlayers,
+      
+    });
+  }
+}
+
+// gets the uid of the tournament to display for user
+export async function getTournamentsByUid(uid: string): Promise<Tournament[]> {
+    const tournamentRef = ref(db, 'tournament');
+    const tournamentSnapshot = await get(tournamentRef);
+    const tournamentList = tournamentSnapshot.val() || {};
+    const tournaments: Tournament[] = [];
+    for (const id in tournamentList) {
+      if (tournamentList.hasOwnProperty(id)) {
+        const tournament = tournamentList[id];
+        if (tournament.uid === uid) {
+          tournaments.push(tournament);
+        }
+      }
+    }
+    return tournaments;
 }
 
 export default writeTournament;

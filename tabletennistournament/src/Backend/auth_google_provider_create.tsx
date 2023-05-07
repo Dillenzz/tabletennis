@@ -11,17 +11,12 @@ export async function getUsernameAndSessionDuration() {
   if (user) {
     // Get the username
     const username = user.displayName || user.email || "Unknown";
-    
+  
     const uid = user.uid;
-
     return { username, uid };
-
   }
-
   return null;
 }
-
-
 
 export default async function login(): Promise<UserCredential | null>{  
 

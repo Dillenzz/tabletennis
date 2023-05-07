@@ -1,13 +1,12 @@
 import { useState, ChangeEvent, useRef, useEffect } from "react";
-import playersData from "./playerData.json";
-import tournamentData from "./tournamentData.json";
-import realPlayers from "./scrape/players.json"
+import realPlayers from "./scrape/players_with_ids.json";
 import Tournament from "./components/Tournament";
-import writeTournament from "./Backend/updateFirebase"
-
-
-
-
+import Class from "./components/Class";
+import Player from "./components/Player";
+import { getTournamentsByUid } from "./Backend/updateFirebase";
+import writeTournament from "./Backend/updateFirebase";
+import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_create";
+import login from "./Backend/auth_google_provider_create";
 
 import "./App.css";
 import {
@@ -19,8 +18,6 @@ import {
   Stack,
   Flex,
   Input,
-  List,
-  ListItem,
   Text,
   FormControl,
   FormLabel,
@@ -47,90 +44,100 @@ import {
   MenuList,
   MenuItem,
   IconButton,
-  MenuItemOption,
-  MenuGroup,
-  MenuOptionGroup,
-  MenuDivider,
 } from "@chakra-ui/react";
 
-import {HamburgerIcon, ExternalLinkIcon, EditIcon,AddIcon,RepeatIcon } from "@chakra-ui/icons";
-
+import { HamburgerIcon, DeleteIcon } from "@chakra-ui/icons";
 
 function App() {
-  useEffect(() => {
-    // Call the function on startup
-    
-  }, []); // Empty array as second argument to run only on startup
+  useEffect(() => {}, []);
+  // Call the function on startup
+  // Empty array as second argument to run only on startup
 
-  
-
-
-  interface Player {
-    name: string;
-    age: number;
-    country: string;
-    club: string;
-    ranking: number;
-  }
-
+  // define state variables
   const [tournamentDateFrom, setTournamentDateFrom] = useState("");
   const [tournamentDateTo, setTournamentDateTo] = useState("");
   const [tournamentLocation, setTournamentLocation] = useState("");
-  const [tournamentPlayers, setTournamentPlayers] = useState("");
-  const [showCreateTournament, setShowCreateTournament] = useState(false);
+  const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
+  const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
   const [tournamentMatches, setTournamentMatches] = useState("");
-  const [showStartMenu, setShowStartMenu] = useState(true);
-  const [players, setPlayers] = useState(playersData);
   const [tournamentName, setTournamentName] = useState("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [showMyTournaments, setShowMyTournament] = useState(false);
-  //const tournaments: Tournament[] = [];
-
-  const [myTournaments, setMyTournaments] = useState<Tournament[]>([]);
   const [numberInGroup, setNumberInGroup] = useState("4");
   const [tournamentType, setTournamentType] = useState("");
+  const [myTournaments, setMyTournaments] = useState<Tournament[]>([]);
+  const [currentTournament, setCurrentTournament] = useState<Tournament>();
+  const [tournamentSeed, setTournamentSeed] = useState(0);
+  const [tournamentSeededPlayers, setTournamentSeededPlayers] = useState<
+    Player[]
+  >([]);
 
-  interface Tournament {
-    userId : string;
-    name?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    location?: string;
-    players?: string;
-    matches?: string[];
-    format?: string;
-    numberInGroup?: string;
-    tournamentId? : string;
-  }
+  // define state variables for showing/hiding components
+  const [showCreateTournament, setShowCreateTournament] = useState(false);
+  const [showStartMenu, setShowStartMenu] = useState(true);
+  const [showMyTournaments, setShowMyTournament] = useState(false);
+  const [showTournamentInfo, setShowTournamentInfo] = useState(false);
+  const [showPlayers, setShowPlayer] = useState(false);
 
+  // define state variables for player search
+  const [players, setPlayers] = useState(realPlayers);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
+  const [userName, setUserName] = useState("");
+  const [uid, setUid] = useState("");
+
+  // set search variables
+  const [searchName, setSearchName] = useState("");
+  const [searchClub, setSearchClub] = useState("");
+  const [sentPlayerIds, setSentPlayerIds] = useState<number[]>([]);
+
+  useEffect(() => {
+    // Reset all state variables to their initial values
+    setShowCreateTournament(false);
+    setShowStartMenu(true);
+    setShowMyTournament(false);
+    setShowTournamentInfo(false);
+    setShowPlayer(false);
+  }, []);
+  // Call the function on startup and when the state variable changes
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      loadTournaments();
+    }, 5000); // fetch data every 5 seconds
+    return () => clearInterval(intervalId);
+  }, [uid]);
+
+  useEffect(() => {
+    setSentPlayerIds(sentPlayerIds);
+  }, [sentPlayerIds]);
+
+  // save or update the tournament to Firebase
   const handleSaveTournament = () => {
     setShowStartMenu(true);
     setShowCreateTournament(false);
     const newTournament: Tournament = {
-      userId : "39",
+      uid: uid,
       name: tournamentName,
       dateFrom: tournamentDateFrom,
       dateTo: tournamentDateTo,
       location: tournamentLocation,
-      players: tournamentPlayers,
-      //matches: tournamentMatches,
       format: tournamentType,
       numberInGroup: numberInGroup,
-      tournamentId: "1"
-
+      players: tournamentPlayers,
+      seeds: tournamentSeed,
+      seededPlayers: tournamentSeededPlayers,
     };
     const updatedTournaments = [...myTournaments, newTournament];
-    console.log("before write")
     writeTournament(newTournament); // Write to Firebase
-    console.log("after write")
-    
     setMyTournaments(updatedTournaments);
-    console.log(myTournaments);
-    
-    //console.log(myTournaments);
+  };
+  // function to load players in search
+  const handleNameSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchName(event.target.value);
   };
 
+  const handleClubSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchClub(event.target.value);
+  };
+  // define tournament type
   const handleTournamentType = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -140,50 +147,157 @@ function App() {
 
   const initialRef = useRef(null);
   const finalRef = useRef(null);
-
   const handleChange = (event: ChangeEvent<HTMLInputElement>) =>
     setTournamentName(event.target.value);
-
+  // changes view to tournament info
   const handleCreateTournament = () => {
     setShowCreateTournament(true);
-    setPlayers(JSON.parse(JSON.stringify(playersData)));
     setShowStartMenu(!showStartMenu);
   };
-
-  const handleSetMyTournaments = () => {
-    setMyTournaments(JSON.parse(JSON.stringify(tournamentData)));
-    console.log(myTournaments);
+  // from uid get tournaments and set them to myTournaments
+  const handleSetMyTournaments = async (uid: string) => {
+    const loadTournaments = await getTournamentsByUid(uid);
+    setMyTournaments(loadTournaments);
   };
-
+  // define group size
   function handleNumberInGroup(event: ChangeEvent<HTMLInputElement>) {
     const value: string = event.target.value;
     setNumberInGroup(value); // update the state with the new value
   }
-
+  // show all tournaments
   const handleShowMyTournaments = () => {
     setShowMyTournament(!showMyTournaments);
-    handleSetMyTournaments();
     setShowStartMenu(false);
+    loadTournaments();
   };
-
+  // go home resets all state variables
   const handlegoToHome = () => {
     setShowMyTournament(false);
     setShowStartMenu(true);
     setShowCreateTournament(false);
-
+    setShowTournamentInfo(false);
+    setShowPlayer(false);
   };
-
+  // go to tournament info
   const handleGoToTournaments = () => {
     setShowMyTournament(true);
     setShowStartMenu(false);
     setShowCreateTournament(false);
-    
+    setShowTournamentInfo(false);
+    setShowPlayer(false);
+  };
+  // login with google
+  async function handleGoogleLogin() {
+    await login();
+    const user1 = await getUsernameAndSessionDuration();
+    if (user1) {
+      setUid(user1.uid);
+      setUserName(user1.username);
+      handleSetMyTournaments(user1.uid);
+    }
+  }
+  // loads tournaments if not loaded already
+  async function loadTournaments() {
+    const user = await getUsernameAndSessionDuration();
+    if (user) {
+      setUid(user.uid);
+      setUserName(user.username);
+      handleSetMyTournaments(user.uid);
+    }
+  }
+  // go to tournament page and load tournament info
+  const handleStartTournament = (tournament: Tournament) => {
+    setCurrentTournament(tournament);
+    setTournamentPlayers(tournament.players ? tournament.players : []);
+    setShowTournamentInfo(true);
+    setShowMyTournament(false);
+    setShowStartMenu(false);
+    setShowCreateTournament(false);
+    setShowPlayer(true);
+    setSentPlayerIds(
+      tournament.players
+        ? tournament.players
+            .filter((player) => player.id !== undefined)
+            .map((player) => player.id as number)
+        : []
+    );
+  };
+  const filteredPlayers = realPlayers.filter((player) => {
+    const nameMatch = player.name
+      .toLowerCase()
+      .includes(searchName.toLowerCase());
+    const clubMatch = player.club
+      .toLowerCase()
+      .includes(searchClub.toLowerCase());
+
+    return nameMatch && clubMatch;
+  });
+  // add player to tournament
+  async function addPlayerToTournament(player: Player) {
+    const playerId = typeof player.id === "number" ? player.id : -1; // Use a default value if id is undefined
+
+    if (sentPlayerIds.includes(playerId)) {
+      // Player has already been sent, do nothing
+      return;
+    }
+
+    const newPlayers = [...tournamentPlayers, player];
+    await setTournamentPlayers(newPlayers);
+    if (currentTournament) {
+      setCurrentTournament({
+        ...currentTournament,
+        players: newPlayers,
+      });
+    }
+    await setSentPlayerIds([...sentPlayerIds, playerId]);
+  }
+  // save tournament to firebase
+  function saveTournament() {
+    if (currentTournament) {
+      writeTournament(currentTournament);
+    }
+  }
+  // delete player from tournament
+  function deletePlayerFromTournament(player: Player) {
+    const newPlayers = tournamentPlayers.filter((p) => p.id !== player.id);
+
+    setTournamentPlayers(newPlayers);
+    setSentPlayerIds(sentPlayerIds.filter((id) => id !== player.id));
+    if (currentTournament) {
+      setCurrentTournament({
+        ...currentTournament,
+        players: newPlayers,
+      });
+    }
+  }
+
+  function handleSetTournamentSeededPlayers(players: Player[]) {
+    const totalPlayers = players.length;
+    let numSeeds = 0;
+
+    if (totalPlayers <= 4) {
+      numSeeds = 0;
+    } else if (totalPlayers <= 16) {
+      numSeeds = 2;
+    } else if (totalPlayers <= 32) {
+      numSeeds = 4;
+    } else if (totalPlayers <= 64) {
+      numSeeds = 8;
+    } else if (totalPlayers <= 128) {
+      numSeeds = 16;
+    } else if (totalPlayers <= 256) {
+      numSeeds = 32;
+    }
+
+    const seededPlayers = players.slice(0, numSeeds);
+
+    setTournamentSeededPlayers(seededPlayers);
+    console.log(tournamentSeededPlayers);
   }
 
   return (
-    
     <Flex
-      bg="F5F5F5"
+      bg="#C1D0B5"
       height="100vh"
       width="100vw"
       display="flex"
@@ -193,25 +307,34 @@ function App() {
       p={4}
     >
       <ChakraProvider>
-        <Menu>
-          <MenuButton
-            as={IconButton}
-            aria-label="Options"
-            icon={<HamburgerIcon />}
-            variant="outline"
-          />
-          <MenuList>
-            <MenuItem onClick={() => handlegoToHome()} >
-              Home
-            </MenuItem>
-            <MenuItem onClick={() => handleGoToTournaments()}>
-              My Tournaments
-            </MenuItem>
-          
-          </MenuList>
-        </Menu>
         <Center>
-          <Heading>Table Tennis Tournament</Heading>
+          <Box bg="#C1D0B5" p={1}>
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                aria-label="Options"
+                icon={<HamburgerIcon />}
+                variant="outline"
+              />
+              <MenuList>
+                <MenuItem onClick={() => handlegoToHome()}>Home</MenuItem>
+                <MenuItem onClick={() => handleGoToTournaments()}>
+                  My Tournaments
+                </MenuItem>
+              </MenuList>
+            </Menu>
+
+            <Button onClick={() => handleGoogleLogin()} ml={2}>
+              {" "}
+              Sign in
+            </Button>
+          </Box>
+        </Center>
+        <Center>{userName && <Text> Username: {userName}</Text>}</Center>
+        <Center>
+          <Heading color="#FFF8DE" fontFamily={"cursive"}>
+            FirstToEleven
+          </Heading>
         </Center>
         {showStartMenu && (
           <Center>
@@ -234,26 +357,40 @@ function App() {
         )}
 
         {showMyTournaments && (
-          <Box bg="#FFFFFF">
+          <Box>
+            <Center>
+              <Button onClick={() => loadTournaments()}>
+                Load tournaments
+              </Button>
+            </Center>
             <Center>
               <Heading>My tournaments</Heading>
             </Center>
-            {myTournaments.map((tournament) => (
-              <Center>
-                <Box width="500px" margin={"0.3em"}>
-                  <Center>
-                    <Tournament
-                      name={tournament.name}
-                      dateFrom={tournament.dateFrom}
-                      dateTo={tournament.dateTo}
-                      location={tournament.location}
-                    ></Tournament>
+            {myTournaments
+              .filter((tournament) => tournament.uid === uid)
+              .map((tournament, index) => {
+                return (
+                  <Center key={`${tournament.tournamentId}-${index}`}>
+                    <Box
+                      onClick={() => handleStartTournament(tournament)}
+                      width="500px"
+                      margin={"0.3em"}
+                    >
+                      <Center>
+                        <Tournament
+                          name={tournament.name}
+                          dateFrom={tournament.dateFrom}
+                          dateTo={tournament.dateTo}
+                          location={tournament.location}
+                        ></Tournament>
+                      </Center>
+                    </Box>
                   </Center>
-                </Box>
-              </Center>
-            ))}
+                );
+              })}
           </Box>
         )}
+
         {showCreateTournament && (
           <Box>
             <Center>
@@ -378,25 +515,126 @@ function App() {
                     </ModalContent>
                   </Modal>
                 </FormControl>
-
-                <Input
-                  size="md"
-                  width="100%"
-                  placeholder="Search player"
-                ></Input>
-                <List
-                  mt={4}
-                  overflowY="scroll"
-                  border="1px solid black"
-                  borderRadius="md"
-                  p={2}
-                >
-                  {players.slice(0, 5).map((player, index) => (
-                    <ListItem key={index}>{player.Name}</ListItem>
-                  ))}
-                </List>
               </Stack>
             </Center>
+          </Box>
+        )}
+
+        {showTournamentInfo && (
+          <Box>
+            <Center>
+              <Stack>
+                <Box>
+                  {currentTournament && (
+                    <Heading fontFamily={"cursive"}>
+                      {currentTournament.name}
+                    </Heading>
+                  )}
+                </Box>
+                <Button onClick={onOpen}>Add players</Button>
+              </Stack>
+
+              <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                  <ModalHeader>Add player</ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody>
+                    <Text mb="8px">Name: {searchName}</Text>
+                    <Input
+                      value={searchName}
+                      onChange={handleNameSearch}
+                      placeholder=""
+                      size="sm"
+                    />
+                    <Text mb="8px">Club: {searchClub}</Text>
+                    <Box>
+                      <Input
+                        value={searchClub}
+                        onChange={handleClubSearch}
+                        placeholder=""
+                        size="sm"
+                      />
+                    </Box>
+                    <Box mt={4}>
+                      {filteredPlayers.slice(0, 25).map((player) => {
+                        return (
+                          <Box
+                            mt={1}
+                            key={player.id}
+                            onClick={async () => {
+                              await addPlayerToTournament(player);
+                            }}
+                          >
+                            <Player
+                              name={player.name}
+                              club={player.club}
+                            ></Player>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </ModalBody>
+
+                  <ModalFooter>
+                    <Button colorScheme="blue" mr={3}>
+                      Done
+                    </Button>
+                    <Button variant="ghost">More players</Button>
+                  </ModalFooter>
+                </ModalContent>
+              </Modal>
+            </Center>
+          </Box>
+        )}
+        {showPlayers && (
+          <Box width="35%">
+            <Button onClick={() => saveTournament()}>Save Tournament</Button>
+            {currentTournament && currentTournament.players ? (
+              <Text>
+                {/**TODO */}
+                Number of players: {currentTournament?.players?.length ?? 0}
+              </Text>
+            ) : null}
+            <Input width={"25%"} placeholder="Number of seeds?" />
+            <Button
+              onClick={() =>
+                handleSetTournamentSeededPlayers(
+                  currentTournament?.players || []
+                )
+              }
+            >
+              Seed players
+            </Button>
+            {currentTournament &&
+              currentTournament.players &&
+              currentTournament.players
+                .sort((a, b) => {
+                  if (!a.points || !b.points) {
+                    return 0;
+                  }
+                  return parseInt(b.points) - parseInt(a.points);
+                })
+                .map((player) => {
+                  return (
+                    <Box key={player.id} display="flex" alignItems="center">
+                     
+                      <Player
+                        name={player.name}
+                        club={player.club}
+                        points={player.points}
+                      ></Player>
+                      <IconButton
+                        aria-label="Open chat"
+                        icon={<DeleteIcon />}
+                        onClick={() => {
+                          deletePlayerFromTournament(player);
+                        }}
+                        size={"sm"}
+                      />
+                    </Box>
+                  );
+                })}
           </Box>
         )}
       </ChakraProvider>
