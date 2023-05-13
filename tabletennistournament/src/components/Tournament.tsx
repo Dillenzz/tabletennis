@@ -11,11 +11,12 @@ interface Tournament {
   players?: Player[] | undefined;
   matches?: string[];
   format?: string;
-  numberInGroup?: string;
+  numberInGroup?: number;
   tournamentId?: number;
   class?: Class[];
   seeds?: number;
-  seededPlayers?: Player[];
+  seededPlayersIds?: number[];
+  threeOrFive?: string;
 }
 
 function Tournament(props: Tournament) {

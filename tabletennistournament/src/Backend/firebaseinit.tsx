@@ -3,6 +3,7 @@ import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
     apiKey: "AIzaSyC0fqdkCB4Zpq1tkqJjbLdOPipaXZ6AdtE",
+    
     authDomain: "firsttoeleven-b5ade.firebaseapp.com",
     projectId: "firsttoeleven-b5ade",
     storageBucket: "firsttoeleven-b5ade.appspot.com",
@@ -16,7 +17,5 @@ export const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 export default db;
-
-
 
 

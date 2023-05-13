@@ -10,7 +10,7 @@ interface Player {
     points?: string | null;
     pointsChange?: string;
     gender?: string;
-    id? : number;
+    id : number;
 
   }
   function Player(props: Player){
@@ -18,7 +18,7 @@ interface Player {
       
       <Box width={"100%"} p="1" _hover={{ bg: "green.100" }} bg="blue.100" rounded="lg">
           <Center>
-        <Text>{props.name},{props.club}, {props.points}</Text>
+        <Text >{props.name},{props.club}, {props.points}</Text>
         </Center>
       </Box>
     );

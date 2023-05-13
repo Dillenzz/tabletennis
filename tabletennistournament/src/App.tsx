@@ -9,6 +9,7 @@ import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_cr
 import login from "./Backend/auth_google_provider_create";
 
 import Tournament from "./components/Tournament";
+import SeededPlayer from "./components/SeededPlayer";
 import Match from "./components/Match";
 import Group from "./components/Group";
 
@@ -63,16 +64,18 @@ function App() {
   const [tournamentLocation, setTournamentLocation] = useState("");
   const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
   const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
-  const [tournamentMatches, setTournamentMatches] = useState("");
+  const [tournamentMatches, setTournamentMatches] = useState(4);
   const [tournamentName, setTournamentName] = useState("");
-  const [numberInGroup, setNumberInGroup] = useState("4");
+  const [numberInGroup, setNumberInGroup] = useState(4); //TODO FIX DEFAULT VALUE
   const [tournamentType, setTournamentType] = useState("");
   const [myTournaments, setMyTournaments] = useState<Tournament[]>([]);
+  const [threeOrFive, setThreeOrFive] = useState("3");
   const [currentTournament, setCurrentTournament] = useState<Tournament>();
-  const [tournamentSeed, setTournamentSeed] = useState(0);
-  const [tournamentSeededPlayers, setTournamentSeededPlayers] = useState<
-    Player[]
+  const [tournamentSeed, setTournamentSeed] = useState();
+  const [tournamentSeededPlayersIds, setTournamentSeededPlayers] = useState<
+    number[]
   >([]);
+  const [tournamentId, setTournamentId] = useState();
 
   // define state variables for showing/hiding components
   const [showCreateTournament, setShowCreateTournament] = useState(false);
@@ -127,13 +130,25 @@ function App() {
       location: tournamentLocation,
       format: tournamentType,
       numberInGroup: numberInGroup,
+      threeOrFive: threeOrFive,
       players: tournamentPlayers,
-      seeds: tournamentSeed,
-      seededPlayers: tournamentSeededPlayers,
+      seededPlayersIds: tournamentSeededPlayersIds,
+      tournamentId: tournamentId,
     };
     const updatedTournaments = [...myTournaments, newTournament];
     writeTournament(newTournament); // Write to Firebase
     setMyTournaments(updatedTournaments);
+    // Reset all state variables to their initial values
+    setTournamentDateFrom("");
+    setTournamentDateTo("");
+    setTournamentLocation("");
+    setTournamentPlayers([]);
+    setTournamentPlayersID([]);
+    setTournamentMatches(4);
+    setTournamentName("");
+    setNumberInGroup(4);
+    setTournamentType("");
+    setCurrentTournament(newTournament);
   };
   // function to load players in search
   const handleNameSearch = (event: ChangeEvent<HTMLInputElement>) => {
@@ -159,6 +174,18 @@ function App() {
   const handleCreateTournament = () => {
     setShowCreateTournament(true);
     setShowStartMenu(!showStartMenu);
+
+    // reset all state variables to their initial values
+    setTournamentDateFrom("");
+    setTournamentDateTo("");
+    setTournamentLocation("");
+    setTournamentPlayers([]);
+    setTournamentPlayersID([]);
+    setTournamentMatches(4);
+    setTournamentName("");
+    setNumberInGroup(4);
+    setTournamentType("");
+    setTournamentSeededPlayers([]);
   };
   // from uid get tournaments and set them to myTournaments
   const handleSetMyTournaments = async (uid: string) => {
@@ -166,10 +193,15 @@ function App() {
     setMyTournaments(loadTournaments);
   };
   // define group size
-  function handleNumberInGroup(event: ChangeEvent<HTMLInputElement>) {
-    const value: string = event.target.value;
-    setNumberInGroup(value); // update the state with the new value
+
+  function handleNumberChange(valueAsString: string, valueAsNumber: number) {
+    setNumberInGroup(valueAsNumber);
   }
+
+  const handleRadioChange = (value: string) => {
+    setThreeOrFive(value);
+  };
+
   // show all tournaments
   const handleShowMyTournaments = () => {
     setShowMyTournament(!showMyTournaments);
@@ -213,8 +245,11 @@ function App() {
   }
   // go to tournament page and load tournament info
   const handleStartTournament = (tournament: Tournament) => {
+    console.log(tournament);
     setCurrentTournament(tournament);
     setTournamentPlayers(tournament.players ? tournament.players : []);
+    console.log(tournament.seededPlayersIds);
+    setTournamentSeededPlayers(tournament.seededPlayersIds ? tournament.seededPlayersIds : []);
     setShowTournamentInfo(true);
     setShowMyTournament(false);
     setShowStartMenu(false);
@@ -263,9 +298,10 @@ function App() {
       const newTournament: Tournament = {
         ...currentTournament,
         players: tournamentPlayers,
-        seededPlayers: tournamentSeededPlayers,
+        seededPlayersIds: tournamentSeededPlayersIds,
       };
       writeTournament(newTournament);
+      setCurrentTournament(newTournament);
     }
   }
   // delete player from tournament
@@ -303,8 +339,8 @@ function App() {
     }
 
     const seededPlayers = players.slice(0, numSeeds);
-    setTournamentSeededPlayers(seededPlayers);
-    console.log(tournamentSeededPlayers);
+    const seededPlayersIds = seededPlayers.map((player) => player.id as number);
+    setTournamentSeededPlayers(seededPlayersIds);
   }
 
   function handleEditTournaments(tournament: Tournament) {
@@ -330,11 +366,24 @@ function App() {
   }
 
   function drawTournament(tournament: Tournament): void {
-    const players = tournament.players;
-    const seededPlayers = tournament.seededPlayers;
-    
-  }
+    const numbersOfGroups = 0;
+    if (tournament && tournament.players && tournament.seededPlayersIds) {
+      if (tournament.numberInGroup === 3) {
+        const numberOfGroups = (tournament?.players?.length % 4) + 1;
+      } else if (tournament.numberInGroup === 5) {
+        const numberOfGroups = tournament?.players?.length % 4;
+      }
+      // assign the seeded players to the groups in order to
+      // ensure that they are not in the same group
+      const seededPlayers = tournament.players.slice(
+        0,
+        tournament.seededPlayersIds.length
+      );
+      // put the seeded players in the groups
 
+      // assign the remaining players to the groups
+    }
+  }
 
   return (
     <Flex
@@ -398,7 +447,7 @@ function App() {
         )}
 
         {showMyTournaments && (
-          <Box>
+          <Box bg="#C1D0B5">
             <Center>
               <Button onClick={() => loadTournaments()}>
                 Load tournaments
@@ -410,12 +459,13 @@ function App() {
             {myTournaments
               .filter((tournament) => tournament.uid === uid)
               .map((tournament, index) => {
+                
                 return (
                   <Center key={`${tournament.tournamentId}-${index}`}>
                     <Box
                       onClick={() => handleStartTournament(tournament)}
                       width="500px"
-                      margin={"0.3em"}
+                      style={{ marginBottom: "0.5", marginTop: "0.5em" }}
                     >
                       <Center>
                         <Tournament
@@ -495,8 +545,9 @@ function App() {
                           <FormControl>
                             <Text>Groups of</Text>
                             <NumberInput
-                              onChange={() => handleNumberInGroup}
                               value={numberInGroup}
+                              onChange={handleNumberChange}
+                              placeholder="4"
                               max={20}
                               min={3}
                             >
@@ -509,7 +560,11 @@ function App() {
                             <FormLabel as="legend">
                               Uneven amount of players into groups of 3 or 5?.
                             </FormLabel>
-                            <RadioGroup defaultValue="3">
+                            <RadioGroup
+                              onChange={handleRadioChange}
+                              value={threeOrFive}
+                              defaultValue="3"
+                            >
                               <HStack spacing="24px">
                                 <Radio value="3">3</Radio>
                                 <Radio value="5">5</Radio>
@@ -550,13 +605,14 @@ function App() {
 
                       <ModalFooter>
                         <Button
-                          onClick={() => handleSaveTournament()}
+                          onClick={() => {
+                            handleSaveTournament();
+                            onClose();
+                          }}
                           colorScheme="blue"
-                          mr={3}
                         >
-                          Save
+                          Save and Close
                         </Button>
-                        <Button onClick={onClose}>Cancel</Button>
                       </ModalFooter>
                     </ModalContent>
                   </Modal>
@@ -613,6 +669,7 @@ function App() {
                             }}
                           >
                             <Player
+                              id = {player.id}
                               name={player.name}
                               club={player.club}
                             ></Player>
@@ -671,8 +728,13 @@ function App() {
                     return parseInt(b.points) - parseInt(a.points);
                   })
                   .map((player) => {
+                    
+                    console.log(currentTournament.seededPlayersIds);
                     const isSeeded =
-                      currentTournament.seededPlayers?.includes(player);
+                      tournamentSeededPlayersIds?.includes(player.id) ||
+                      currentTournament.seededPlayersIds?.includes(player.id);
+                      
+                    
                     return (
                       <Box
                         p={[0, 0.5]}
@@ -680,26 +742,31 @@ function App() {
                         display="flex"
                         alignItems="horizontal"
                       >
-                        <div
-                          style={{ fontWeight: isSeeded ? "bold" : "normal" }}
-                        >
-                          <Flex>
-                            <IconButton
-                              aria-label="Open chat"
-                              icon={<DeleteIcon />}
-                              colorScheme="red"
-                              onClick={() => {
-                                deletePlayerFromTournament(player);
-                              }}
-                              size={"sm"}
-                            />
-                            <Player
+                        <Flex>
+                          <IconButton
+                            aria-label="Open chat"
+                            icon={<DeleteIcon />}
+                            colorScheme="red"
+                            onClick={() => {
+                              deletePlayerFromTournament(player);
+                            }}
+                            size={"sm"}
+                          />
+                          {isSeeded ? (
+                            <SeededPlayer
                               name={player.name}
                               club={player.club}
                               points={player.points}
-                            ></Player>
-                          </Flex>
-                        </div>
+                            />
+                          ) : (
+                            <Player
+                              id = {player.id}
+                              name={player.name}
+                              club={player.club}
+                              points={player.points}
+                            />
+                          )}
+                        </Flex>
                       </Box>
                     );
                   })}
