@@ -2,6 +2,7 @@ import { Box, Heading, Text, Center } from "@chakra-ui/react";
 import Player from "./Player";
 import Class from "./Class";
 import Group from "./Group";
+import Match from "./Match";
 
 interface Tournament {
   uid?: string;
@@ -10,7 +11,7 @@ interface Tournament {
   dateTo?: string;
   location?: string;
   players?: Player[] | undefined;
-  matches?: string[];
+  matches?: Match[];
   format?: string;
   numberInGroup?: number;
   tournamentId?: number;
@@ -19,6 +20,7 @@ interface Tournament {
   seededPlayersIds?: number[];
   threeOrFive?: string;
   groups?: Group[];
+  started?: boolean;
 }
 
 function Tournament(props: Tournament) {

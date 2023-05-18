@@ -51,6 +51,7 @@ import {
   IconButton,
   Spacer,
   ButtonGroup,
+  InputGroup,
 } from "@chakra-ui/react";
 
 import { HamburgerIcon, DeleteIcon } from "@chakra-ui/icons";
@@ -93,6 +94,7 @@ function App() {
   const [showTournamentButtons, setShowTournamentButtons] = useState(false);
   const [showStartTournamentButton, setShowStartTournamentButton] =
     useState(true);
+  const [tournamentStarted, setTournamentStarted] = useState(false);
 
   // define state variables for player search
   const [players, setPlayers] = useState(realPlayers);
@@ -261,9 +263,10 @@ function App() {
     }
   }
   // go to tournament page and load tournament info
-  const handleStartTournament = (tournament: Tournament) => {
+  const handleTournamentInfo = (tournament: Tournament) => {
     // console.log(tournament);
     setCurrentTournament(tournament);
+    setTournamentStarted(tournament.started ? tournament.started : false);
     setTournamentPlayers(tournament.players ? tournament.players : []);
     // console.log(tournament.seededPlayersIds);
     setTournamentSeededPlayers(
@@ -275,6 +278,7 @@ function App() {
     setShowDrawTournament(true);
     setShowCreateTournament(false);
     setShowTournamentButtons(true);
+    console.log(currentTournament?.started);
     setShowPlayer(true);
     setSentPlayerIds(
       tournament.players
@@ -385,7 +389,7 @@ function App() {
     setShowMyTournament(false);
     setShowStartMenu(false);
     setShowCreateTournament(false);
-    setShowTournamentInfo(false);
+    setShowTournamentInfo(true);
     setShowEditTournament(false);
     setShowDrawTournament(true);
     setCurrentTournament(tournament);
@@ -484,16 +488,128 @@ function App() {
     tournamentId?: number;
     */
 
+  function handleStartTournament() {
+    if (currentTournament) {
+      setCurrentTournament({
+        ...currentTournament,
+        started: true,
+      });
+      const newTournament = {
+        ...currentTournament,
+        started: true,
+      };
+      writeTournament(newTournament);
+    }
+    setShowStartTournamentButton(false);
+    setTournamentStarted(true);
+    setShowTournamentInfo(false);
+    setShowDrawTournament(false);
+    setShowPlayer(false);
+    setShowTournamentButtons(false);
+    setMatchesInTournament(currentTournament);
+  }
+
+  function setMatchesInTournament(tournament: Tournament | undefined) {
+    if (tournament) {
+      let matchIdCounter = 0; // Variable to track match IDs
+      const matches: Match[] = [];
+
+      if (tournament.groups) {
+        for (const group of tournament.groups) {
+          const newMatches = createMatchesForGroup(group, matchIdCounter);
+          matchIdCounter += newMatches.length; // Update the match ID counter
+          matches.push(...newMatches);
+          group.matches = newMatches; // Add matches to the group
+        }
+      }
+
+      setCurrentTournament({
+        ...tournament,
+        matches: matches,
+      });
+    }
+  }
+
+  function createMatchesForGroup(
+    group: Group,
+    matchIdCounter: number
+  ): Match[] {
+    const matches: Match[] = [];
+    const players = group.players;
+
+    if (players) {
+      const numberOfPlayers = players.length;
+      const numberOfMatches = (numberOfPlayers * (numberOfPlayers - 1)) / 2;
+
+      let pairings: number[][] = [];
+
+      if (numberOfPlayers === 3) {
+        pairings = [
+          [0, 1],
+          [0, 2],
+          [1, 2],
+        ];
+      } else if (numberOfPlayers === 4) {
+        pairings = [
+          [0, 2],
+          [1, 3],
+          [0, 1],
+          [2, 3],
+          [0, 3],
+          [1, 2],
+        ];
+      } else if (numberOfPlayers === 5) {
+        pairings = [
+          [0, 2],
+          [1, 3],
+          [0, 1],
+          [2, 3],
+          [0, 3],
+          [1, 4],
+          [2, 4],
+          [3, 4],
+          [0, 4],
+          [1, 2],
+        ];
+      } else {
+        // Handle other cases or throw an error for unsupported number of players
+        throw new Error("Unsupported number of players in the group.");
+      }
+
+      for (let i = 0; i < numberOfMatches; i++) {
+        const pair = pairings[i];
+        const match: Match = {
+          player1: players[pair[0]],
+          player2: players[pair[1]],
+          group: group.name,
+          matchId: matchIdCounter + i,
+          tournamentId: group.tournamentId,
+        };
+
+        matches.push(match);
+      }
+
+      console.log(matches);
+      return matches;
+    }
+
+    return [];
+  }
+
+  function handleReportResult() {
+    //setShowReportResult(true);
+  }
+
   return (
     <Flex
       bg="#C1D0B5"
-      minHeight='100vh'
-      minWidth='100vw'
+      minHeight="100vh"
+      minWidth="100vw"
       display="flex"
       justifyContent="flex-start"
       alignItems="top"
       flexDirection="column"
-      p={4}
+      //p={1}
     >
       <ChakraProvider>
         <Center>
@@ -561,7 +677,7 @@ function App() {
                 return (
                   <Center key={`${tournament.tournamentId}-${index}`}>
                     <Box
-                      onClick={() => handleStartTournament(tournament)}
+                      onClick={() => handleTournamentInfo(tournament)}
                       width="35%"
                       style={{ marginBottom: "0.5", marginTop: "0.5em" }}
                     >
@@ -720,7 +836,7 @@ function App() {
           </Box>
         )}
 
-        {showTournamentInfo && (
+        {showTournamentInfo && !tournamentStarted && (
           <Box>
             <Center>
               <Stack>
@@ -790,61 +906,56 @@ function App() {
             </Center>
           </Box>
         )}
-        {showTournamentButtons && (
+        {showTournamentButtons && !tournamentStarted && (
           <>
-
-            <Flex width="80%" p={1}>
-              
+            <Flex p={1}>
               <Button colorScheme="blue" p={1} onClick={() => saveTournament()}>
                 Save Tournament
               </Button>
-              
-              <ButtonGroup gap='2'>
-              <Button
-                colorScheme="purple"
-                p={1}
-                
-                onClick={() =>
-                  handleSetTournamentSeededPlayers(
-                    currentTournament?.players || []
-                  )
-                }
-              >
-                Seed players
-              </Button>
-              
 
-              {currentTournament && (
+              <ButtonGroup gap="2">
                 <Button
-                  colorScheme="yellow"
+                  colorScheme="purple"
                   p={1}
-                  onClick={() => handleDrawTournament(currentTournament)}
+                  onClick={() =>
+                    handleSetTournamentSeededPlayers(
+                      currentTournament?.players || []
+                    )
+                  }
                 >
-                  Draw Tournament
+                  Seed players
                 </Button>
-              )}
+
+                {currentTournament && (
+                  <Button
+                    colorScheme="yellow"
+                    p={1}
+                    onClick={() => handleDrawTournament(currentTournament)}
+                  >
+                    Draw Tournament
+                  </Button>
+                )}
               </ButtonGroup>
-                
+
               <Button
                 colorScheme="green"
                 p={1}
-                onClick={() => console.log("start tournament")}
+                onClick={() => handleStartTournament()}
               >
                 Start Tournament
               </Button>
-              
             </Flex>
           </>
         )}
 
-        <Flex>
-          {showPlayers && (
+        <Flex p={1}>
+          {showPlayers && !tournamentStarted && (
             <Box width="35%">
               <Box
                 style={{
-                  overflow: "auto",
-                  maxHeight: "50%",
-                  maxWidth: "60%",
+                  overflowY: "auto",
+                  maxHeight: "60vh",
+                  maxWidth: "65%",
                 }}
               >
                 {currentTournament &&
@@ -900,9 +1011,9 @@ function App() {
               </Box>
             </Box>
           )}
-          {showDrawTournament && (
-            <Box maxWidth="60%" maxHeight="30%" overflow="auto" p={1}>
-              <Flex>
+          {showDrawTournament && !tournamentStarted && (
+            <Box>
+              <Flex overflow={"auto"} maxHeight={"80vh"} maxWidth={"100vh"}>
                 <Box flex="1" p={1}>
                   {currentTournament?.groups
                     ?.slice(0, Math.ceil(currentTournament.groups.length / 2))
@@ -933,6 +1044,154 @@ function App() {
             </Box>
           )}
         </Flex>
+        {currentTournament && tournamentStarted && (
+          <Box>
+            <Center>
+              <Heading colorScheme="black" fontFamily={"times new roman"}>
+                TournamentOverview
+              </Heading>
+            </Center>
+            <Flex p={1}>
+              <Button onClick={() => onOpen()} colorScheme="pink">
+                Report result
+              </Button>
+              <Modal  isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                  <ModalHeader>Report match score</ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody>
+                  
+                    <Box p={1}>
+                      <Text as="h2">Match ID</Text> 
+                    <Input
+                      p={1}
+                      maxWidth={"25%"}
+                      size="sm"
+                    />
+                    
+                    <Button margin={"2"}>Load match</Button>
+                    </Box>
+                    <Box>
+                      <Flex>
+                        
+                          <Text>Player 1 </Text>
+                          <Spacer />
+                          <Text>Player 2 </Text>
+                        
+                      </Flex>
+                    </Box>
+                    <InputGroup>
+                    <Box p={1}>
+                      <Flex>
+                        <Center>
+                          <Input maxWidth={"15%"} size="sm" />
+                          <Text> - </Text>
+                          <Input maxWidth={"15%"} size="sm" />
+                        </Center>
+                      </Flex>
+                    </Box>
+                    <Box p={1}>
+                      <Flex>
+                        <Center>
+                          <Input maxWidth={"15%"} size="sm" />
+                          <Text> - </Text>
+                          <Input maxWidth={"15%"} size="sm" />
+                        </Center>
+                      </Flex>
+                    </Box>
+                    <Box p={1}>
+                      <Flex>
+                        <Center>
+                          <Input maxWidth={"15%"} size="sm" />
+                          <Text> - </Text>
+                          <Input maxWidth={"15%"} size="sm" />
+                        </Center>
+                      </Flex>
+                    </Box>
+                    <Box p={1}>
+                      <Flex>
+                        <Center>
+                          <Input maxWidth={"15%"} size="sm" />
+                          <Text> - </Text>
+                          <Input maxWidth={"15%"} size="sm" />
+                        </Center>
+                      </Flex>
+                    </Box>
+                    <Box p={1}>
+                      <Flex>
+                        <Center>
+                          <Input maxWidth={"15%"} size="sm" />
+                          <Text> - </Text>
+                          <Input maxWidth={"15%"} size="sm" />
+                        </Center>
+                      </Flex>
+                    </Box>
+                    <Box p={1}>
+                      <Flex>
+                        <Center>
+                          <Input maxWidth={"15%"} size="sm" />
+                          <Text> - </Text>
+                          <Input maxWidth={"15%"} size="sm" />
+                        </Center>
+                      </Flex>
+                    </Box>
+                    <Box p={1}>
+                      <Flex>
+                        <Center>
+                          <Input maxWidth={"15%"} size="sm" />
+                          <Text> - </Text>
+                          <Input maxWidth={"15%"} size="sm" />
+                        </Center>
+                      </Flex>
+                    </Box>
+                    </InputGroup>
+                    
+                  </ModalBody>
+
+                  <ModalFooter>
+                    <Button onClick={onClose} colorScheme="blue" mr={3}>
+                      Send result
+                    </Button>
+                  </ModalFooter>
+                </ModalContent>
+              </Modal>
+              <Spacer />
+              <Button colorScheme="teal">Toggle results</Button>
+              <Spacer />
+              <Button colorScheme="green">Start bracket</Button>
+            </Flex>
+            <Box>
+              <Flex overflow={"auto"} maxHeight={"80vh"} maxWidth={"100vh"}>
+                {currentTournament?.groups
+                  ?.reduce((columns: JSX.Element[][], group, index) => {
+                    const columnIndex = Math.floor(index / 4);
+
+                    if (!columns[columnIndex]) {
+                      columns[columnIndex] = [];
+                    }
+
+                    columns[columnIndex].push(
+                      <Box p={1} key={group.name}>
+                        <Group
+                          seededPlayersIds={currentTournament.seededPlayersIds}
+                          name={group.name}
+                          players={group.players}
+                        />
+                      </Box>
+                    );
+
+                    return columns;
+                  }, [])
+                  .map((column, columnIndex) => (
+                    <Box flex="1" p={1} key={columnIndex}>
+                      {column}
+                    </Box>
+                  ))}
+              </Flex>
+            </Box>
+          </Box>
+        )}
       </ChakraProvider>
     </Flex>
   );
