@@ -42,6 +42,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       uid: tournament.uid,
       seededPlayersIds: tournament.seededPlayersIds,
       threeOrFive: tournament.threeOrFive,
+      groups: tournament.groups,
     });
   } else {
     // Tournament does not exist, create it
@@ -57,6 +58,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       uid: tournament.uid,
       seededPlayersIds: tournament.seededPlayersIds,
       threeOrFive: tournament.threeOrFive,
+      groups: tournament.groups,
     });
     console.log("Tournament created");
   }

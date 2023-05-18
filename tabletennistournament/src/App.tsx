@@ -49,6 +49,8 @@ import {
   MenuList,
   MenuItem,
   IconButton,
+  Spacer,
+  ButtonGroup,
 } from "@chakra-ui/react";
 
 import { HamburgerIcon, DeleteIcon } from "@chakra-ui/icons";
@@ -84,7 +86,13 @@ function App() {
   const [showTournamentInfo, setShowTournamentInfo] = useState(false);
   const [showPlayers, setShowPlayer] = useState(false);
   const [showEditTournament, setShowEditTournament] = useState(false);
+
   const [showDrawTournament, setShowDrawTournament] = useState(false);
+  const [numberOfGroups, setNumberOfGroups] = useState(0);
+  const [tournamentGroups, setTournamentGroups] = useState<Group[]>([]);
+  const [showTournamentButtons, setShowTournamentButtons] = useState(false);
+  const [showStartTournamentButton, setShowStartTournamentButton] =
+    useState(true);
 
   // define state variables for player search
   const [players, setPlayers] = useState(realPlayers);
@@ -97,6 +105,9 @@ function App() {
   const [searchName, setSearchName] = useState("");
   const [searchClub, setSearchClub] = useState("");
   const [sentPlayerIds, setSentPlayerIds] = useState<number[]>([]);
+
+  // loading variable
+  const [isLoading, setIsLoading] = useState(true); // Tournament is loading
 
   useEffect(() => {
     // Reset all state variables to their initial values
@@ -134,6 +145,7 @@ function App() {
       players: tournamentPlayers,
       seededPlayersIds: tournamentSeededPlayersIds,
       tournamentId: tournamentId,
+      groups: tournamentGroups,
     };
     const updatedTournaments = [...myTournaments, newTournament];
     writeTournament(newTournament); // Write to Firebase
@@ -215,6 +227,9 @@ function App() {
     setShowCreateTournament(false);
     setShowTournamentInfo(false);
     setShowPlayer(false);
+    setShowEditTournament(false);
+    setShowDrawTournament(false);
+    setShowTournamentButtons(false);
   };
   // go to tournament info
   const handleGoToTournaments = () => {
@@ -223,6 +238,8 @@ function App() {
     setShowCreateTournament(false);
     setShowTournamentInfo(false);
     setShowPlayer(false);
+    setShowTournamentButtons(false);
+    setShowDrawTournament(false);
   };
   // login with google
   async function handleGoogleLogin() {
@@ -245,15 +262,19 @@ function App() {
   }
   // go to tournament page and load tournament info
   const handleStartTournament = (tournament: Tournament) => {
-    console.log(tournament);
+    // console.log(tournament);
     setCurrentTournament(tournament);
     setTournamentPlayers(tournament.players ? tournament.players : []);
-    console.log(tournament.seededPlayersIds);
-    setTournamentSeededPlayers(tournament.seededPlayersIds ? tournament.seededPlayersIds : []);
+    // console.log(tournament.seededPlayersIds);
+    setTournamentSeededPlayers(
+      tournament.seededPlayersIds ? tournament.seededPlayersIds : []
+    );
     setShowTournamentInfo(true);
     setShowMyTournament(false);
     setShowStartMenu(false);
+    setShowDrawTournament(true);
     setShowCreateTournament(false);
+    setShowTournamentButtons(true);
     setShowPlayer(true);
     setSentPlayerIds(
       tournament.players
@@ -319,7 +340,7 @@ function App() {
   }
 
   function handleSetTournamentSeededPlayers(players: Player[]) {
-    console.log(players);
+    //console.log(players);
     const totalPlayers = players.length;
 
     let numSeeds = 0;
@@ -340,7 +361,14 @@ function App() {
 
     const seededPlayers = players.slice(0, numSeeds);
     const seededPlayersIds = seededPlayers.map((player) => player.id as number);
+    console.log(seededPlayers);
+
     setTournamentSeededPlayers(seededPlayersIds);
+    currentTournament &&
+      setCurrentTournament({
+        ...currentTournament,
+        seededPlayersIds: seededPlayersIds,
+      });
   }
 
   function handleEditTournaments(tournament: Tournament) {
@@ -358,38 +386,109 @@ function App() {
     setShowStartMenu(false);
     setShowCreateTournament(false);
     setShowTournamentInfo(false);
-    setShowPlayer(false);
     setShowEditTournament(false);
     setShowDrawTournament(true);
     setCurrentTournament(tournament);
+    setShowStartTournamentButton(true);
     drawTournament(tournament);
   }
 
   function drawTournament(tournament: Tournament): void {
-    const numbersOfGroups = 0;
+    let noGroups = 0;
+    const groups: Player[][] = [];
     if (tournament && tournament.players && tournament.seededPlayersIds) {
-      if (tournament.numberInGroup === 3) {
-        const numberOfGroups = (tournament?.players?.length % 4) + 1;
-      } else if (tournament.numberInGroup === 5) {
-        const numberOfGroups = tournament?.players?.length % 4;
+      if (tournament.threeOrFive === "3") {
+        console.log("3 here");
+        noGroups = Math.floor(tournament?.players?.length / 4) + 1;
+        setNumberInGroup(noGroups);
+      } else if (tournament.threeOrFive === "5") {
+        noGroups = Math.floor(tournament?.players?.length / 4);
+        setNumberInGroup(noGroups);
       }
       // assign the seeded players to the groups in order to
-      // ensure that they are not in the same group
-      const seededPlayers = tournament.players.slice(
-        0,
-        tournament.seededPlayersIds.length
-      );
-      // put the seeded players in the groups
 
-      // assign the remaining players to the groups
+      // ensure that they are not in the same group
+      for (let i = 0; i < noGroups; i++) {
+        groups.push([]);
+      }
+
+      for (let i = 0; i < tournament.seededPlayersIds.length; i++) {
+        const seededPlayerId = tournament.seededPlayersIds[i];
+        const player = tournament.players.find((p) => p.id === seededPlayerId);
+        if (player) {
+          groups[i % noGroups]?.push(player);
+          //console.log(groups);
+        }
+      }
+      const unseededPlayers = tournament.players.filter(
+        (player) => !tournament.seededPlayersIds?.includes(player.id)
+      );
+      //console.log(unseededPlayers);
+      shuffleArray(unseededPlayers);
+      //console.log(unseededPlayers);
+
+      let groupIndex = tournament.seededPlayersIds.length;
+      for (const player of unseededPlayers) {
+        // console.log(player);
+        groups[groupIndex]?.push(player);
+
+        groupIndex = (groupIndex + 1) % noGroups;
+      }
+      // console.log(groups);
+    }
+    const addGroups = setGroupsForTournament(groups);
+    // console.log(tournamentGroups);
+
+    if (currentTournament) {
+      setCurrentTournament({
+        ...currentTournament,
+        groups: addGroups,
+      });
+    }
+    //console.log(currentTournament?.groups);
+  }
+
+  function shuffleArray<T>(array: T[]): void {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
   }
+
+  function setGroupsForTournament(players: Player[][]) {
+    const updatedGroups: Group[] = [];
+    for (let i = 0; i < players.length; i++) {
+      const group = players[i];
+
+      const newGroup: Group = {
+        name: i + 1,
+        players: group,
+        matches: [],
+        format: "Best of 5",
+        numberInGroup: players[i].length,
+        tournamentId: currentTournament?.tournamentId,
+      };
+      updatedGroups.push(newGroup);
+
+      //console.log(tournamentGroups);
+    }
+
+    return updatedGroups;
+  }
+  /*interface Group{
+    name?: number;
+    players?: Player[];
+    matches?: Match[];
+    format?: string;
+    numberInGroup?: string;
+    tournamentId?: number;
+    */
 
   return (
     <Flex
       bg="#C1D0B5"
-      height="100vh"
-      width="100vw"
+      minHeight='100vh'
+      minWidth='100vw'
       display="flex"
       justifyContent="flex-start"
       alignItems="top"
@@ -459,12 +558,11 @@ function App() {
             {myTournaments
               .filter((tournament) => tournament.uid === uid)
               .map((tournament, index) => {
-                
                 return (
                   <Center key={`${tournament.tournamentId}-${index}`}>
                     <Box
                       onClick={() => handleStartTournament(tournament)}
-                      width="500px"
+                      width="35%"
                       style={{ marginBottom: "0.5", marginTop: "0.5em" }}
                     >
                       <Center>
@@ -633,7 +731,9 @@ function App() {
                     </Heading>
                   )}
                 </Box>
-                <Button onClick={onOpen}>Add players</Button>
+                <Button colorScheme="teal" onClick={onOpen}>
+                  Add players
+                </Button>
               </Stack>
 
               <Modal isOpen={isOpen} onClose={onClose}>
@@ -669,7 +769,7 @@ function App() {
                             }}
                           >
                             <Player
-                              id = {player.id}
+                              id={player.id}
                               name={player.name}
                               club={player.club}
                             ></Player>
@@ -690,12 +790,20 @@ function App() {
             </Center>
           </Box>
         )}
-        {showPlayers && (
-          <Box width="35%">
-            <Flex>
-              <Button onClick={() => saveTournament()}>Save Tournament</Button>
+        {showTournamentButtons && (
+          <>
 
+            <Flex width="80%" p={1}>
+              
+              <Button colorScheme="blue" p={1} onClick={() => saveTournament()}>
+                Save Tournament
+              </Button>
+              
+              <ButtonGroup gap='2'>
               <Button
+                colorScheme="purple"
+                p={1}
+                
                 onClick={() =>
                   handleSetTournamentSeededPlayers(
                     currentTournament?.players || []
@@ -704,75 +812,127 @@ function App() {
               >
                 Seed players
               </Button>
+              
 
               {currentTournament && (
-                <Button onClick={() => handleDrawTournament(currentTournament)}>
+                <Button
+                  colorScheme="yellow"
+                  p={1}
+                  onClick={() => handleDrawTournament(currentTournament)}
+                >
                   Draw Tournament
                 </Button>
               )}
+              </ButtonGroup>
+                
+              <Button
+                colorScheme="green"
+                p={1}
+                onClick={() => console.log("start tournament")}
+              >
+                Start Tournament
+              </Button>
+              
             </Flex>
-            <Box
-              style={{
-                overflow: "auto",
-                maxHeight: "400px",
-                maxWidth: "400px",
-              }}
-            >
-              {currentTournament &&
-                currentTournament.players &&
-                currentTournament.players
-                  .sort((a, b) => {
-                    if (!a.points || !b.points) {
-                      return 0;
-                    }
-                    return parseInt(b.points) - parseInt(a.points);
-                  })
-                  .map((player) => {
-                    
-                    console.log(currentTournament.seededPlayersIds);
-                    const isSeeded =
-                      tournamentSeededPlayersIds?.includes(player.id) ||
-                      currentTournament.seededPlayersIds?.includes(player.id);
-                      
-                    
-                    return (
-                      <Box
-                        p={[0, 0.5]}
-                        key={player.id}
-                        display="flex"
-                        alignItems="horizontal"
-                      >
-                        <Flex>
-                          <IconButton
-                            aria-label="Open chat"
-                            icon={<DeleteIcon />}
-                            colorScheme="red"
-                            onClick={() => {
-                              deletePlayerFromTournament(player);
-                            }}
-                            size={"sm"}
-                          />
-                          {isSeeded ? (
-                            <SeededPlayer
-                              name={player.name}
-                              club={player.club}
-                              points={player.points}
-                            />
-                          ) : (
-                            <Player
-                              id = {player.id}
-                              name={player.name}
-                              club={player.club}
-                              points={player.points}
-                            />
-                          )}
-                        </Flex>
-                      </Box>
-                    );
-                  })}
-            </Box>
-          </Box>
+          </>
         )}
+
+        <Flex>
+          {showPlayers && (
+            <Box width="35%">
+              <Box
+                style={{
+                  overflow: "auto",
+                  maxHeight: "50%",
+                  maxWidth: "60%",
+                }}
+              >
+                {currentTournament &&
+                  currentTournament.players &&
+                  currentTournament.players
+                    .sort((a, b) => {
+                      if (!a.points || !b.points) {
+                        return 0;
+                      }
+                      return parseInt(b.points) - parseInt(a.points);
+                    })
+                    .map((player) => {
+                      //console.log(currentTournament.seededPlayersIds);
+                      const isSeeded =
+                        tournamentSeededPlayersIds?.includes(player.id) ||
+                        currentTournament.seededPlayersIds?.includes(player.id);
+
+                      return (
+                        <Box
+                          p={[0, 0.5]}
+                          key={player.id}
+                          display="flex"
+                          alignItems="horizontal"
+                        >
+                          <Flex>
+                            <IconButton
+                              aria-label="Open chat"
+                              icon={<DeleteIcon />}
+                              colorScheme="red"
+                              onClick={() => {
+                                deletePlayerFromTournament(player);
+                              }}
+                              size={"sm"}
+                            />
+                            {isSeeded ? (
+                              <SeededPlayer
+                                name={player.name}
+                                club={player.club}
+                                points={player.points}
+                              />
+                            ) : (
+                              <Player
+                                id={player.id}
+                                name={player.name}
+                                club={player.club}
+                                points={player.points}
+                              />
+                            )}
+                          </Flex>
+                        </Box>
+                      );
+                    })}
+              </Box>
+            </Box>
+          )}
+          {showDrawTournament && (
+            <Box maxWidth="60%" maxHeight="30%" overflow="auto" p={1}>
+              <Flex>
+                <Box flex="1" p={1}>
+                  {currentTournament?.groups
+                    ?.slice(0, Math.ceil(currentTournament.groups.length / 2))
+                    .map((group) => (
+                      <Box p={1} key={group.name}>
+                        <Group
+                          seededPlayersIds={currentTournament.seededPlayersIds}
+                          name={group.name}
+                          players={group.players}
+                        />
+                      </Box>
+                    ))}
+                </Box>
+                <Box flex="1" p={1}>
+                  {currentTournament?.groups
+                    ?.slice(Math.ceil(currentTournament.groups.length / 2))
+                    .map((group) => (
+                      <Box p={1} key={group.name}>
+                        <Group
+                          seededPlayersIds={currentTournament.seededPlayersIds}
+                          name={group.name}
+                          players={group.players}
+                        />
+                      </Box>
+                    ))}
+                </Box>
+              </Flex>
+            </Box>
+          )}
+        </Flex>
       </ChakraProvider>
     </Flex>
   );

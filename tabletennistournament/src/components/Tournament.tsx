@@ -1,6 +1,7 @@
 import { Box, Heading, Text, Center } from "@chakra-ui/react";
 import Player from "./Player";
 import Class from "./Class";
+import Group from "./Group";
 
 interface Tournament {
   uid?: string;
@@ -17,6 +18,7 @@ interface Tournament {
   seeds?: number;
   seededPlayersIds?: number[];
   threeOrFive?: string;
+  groups?: Group[];
 }
 
 function Tournament(props: Tournament) {
