@@ -12,6 +12,7 @@ import Tournament from "./components/Tournament";
 import SeededPlayer from "./components/SeededPlayer";
 import Match from "./components/Match";
 import Group from "./components/Group";
+import Set from "./components/Set";
 
 import "./App.css";
 import {
@@ -110,6 +111,33 @@ function App() {
 
   // loading variable
   const [isLoading, setIsLoading] = useState(true); // Tournament is loading
+
+  // define set score variables
+  const [setNumber, setSetNumber] = useState(1);
+  const [player1Score, setPlayer1Score] = useState(0);
+  const [player2Score, setPlayer2Score] = useState(0);
+
+  const [scores, setScores] = useState<Set[]>([]);
+  const [matchId, setMatchId] = useState("");
+  const [currentMatch, setCurrentMatch] = useState<Match>();
+
+  // set score for each set and player
+
+  const [set1Player1, setSet1Player1] = useState(0);
+  const [set2Player1, setSet2Player1] = useState(0);
+  const [set3Player1, setSet3Player1] = useState(0);
+  const [set4Player1, setSet4Player1] = useState(0);
+  const [set5Player1, setSet5Player1] = useState(0);
+  const [set6Player1, setSet6Player1] = useState(0);
+  const [set7Player1, setSet7Player1] = useState(0);
+  const [set1Player2, setSet1Player2] = useState(0);
+  const [set2Player2, setSet2Player2] = useState(0);
+  const [set3Player2, setSet3Player2] = useState(0);
+  const [set4Player2, setSet4Player2] = useState(0);
+  const [set5Player2, setSet5Player2] = useState(0);
+  const [set6Player2, setSet6Player2] = useState(0);
+  const [set7Player2, setSet7Player2] = useState(0);
+  const [winner, setWinner] = useState<Player>();
 
   useEffect(() => {
     // Reset all state variables to their initial values
@@ -266,8 +294,8 @@ function App() {
   const handleTournamentInfo = (tournament: Tournament) => {
     // console.log(tournament);
     setCurrentTournament(tournament);
-    setTournamentStarted(tournament.started ? tournament.started : false);
     setTournamentPlayers(tournament.players ? tournament.players : []);
+    setTournamentStarted(tournament.started ? tournament.started : false);
     // console.log(tournament.seededPlayersIds);
     setTournamentSeededPlayers(
       tournament.seededPlayersIds ? tournament.seededPlayersIds : []
@@ -365,7 +393,6 @@ function App() {
 
     const seededPlayers = players.slice(0, numSeeds);
     const seededPlayersIds = seededPlayers.map((player) => player.id as number);
-    console.log(seededPlayers);
 
     setTournamentSeededPlayers(seededPlayersIds);
     currentTournament &&
@@ -501,12 +528,14 @@ function App() {
       writeTournament(newTournament);
     }
     setShowStartTournamentButton(false);
-    setTournamentStarted(true);
     setShowTournamentInfo(false);
     setShowDrawTournament(false);
     setShowPlayer(false);
+    setShowMyTournament(false);
     setShowTournamentButtons(false);
     setMatchesInTournament(currentTournament);
+    setTournamentStarted(true);
+    console.log(currentTournament?.started);
   }
 
   function setMatchesInTournament(tournament: Tournament | undefined) {
@@ -524,6 +553,10 @@ function App() {
       }
 
       setCurrentTournament({
+        ...tournament,
+        matches: matches,
+      });
+      writeTournament({
         ...tournament,
         matches: matches,
       });
@@ -589,7 +622,6 @@ function App() {
         matches.push(match);
       }
 
-      console.log(matches);
       return matches;
     }
 
@@ -598,6 +630,109 @@ function App() {
 
   function handleReportResult() {
     //setShowReportResult(true);
+  }
+
+  function handleCheckWinner() {
+    let wonSetsPlayer1 = 0;
+    let wonSetsPlayer2 = 0;
+    const set1 = {
+      player1Score: set1Player1,
+      player2Score: set1Player2,
+    };
+    const set2 = {
+      player1Score: set2Player1,
+      player2Score: set2Player2,
+    };
+    const set3 = {
+      player1Score: set3Player1,
+      player2Score: set3Player2,
+    };
+    const set4 = {
+      player1Score: set4Player1,
+      player2Score: set4Player2,
+    };
+    const set5 = {
+      player1Score: set5Player1,
+      player2Score: set5Player2,
+    };
+    const sets = [set1, set2, set3, set4, set5];
+
+    for (let i = 0; i < sets.length; i++) {
+      const set = sets[i];
+      const player1Score = set.player1Score;
+      const player2Score = set.player2Score;
+      console.log(player1Score);
+      console.log(player2Score);
+
+      if (!isNaN(player1Score) && !isNaN(player2Score)) {
+        // Check if the absolute difference is greater than or equal to 2
+        if ((player1Score > 10 || player2Score > 10) && Math.abs(player1Score - player2Score) != 2)  {
+          throw new Error(
+            "Input error: Absolute difference between scores need to be 2"
+          );
+        }
+        
+        if (
+          Math.abs(player1Score - player2Score) >= 2 ||
+          (player1Score == 0 && player2Score == 0)
+        ) {
+          if (player1Score > player2Score) {
+            wonSetsPlayer1++;
+          } else if (player1Score < player2Score) {
+            wonSetsPlayer2++;
+          }
+        } else {
+          throw new Error(
+            "Input error: Absolute difference between scores must be greater than or equal to 2."
+          );
+        }
+      } else {
+        throw new Error(
+          "Input error: Invalid score input. Please enter numeric values."
+        );
+      }
+    }
+
+    if (wonSetsPlayer1 === wonSetsPlayer2) {
+      throw new Error(
+        "Input error: The number of won sets for each player cannot be equal."
+      );
+    }
+
+    if (wonSetsPlayer1 < 3 && wonSetsPlayer2 < 3) {
+      throw new Error(
+        "Input error: At least one player must win 3 or more sets."
+      );
+    }
+
+    let winner = null;
+    if (wonSetsPlayer1 > wonSetsPlayer2) {
+      winner = currentMatch?.player1;
+    } else {
+      winner = currentMatch?.player2;
+    }
+
+    setWinner(winner);
+  }
+
+  /*
+    setNumber?: number;
+    player1Score?: number;
+    player2Score?: number;
+    matchId?: string;
+   */
+
+  function loadReportPlayers(matchID: number) {
+    console.log(matchID);
+    if (currentTournament) {
+      const match = currentTournament.matches?.find(
+        (match) => match.matchId === matchID
+      );
+      if (match) {
+        setCurrentMatch(match);
+        //setShowReportResult(true);
+      }
+    }
   }
 
   return (
@@ -1055,101 +1190,369 @@ function App() {
               <Button onClick={() => onOpen()} colorScheme="pink">
                 Report result
               </Button>
-              <Modal  isOpen={isOpen} onClose={onClose}>
+              <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent bg={"blue.200"}>
                   <ModalHeader>Report match score</ModalHeader>
                   <ModalCloseButton />
                   <ModalBody>
-                  
                     <Box p={1}>
-                      <Text as="h2">Match ID</Text> 
-                    <Input
-                      p={1}
-                      maxWidth={"25%"}
-                      size="sm"
-                    />
-                    
-                    <Button margin={"2"}>Load match</Button>
+                      <Text as="h2">Match ID</Text>
+                      <Input
+                        maxLength={10000}
+                        fontWeight={"bold"}
+                        id="matchid"
+                        p={1}
+                        maxWidth={"25%"}
+                        size="sm"
+                        value={matchId}
+                        onChange={(e) => setMatchId(e.target.value)}
+                      />
+
+                      <Button
+                        onClick={() => loadReportPlayers(parseInt(matchId))}
+                        margin={"2"}
+                      >
+                        Load match
+                      </Button>
                     </Box>
                     <Box>
-                      <Flex>
-                        
-                          <Text>Player 1 </Text>
+                      {currentMatch && (
+                        <Flex>
+                          <Text
+                            fontWeight="bold"
+                            fontSize={"15"}
+                            maxWidth={"20%"}
+                          >
+                            {" "}
+                            {currentMatch.player1?.name}{" "}
+                          </Text>
+
                           <Spacer />
-                          <Text>Player 2 </Text>
-                        
-                      </Flex>
+                          <Center>
+                            <Text fontSize={"40"}>
+                              {" "}
+                              {currentMatch.matchId}{" "}
+                            </Text>
+                          </Center>
+                          <Spacer />
+                          <Text
+                            fontWeight="bold"
+                            fontSize={"15"}
+                            maxWidth={"20%"}
+                          >
+                            {" "}
+                            {currentMatch.player2?.name}{" "}
+                          </Text>
+                        </Flex>
+                      )}
                     </Box>
-                    <InputGroup>
-                    <Box p={1}>
-                      <Flex>
-                        <Center>
-                          <Input maxWidth={"15%"} size="sm" />
-                          <Text> - </Text>
-                          <Input maxWidth={"15%"} size="sm" />
-                        </Center>
-                      </Flex>
-                    </Box>
-                    <Box p={1}>
-                      <Flex>
-                        <Center>
-                          <Input maxWidth={"15%"} size="sm" />
-                          <Text> - </Text>
-                          <Input maxWidth={"15%"} size="sm" />
-                        </Center>
-                      </Flex>
-                    </Box>
-                    <Box p={1}>
-                      <Flex>
-                        <Center>
-                          <Input maxWidth={"15%"} size="sm" />
-                          <Text> - </Text>
-                          <Input maxWidth={"15%"} size="sm" />
-                        </Center>
-                      </Flex>
-                    </Box>
-                    <Box p={1}>
-                      <Flex>
-                        <Center>
-                          <Input maxWidth={"15%"} size="sm" />
-                          <Text> - </Text>
-                          <Input maxWidth={"15%"} size="sm" />
-                        </Center>
-                      </Flex>
-                    </Box>
-                    <Box p={1}>
-                      <Flex>
-                        <Center>
-                          <Input maxWidth={"15%"} size="sm" />
-                          <Text> - </Text>
-                          <Input maxWidth={"15%"} size="sm" />
-                        </Center>
-                      </Flex>
-                    </Box>
-                    <Box p={1}>
-                      <Flex>
-                        <Center>
-                          <Input maxWidth={"15%"} size="sm" />
-                          <Text> - </Text>
-                          <Input maxWidth={"15%"} size="sm" />
-                        </Center>
-                      </Flex>
-                    </Box>
-                    <Box p={1}>
-                      <Flex>
-                        <Center>
-                          <Input maxWidth={"15%"} size="sm" />
-                          <Text> - </Text>
-                          <Input maxWidth={"15%"} size="sm" />
-                        </Center>
-                      </Flex>
-                    </Box>
-                    </InputGroup>
-                    
+                    <Stack>
+                      <Box p={1}>
+                        <Flex>
+                          <Center>
+                            <Input
+                              value={set1Player1}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet1Player1(parseInt(inputValue));
+                                } else {
+                                  setSet1Player1(0);
+                                }
+                              }}
+                              maxLength={2}
+                              colorScheme="green"
+                              bg="green.100"
+                              id="set1player1"
+                              borderRadius={"5px"}
+                              maxWidth={"15%"}
+                              size="md"
+                              fontWeight={"bold"}
+                            />
+                            <Text> - </Text>
+                            <Input
+                              value={set1Player2}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet1Player2(parseInt(inputValue));
+                                } else {
+                                  setSet1Player2(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set1player2"
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                          </Center>
+                        </Flex>
+                      </Box>
+                      <Box p={1}>
+                        <Flex>
+                          <Center>
+                            <Input
+                              value={set2Player1}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet2Player1(parseInt(inputValue));
+                                } else {
+                                  setSet2Player1(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set2player1"
+                              borderRadius={"5px"}
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                            <Text> - </Text>
+                            <Input
+                              minLength={1}
+                              value={set2Player2}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet2Player2(parseInt(inputValue));
+                                } else {
+                                  setSet2Player2(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set2player2"
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                          </Center>
+                        </Flex>
+                      </Box>
+                      <Box p={1}>
+                        <Flex>
+                          <Center>
+                            <Input
+                              value={set3Player1}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet3Player1(parseInt(inputValue));
+                                } else {
+                                  setSet3Player1(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set3player1"
+                              borderRadius={"5px"}
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                            <Text> - </Text>
+                            <Input
+                              value={set3Player2}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet3Player2(parseInt(inputValue));
+                                } else {
+                                  setSet3Player2(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set3player2"
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                          </Center>
+                        </Flex>
+                      </Box>
+                      <Box p={1}>
+                        <Flex>
+                          <Center>
+                            <Input
+                              value={set4Player1}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet4Player1(parseInt(inputValue));
+                                } else {
+                                  setSet4Player1(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set4player1"
+                              borderRadius={"5px"}
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                            <Text> - </Text>
+                            <Input
+                              value={set4Player2}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet4Player2(parseInt(inputValue));
+                                } else {
+                                  setSet4Player2(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set4player2"
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                          </Center>
+                        </Flex>
+                      </Box>
+                      <Box p={1}>
+                        <Flex>
+                          <Center>
+                            <Input
+                              value={set5Player1}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet5Player1(parseInt(inputValue));
+                                } else {
+                                  setSet5Player1(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set5player1"
+                              borderRadius={"5px"}
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                            <Text> - </Text>
+                            <Input
+                              value={set5Player2}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet5Player2(parseInt(inputValue));
+                                } else {
+                                  setSet5Player2(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set5player2"
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                          </Center>
+                        </Flex>
+                      </Box>
+                      <Box p={1}>
+                        <Flex>
+                          <Center>
+                            <Input
+                              value={set6Player1}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet6Player1(parseInt(inputValue));
+                                } else {
+                                  setSet6Player1(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set6player1"
+                              borderRadius={"5px"}
+                              maxWidth={"15%"}
+                              size="md"
+                              fontSize={14}
+                              colorScheme="whiteAlpha"
+                            />
+                            <Text> - </Text>
+                            <Input
+                              value={set6Player2}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet6Player2(parseInt(inputValue));
+                                } else {
+                                  setSet6Player2(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set6player2"
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                          </Center>
+                        </Flex>
+                      </Box>
+                      <Box p={1}>
+                        <Flex>
+                          <Center>
+                            <Input
+                              value={set7Player1}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet7Player1(parseInt(inputValue));
+                                } else {
+                                  setSet7Player1(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set7player1"
+                              borderRadius={"5px"}
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                            <Text> - </Text>
+                            <Input
+                              value={set7Player2}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (!isNaN(parseInt(inputValue))) {
+                                  setSet7Player2(parseInt(inputValue));
+                                } else {
+                                  setSet7Player2(0);
+                                }
+                              }}
+                              maxLength={2}
+                              fontWeight={"bold"}
+                              bg={"green.100"}
+                              id="set7player2"
+                              maxWidth={"15%"}
+                              size="md"
+                            />
+                          </Center>
+                        </Flex>
+                      </Box>
+                    </Stack>
                   </ModalBody>
 
                   <ModalFooter>
+                    <Button onClick={() => handleCheckWinner()}>
+                      Check winner
+                    </Button>
                     <Button onClick={onClose} colorScheme="blue" mr={3}>
                       Send result
                     </Button>
