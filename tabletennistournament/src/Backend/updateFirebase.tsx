@@ -44,7 +44,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       threeOrFive: tournament.threeOrFive,
       groups: tournament.groups,
       started: tournament.started,
-      matches: tournament.matches,
+      matches: tournament.matches
     });
   } else {
     // Tournament does not exist, create it
