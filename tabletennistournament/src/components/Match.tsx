@@ -13,6 +13,8 @@ interface   Match {
     loser?: Player;
     date?: string;
     reported?: boolean;
+    player1wonSets?: number;
+    player2wonSets?: number;
 }
 
 

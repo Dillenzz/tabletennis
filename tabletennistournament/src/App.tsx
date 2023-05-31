@@ -155,6 +155,8 @@ function App() {
   const [set6Player2, setSet6Player2] = useState(0);
   const [set7Player2, setSet7Player2] = useState(0);
   const [winner, setWinner] = useState<Player>();
+  const [wonSetsPlayer1, setWonSetsPlayer1] = useState(0);
+  const [wonSetsPlayer2, setWonSetsPlayer2] = useState(0);
 
   // Sates for errorhandling and checking correct winner
   const [matchIdError, setMatchIdError] = useState(0);
@@ -297,6 +299,7 @@ function App() {
     setShowDrawTournament(false);
     setShowTournamentButtons(false);
     setTournamentStarted(false);
+    setShowGroupResult(false);
   };
   // go to tournament info
   const handleGoToTournaments = () => {
@@ -376,14 +379,14 @@ function App() {
     }
 
     const newPlayers = [...tournamentPlayers, player];
-    await setTournamentPlayers(newPlayers);
+    setTournamentPlayers(newPlayers);
     if (currentTournament) {
       setCurrentTournament({
         ...currentTournament,
         players: newPlayers,
       });
     }
-    await setSentPlayerIds([...sentPlayerIds, playerId]);
+    setSentPlayerIds([...sentPlayerIds, playerId]);
   }
   // save tournament to firebase
   function saveTournament() {
@@ -392,9 +395,11 @@ function App() {
         ...currentTournament,
         players: tournamentPlayers,
         seededPlayersIds: tournamentSeededPlayersIds,
-        groups: tournamentGroups,
-        matches: [],
+        groups: currentTournament.groups ? currentTournament.groups : [],
+        matches: currentTournament.matches ? currentTournament.matches : [],
+        started: false,
       };
+      console.log(tournamentGroups);
       writeTournament(newTournament);
       setCurrentTournament(newTournament);
     }
@@ -465,7 +470,6 @@ function App() {
     //setShowEditTournament(false);
     setShowDrawTournament(true);
     setCurrentTournament(tournament);
-
     drawTournament(tournament);
   }
 
@@ -709,6 +713,7 @@ function App() {
       setCurrentTournament({
         ...tournament,
         groups: addGroups,
+        matches: allMatchesInTournament,
       });
       writeTournament({
         ...tournament,
@@ -1070,6 +1075,8 @@ function App() {
 
       setWinner(winner);
       setCheckWinner(1);
+      setWonSetsPlayer1(wonSetsPlayer1);
+      setWonSetsPlayer2(wonSetsPlayer2);
     } catch (error: any) {
       setCheckWinner(-1);
       setErrorMessage(error.message);
@@ -1104,6 +1111,8 @@ function App() {
         sets: sets,
         winner: winner,
         reported: true,
+        player1wonSets: wonSetsPlayer1,
+        player2wonSets: wonSetsPlayer2,
       };
 
       if (currentTournament !== null && currentTournament !== undefined) {
@@ -1525,8 +1534,8 @@ function App() {
                           <Box
                             mt={1}
                             key={player.id}
-                            onClick={async () => {
-                              await addPlayerToTournament(player);
+                            onClick={() => {
+                              addPlayerToTournament(player);
                             }}
                           >
                             <Player
@@ -1651,6 +1660,7 @@ function App() {
                                 name={player.name}
                                 club={player.club}
                                 points={player.points}
+                                class={player.class}
                               />
                             ) : (
                               <Player
@@ -1658,6 +1668,7 @@ function App() {
                                 name={player.name}
                                 club={player.club}
                                 points={player.points}
+                                class={player.class}
                               />
                             )}
                           </Flex>
@@ -2274,7 +2285,7 @@ function App() {
             </Box>
 
             {showGroups && (
-              <Box margin={"5"} width="30%">
+              <Box margin={"5"} width="100%">
                 <Flex overflow={"auto"} maxHeight={"80vh"} maxWidth={"100vh"}>
                   {currentTournament?.groups
                     ?.reduce((columns: JSX.Element[][], group, index) => {
@@ -2292,7 +2303,7 @@ function App() {
                             isOpen={isOpenScoreModal}
                             motionPreset="slideInBottom"
                           >
-                            <ModalOverlay />
+                            <ModalOverlay bg={"teal.400"} />
                             <ModalContent>
                               {currentPlayer && currentPlayer.name && (
                                 <ModalHeader>
@@ -2349,9 +2360,6 @@ function App() {
                                   onClick={onCloseScoreModal}
                                 >
                                   Close
-                                </Button>
-                                <Button variant="ghost">
-                                  Secondary Action
                                 </Button>
                               </ModalFooter>
                             </ModalContent>

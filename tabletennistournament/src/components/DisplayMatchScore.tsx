@@ -40,11 +40,17 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
                       {set.player1Score} - {set.player2Score}
                     </Text>
                   </Box>
+
                 );
               } else {
                 return null; // Skip rendering the set
               }
             })}
+             <Stack>
+              <Text fontWeight={"bold"} fontSize={"15"}>Winner</Text>
+              <Text>{props.match.winner?.name}</Text>
+              <Text> {props.match.player1wonSets} - {props.match.player2wonSets}</Text>
+              </Stack>
         </Flex>
       </Stack>
     </Box>

@@ -1,9 +1,9 @@
-import React from "react";
+
 import Player from "./Player";
 import Match from "./Match";
 import PlayerGroupScore from "./PlayerGroupScore";
-import { Box, Heading, Text, Center } from "@chakra-ui/react";
-import SeededPlayer from "./SeededPlayer";
+import { Box,Text, Center } from "@chakra-ui/react";
+
 
 interface Group {
   name?: number;
@@ -67,6 +67,7 @@ function GroupResult(props: Group) {
               id={player.player.id}
               name={player.player.name}
               score={player.score}
+              class={player.player.class}
             />
           ))}
         </Box>

@@ -1,6 +1,6 @@
 import Player from "./Player";
 import Match from "./Match";
-import { Box, Heading, Text, Center } from "@chakra-ui/react";
+import { Box, Text, Center } from "@chakra-ui/react";
 import SeededPlayer from "./SeededPlayer";
 
 interface GroupDisplayScore {
