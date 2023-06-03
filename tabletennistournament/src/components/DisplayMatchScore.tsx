@@ -34,10 +34,13 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
             props.match.sets.map((set: Set, index: number) => {
               if (set.player1Score !== 0 || set.player2Score !== 0) {
                 return (
-                  <Box margin="4" key={index}>
-                    <Text>Set {index + 1}</Text>
-                    <Text>
-                      {set.player1Score} - {set.player2Score}
+                  <Box width={"100%"} margin="4" key={index}>
+                    <Text fontSize={14}>Set {index + 1}</Text>
+                    <Text fontSize={20}>
+                      {set.player1Score} 
+                    </Text>
+                    <Text fontSize={20}>
+                      {set.player2Score}
                     </Text>
                   </Box>
 

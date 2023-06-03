@@ -12,6 +12,7 @@ interface Player {
   gender?: string;
   id?: number;
   class? : string;
+  isTopPlayer?: boolean;
   onClick?: () => void
   
 }
@@ -22,7 +23,7 @@ function SeededPlayer(props: Player) {
       width={"100%"}
       p="1"
       _hover={{ bg: "green.100" }}
-      bg="blue.100"
+      bg="#F5F0BB"
       rounded="lg"
     >
       <Center>

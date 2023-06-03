@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Center } from "@chakra-ui/react";
+import { Box, Heading, Text, Center, Spacer } from "@chakra-ui/react";
 import Player from "./Player";
 import Class from "./Class";
 import Group from "./Group";
@@ -21,6 +21,7 @@ interface Tournament {
   threeOrFive?: string;
   groups?: Group[];
   started?: boolean;
+  readyToStart?: boolean;
 }
 
 function Tournament(props: Tournament) {
@@ -29,18 +30,29 @@ function Tournament(props: Tournament) {
       width={"85%"}
       p="2"
       _hover={{ bg: "green.100" }}
-      bg="blue.100"
+      bg="#F5F0BB"
       rounded="lg"
     >
-      <Center>
-        <Heading margin={"1em"} as="h2" mb="2">
-          {props.name}
-        </Heading>
-      </Center>
-      <Text>
-        Date: {props.dateFrom} - {props.dateTo}
-      </Text>
-      <Text>Location: {props.location}</Text>
+      <Box>
+        <Center>
+          <Heading margin={"1em"} as="h2" mb="2">
+            {props.name}
+          </Heading>
+        </Center>
+      </Box>
+
+      <Box>
+        <Center>
+          <Text fontWeight={"bold"} fontSize={"20"}>
+            Location: {props.location}
+          </Text>
+
+          <Spacer></Spacer>
+          <Text fontSize={"20"}>
+            Date: {props.dateFrom} - {props.dateTo}
+          </Text>
+        </Center>
+      </Box>
     </Box>
   );
 }

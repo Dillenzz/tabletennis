@@ -1,9 +1,7 @@
-
 import Player from "./Player";
 import Match from "./Match";
 import PlayerGroupScore from "./PlayerGroupScore";
-import { Box,Text, Center } from "@chakra-ui/react";
-
+import { Box, Text, Center } from "@chakra-ui/react";
 
 interface Group {
   name?: number;
@@ -53,10 +51,14 @@ function GroupResult(props: Group) {
   // Sort the playerGroupScore array in descending order
   const sortedPlayers = playerGroupScore.sort((a, b) => b.score - a.score);
 
+  // first 2 players in each group shpuld be in the next round and displayed with a green color
+
+  const topPlayers = sortedPlayers.slice(0, 2);
+
   return (
-    <Box width="100%" _hover={{ bg: "green.100" }} bg="blue.100" rounded="lg">
+    <Box width="100%" bg="#F5F0BB" rounded="md">
       <Center>
-        <Text style={{ fontWeight: "bold" }}>Group {name}</Text>
+        <Text fontSize={20} style={{ fontWeight: "bold" }}>Group {name}</Text>
       </Center>
       {sortedPlayers && (
         <Box>
@@ -68,8 +70,16 @@ function GroupResult(props: Group) {
               name={player.player.name}
               score={player.score}
               class={player.player.class}
+              isTopPlayer={topPlayers.includes(player)}
             />
           ))}
+        </Box>
+      )}
+      {sortedPlayers.length === 0 && (
+        <Box>
+          <Center>
+            <Text fontSize={20}>No reported matches for this group</Text>
+          </Center>
         </Box>
       )}
     </Box>
