@@ -15,6 +15,12 @@ interface   Match {
     reported?: boolean;
     player1wonSets?: number;
     player2wonSets?: number;
+    player1lostSets?: number;
+    player2lostSets?: number;
+    player1wonPoints?: number;
+    player2wonPoints?: number;
+    player1lostPoints?: number;
+    player2lostPoints?: number;
 }
 
 

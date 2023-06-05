@@ -22,6 +22,8 @@ interface Tournament {
   groups?: Group[];
   started?: boolean;
   readyToStart?: boolean;
+  bo?: string;
+  startBracket?: boolean;
 }
 
 function Tournament(props: Tournament) {
@@ -29,7 +31,7 @@ function Tournament(props: Tournament) {
     <Box
       width={"85%"}
       p="2"
-      _hover={{ bg: "green.100" }}
+      _hover={{ bg: "#DBDFAA" , cursor: "pointer" }}
       bg="#F5F0BB"
       rounded="lg"
     >

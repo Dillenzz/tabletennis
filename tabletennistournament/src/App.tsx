@@ -92,6 +92,7 @@ function App() {
     number[]
   >([]);
   const [tournamentId] = useState();
+  const [bo, setBo] = useState("Bo5");
 
   // define state variables for showing/hiding components
   const [showCreateTournament, setShowCreateTournament] = useState(false);
@@ -102,7 +103,7 @@ function App() {
   //const [showEditTournament, setShowEditTournament] = useState(false);
 
   const [showDrawTournament, setShowDrawTournament] = useState(false);
-  const [tournamentGroups] = useState<Group[]>([]);
+
   const [showTournamentButtons, setShowTournamentButtons] = useState(false);
   const [showUserName, setShowUserName] = useState(false);
 
@@ -198,42 +199,6 @@ function App() {
   }, [sentPlayerIds]);
 
   // save or update the tournament to Firebase
-  const handleSaveTournament = () => {
-    setShowStartMenu(true);
-    setShowCreateTournament(false);
-
-    const newTournament: Tournament = {
-      uid: uid,
-      name: tournamentName,
-      dateFrom: tournamentDateFrom,
-      dateTo: tournamentDateTo,
-      location: tournamentLocation,
-      format: tournamentType,
-      numberInGroup: numberInGroup,
-      threeOrFive: threeOrFive,
-      players: tournamentPlayers,
-      seededPlayersIds: tournamentSeededPlayersIds,
-      tournamentId: tournamentId,
-      groups: tournamentGroups,
-      started: tournamentStarted,
-      matches: allMatchesInTournament,
-    };
-
-    const updatedTournaments = [...myTournaments, newTournament];
-    writeTournament(newTournament); // Write to Firebase
-    setMyTournaments(updatedTournaments);
-    // Reset all state variables to their initial values
-    setTournamentDateFrom("");
-    setTournamentDateTo("");
-    setTournamentLocation("");
-    setTournamentPlayers([]);
-
-    //setAllMatchesInTournament([]);
-    setTournamentName("");
-    setNumberInGroup(4);
-    setTournamentType("");
-    setCurrentTournament(newTournament);
-  };
 
   const createTournament = () => {
     setShowStartMenu(true);
@@ -255,6 +220,7 @@ function App() {
       started: false,
       matches: [],
       readyToStart: false,
+      bo: bo,
     };
 
     const updatedTournaments = [...myTournaments, newTournament];
@@ -333,11 +299,16 @@ function App() {
     setThreeOrFive(value);
   };
 
+  const handleBoChange = (value: string) => {
+    setBo(value);
+  };
+
   // show all tournaments
   const handleShowMyTournaments = () => {
     setShowMyTournament(!showMyTournaments);
     setShowStartMenu(false);
     loadTournaments();
+    setShowUserName(false);
   };
   // go home resets all state variables
   const handlegoToHome = () => {
@@ -363,6 +334,7 @@ function App() {
     setTournamentLocation("");
     setTournamentType("");
     setShowUnreportedMatches(false);
+    setShowUserName(true);
   };
   // go to tournament info
   const handleGoToTournaments = () => {
@@ -375,6 +347,7 @@ function App() {
     setShowDrawTournament(false);
     setShowGroups(false);
     setShowTournamentButtons(false);
+    setShowUserName(false);
   };
   // login with google
   async function handleGoogleLogin() {
@@ -412,6 +385,7 @@ function App() {
 
     setShowCreateTournament(false);
     setShowTournamentButtons(true);
+    setShowUserName(false);
     setUnreportedMatches([]);
     // console.log("currentTournamet.started", currentTournament?.started);
     setShowPlayer(true);
@@ -530,7 +504,7 @@ function App() {
   }
 
   // function not called?
-  function handleEditTournaments(tournament: Tournament) {
+  /* function handleEditTournaments(tournament: Tournament) {
     setShowMyTournament(false);
     setShowStartMenu(false);
     setShowCreateTournament(false);
@@ -539,6 +513,7 @@ function App() {
     //setShowEditTournament(true);
     setCurrentTournament(tournament);
   }
+  */
 
   // sets states to display the drawn groups
   function handleDrawTournament() {
@@ -629,6 +604,11 @@ function App() {
           if (tournament.players.length == 5) {
             noGroups = 1;
             no5Groups = 1;
+          }
+
+          if (tournament.players.length == 7) {
+            noGroups = 2;
+            no3Groups = 0;
           }
         } else {
           noGroups = Math.floor(tournament?.players?.length / 4);
@@ -863,6 +843,7 @@ function App() {
         groups: addGroups,
         readyToStart: true,
         matches: [],
+        
       });
     }
     setShowDrawTournament(false);
@@ -1016,7 +997,7 @@ function App() {
     setTournamentStarted(true);
     setShowUnreportedMatches(false);
     setShowGroups(true);
-    
+
     if (currentTournament) {
       setCurrentTournament({
         ...currentTournament,
@@ -1056,11 +1037,7 @@ function App() {
       }
       console.log("matches", matches);
       return matches;
-      console.log(
-        "currentTournament",
-        currentTournament,
-        "Writing matches to tournament"
-      );
+    
     }
     //console.log("currentTourbament.matches", currentTournament?.matches);
   }
@@ -1220,6 +1197,7 @@ function App() {
       setCheckWinner(1);
       setWonSetsPlayer1(wonSetsPlayer1);
       setWonSetsPlayer2(wonSetsPlayer2);
+      
     } catch (error: any) {
       setCheckWinner(-1);
       setErrorMessage(error.message);
@@ -1227,6 +1205,7 @@ function App() {
   }
   // sets the match scores for the sets to then be reported
   function handleMatchScore() {
+    console.log("handleMatchScore")
     if (currentMatch !== null && currentMatch !== undefined) {
       const set1 = {
         player1Score: set1Player1,
@@ -1249,6 +1228,22 @@ function App() {
         player2Score: set5Player2,
       };
       const sets = [set1, set2, set3, set4, set5];
+
+      // sum all the points for all sets and put it into the match object
+
+      let wonPointsPlayer1 = 0;
+      let wonPointsPlayer2 = 0;
+      let lostPointsPlayer1 = 0;
+      let lostPointsPlayer2 = 0;
+
+
+      for (let i = 0; i < sets.length; i++) {
+        const set = sets[i];
+        wonPointsPlayer1 += set.player1Score;
+        wonPointsPlayer2 += set.player2Score;
+        lostPointsPlayer1 += set.player2Score;
+        lostPointsPlayer2 += set.player1Score;
+      }
       const match = {
         ...currentMatch,
         sets: sets,
@@ -1256,6 +1251,12 @@ function App() {
         reported: true,
         player1wonSets: wonSetsPlayer1,
         player2wonSets: wonSetsPlayer2,
+        player1wonPoints: wonPointsPlayer1,
+        player2wonPoints: wonPointsPlayer2,
+        player1lostSets: wonSetsPlayer2,
+        player2lostSets: wonSetsPlayer1,
+        player1lostPoints: wonPointsPlayer2,
+        player2lostPoints: wonPointsPlayer1,
       };
 
       if (currentTournament !== null && currentTournament !== undefined) {
@@ -1367,10 +1368,12 @@ function App() {
       setUnreportedMatches(matchIds);
     }
 
-    setShowUnreportedMatches(!showUnreportedMatches);
-   
+    setShowUnreportedMatches(true);
+    setShowGroupResult(false);
+    setShowGroups(false);
+
     if (matchIds.length !== 0) {
-    return -1;
+      return -1;
     }
   }
 
@@ -1391,24 +1394,26 @@ function App() {
 
   function handleCheckIfStartBracket() {
     if (handleCheckGroupStatus() === -1) {
-      return 
+      return;
     }
-    
+
     if (currentTournament !== undefined && currentTournament !== null) {
-      if (unreportedMatches.length === 0 ) {
+      if (unreportedMatches.length === 0) {
         setStartBracket(true);
-        console.log("startBracket is true");
-      } 
+        writeTournament({
+          ...currentTournament,
+          startBracket: true,
+        });
+        //checkGroupAdvancement();
+      }
       if (unreportedMatches === undefined || unreportedMatches === null) {
         setShowUnreportedMatches(true);
         console.log("unreportedMatches is undefined or null");
       }
-       
     }
   }
 
   const inputMatchIdRefA = useRef<HTMLInputElement | null>(null);
-  
 
   function handleDeleteTournament(tournament: Tournament) {
     console.log("handleDeleteTournament");
@@ -1424,6 +1429,8 @@ function App() {
       //handleSetAllValuesToDefault();
     }
   }
+
+  
 
   return (
     <Flex
@@ -1509,7 +1516,7 @@ function App() {
         {showMyTournaments && (
           <Box bg="#C1D0B5">
             <Center>
-              <Button bg={"#AAC8A7"} onClick={() => loadTournaments()}>
+              <Button bg={"green.300"} onClick={() => loadTournaments()}>
                 Load tournaments
               </Button>
             </Center>
@@ -1689,6 +1696,19 @@ function App() {
                             <FormHelperText>
                               Only applies if groups of size 4
                             </FormHelperText>
+
+                            <FormLabel as="legend">Number of sets</FormLabel>
+                            <RadioGroup
+                              onChange={handleBoChange}
+                              value={bo}
+                              defaultValue="Bo5"
+                            >
+                              <HStack spacing="24px">
+                                <Radio value="Bo3">Bo3</Radio>
+                                <Radio value="Bo5">Bo5</Radio>
+                                <Radio value="Bo7">Bo7</Radio>
+                              </HStack>
+                            </RadioGroup>
                           </FormControl>
                         )}
                         {tournamentType == "bracket" && (
@@ -1982,17 +2002,6 @@ function App() {
             </Center>
             <Flex justifyContent="space-between">
               <Button
-                fontSize={"30"}
-                size={"lg"}
-                onClick={() => {
-                  onOpen();
-                }}
-                bg={"#AAC8A7"}
-              >
-                Report result
-              </Button>
-
-              <Button
                 marginLeft="5"
                 fontSize={"30"}
                 size={"lg"}
@@ -2006,20 +2015,6 @@ function App() {
                 }}
               >
                 Groups
-              </Button>
-
-              <Button
-                marginLeft="5"
-                fontSize={"30"}
-                size={"lg"}
-                bg={"#AAC8A7"}
-                onClick={() => {
-                  handleCheckGroupStatus();
-                  setShowGroupResult(false);
-                  setShowGroups(false);
-                }}
-              >
-                Status
               </Button>
 
               <Modal isOpen={isOpen} onClose={onClose}>
@@ -2587,6 +2582,31 @@ function App() {
               >
                 Results
               </Button>
+
+              <Button
+                fontSize={"30"}
+                size={"lg"}
+                onClick={() => {
+                  onOpen();
+                }}
+                bg={"#F7E1AE"}
+              >
+                Report result
+              </Button>
+
+              <Button
+                marginLeft="5"
+                fontSize={"30"}
+                size={"lg"}
+                bg={"green.300"}
+                onClick={() => {
+                  handleCheckGroupStatus();
+                  setShowGroupResult(false);
+                  setShowGroups(false);
+                }}
+              >
+                Status
+              </Button>
               {unreportedMatches.length === 0 && (
                 <Button
                   onClick={() => {
@@ -2595,17 +2615,18 @@ function App() {
                   // justifyContent={"flex-end"}
                   size="lg"
                   fontSize="30"
-                  bg={"#AAC8A7"}
+                  bg={"green.300"}
                 >
                   Start bracket
                 </Button>
               )}
 
-              {(unreportedMatches.length !== 0 || unreportedMatches === null) && (
+              {(unreportedMatches.length !== 0 ||
+                unreportedMatches === null) && (
                 // red button
                 <Button
                   onClick={() => {
-                    alert("Unreported matches");
+                    alert(unreportedMatches.length + `  unreported matches`);
                   }}
                   // justifyContent={"flex-end"}
                   size="lg"
@@ -2780,6 +2801,7 @@ function App() {
                     name={group.name}
                     players={group.players}
                     matches={group.matches}
+
                   />
                 </Box>
               );

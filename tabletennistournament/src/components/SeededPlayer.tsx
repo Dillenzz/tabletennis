@@ -22,7 +22,7 @@ function SeededPlayer(props: Player) {
      onClick={props.onClick}
       width={"100%"}
       p="1"
-      _hover={{ bg: "green.100" }}
+      _hover={{ bg: "green.100", cursor:"pointer" }}
       bg="#F5F0BB"
       rounded="lg"
     >
