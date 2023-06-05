@@ -23,6 +23,6 @@
   "references": [{ "path": "./tsconfig.node.json" }],
 
   "scripts": {
-    "build": "react-scripts build"
+    "build": "npm run build:node && npm run build:browser",
   }
 }
