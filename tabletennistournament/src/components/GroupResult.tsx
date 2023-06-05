@@ -2,7 +2,7 @@ import Player from "./Player";
 import Match from "./Match";
 import PlayerGroupScore from "./PlayerGroupScore";
 import { Box, Text, Center } from "@chakra-ui/react";
-import { set } from "firebase/database";
+
 
 interface Group {
   name?: number;

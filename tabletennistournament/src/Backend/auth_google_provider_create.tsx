@@ -1,7 +1,6 @@
 import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, UserCredential, OAuthCredential } from "firebase/auth";
 import {app} from "./firebaseinit";
-import db from "./firebaseinit";
-import { ref, set, get } from "firebase/database";
+
 
 
 export async function getUsernameAndSessionDuration() {
@@ -35,7 +34,7 @@ export default async function login(): Promise<UserCredential | null>{
         // The signed-in user info.
         const user = result.user;
 
-        const uid = user.uid;
+        
 
         console.log(user, "user");
 
@@ -44,14 +43,14 @@ export default async function login(): Promise<UserCredential | null>{
 
       return null;
     })
-    .catch((error) => {
+    .catch(() => {
       // Handle Errors here.
-      const errorCode = error.code;
-      const errorMessage = error.message;
+      //const errorCode = error.code;
+      //const errorMessage = error.message;
       // The email of the user's account used.
-      const email = (error.customData as any).email;
+      //const email = (error.customData as any).email;
       // The AuthCredential type that was used.
-      const credential = GoogleAuthProvider.credentialFromError(error);
+      //const credential = GoogleAuthProvider.credentialFromError(error);
       // ...
 
       return null;

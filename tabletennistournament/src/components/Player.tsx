@@ -1,4 +1,4 @@
-import { Box, Text, Center, Stack, Flex, Grid, Spacer } from "@chakra-ui/react";
+import { Box, Text, Flex, Grid, Spacer } from "@chakra-ui/react";
 
 interface Player {
   worldRanking?: null | string;
