@@ -1,5 +1,5 @@
 import db from "./firebaseinit";
-import { ref, set, get, update } from "firebase/database";
+import { ref, set, get } from "firebase/database";
 import Tournament from "../components/Tournament";
 
 async function deleteTournament(tournament: Tournament): Promise<void> {

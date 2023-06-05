@@ -77,9 +77,7 @@ function App() {
   const [tournamentLocation, setTournamentLocation] = useState("");
   const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
   //const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
-  const [allMatchesInTournament, setAllMatchesInTournament] = useState<Match[]>(
-    []
-  );
+  
 
   // states for tournamentinfo
   const [tournamentName, setTournamentName] = useState("");
@@ -279,7 +277,7 @@ function App() {
     setNumberInGroup(4);
     setTournamentType("");
     setTournamentSeededPlayers([]);
-    setAllMatchesInTournament([]);
+    //setAllMatchesInTournament([]);
     setTournamentStarted(false);
   };
   // from uid get tournaments and set them to myTournaments
@@ -327,7 +325,7 @@ function App() {
     setTournamentPlayers([]);
     setTournamentSeededPlayers([]);
 
-    setAllMatchesInTournament([]);
+    //setAllMatchesInTournament([]);
     setTournamentName("");
     setTournamentDateFrom("");
     setTournamentDateTo("");
@@ -1233,16 +1231,13 @@ function App() {
 
       let wonPointsPlayer1 = 0;
       let wonPointsPlayer2 = 0;
-      let lostPointsPlayer1 = 0;
-      let lostPointsPlayer2 = 0;
-
+      
 
       for (let i = 0; i < sets.length; i++) {
         const set = sets[i];
         wonPointsPlayer1 += set.player1Score;
         wonPointsPlayer2 += set.player2Score;
-        lostPointsPlayer1 += set.player2Score;
-        lostPointsPlayer2 += set.player1Score;
+        
       }
       const match = {
         ...currentMatch,
@@ -2808,6 +2803,13 @@ function App() {
             })}
           </Box>
         )}
+        {startBracket && readyToStart && (
+          <Box>
+            <Text>
+              HEJ</Text>
+              </Box>
+              )}
+
       </ChakraProvider>
     </Flex>
   );

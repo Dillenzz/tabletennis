@@ -18,18 +18,18 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       return tournamentId > maxId ? tournamentId : maxId;
     }, 0);
   }
-  console.log(tournament.tournamentId)
+  
   const newTournamentId =
     tournament.tournamentId === undefined
       ? maxTournamentId + 1
       : tournament.tournamentId;
-  console.log("New tournament id: " + newTournamentId);
+  
   
   const tournamentRef = ref(db, `tournament/${newTournamentId}`);
   const tournamentSnapshot = await get(tournamentRef);
 
   if (tournamentSnapshot.exists()) {
-    console.log("Tournament already exists");
+    console.log("Tournament exists updating tournament");
     // Tournament already exists, update it
     await update(tournamentRef, {
       name: tournament.name,
@@ -40,11 +40,13 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       format: tournament.format,
       numberInGroup: tournament.numberInGroup,
       uid: tournament.uid,
-      seededPlayersIds: tournament.seededPlayersIds,
+      seededPlayersIds: tournament.seededPlayersIds ? tournament.seededPlayersIds : [],
       threeOrFive: tournament.threeOrFive,
       groups: tournament.groups,
       started: tournament.started,
-      matches: tournament.matches
+      matches: tournament.matches,
+      readyToStart: tournament.readyToStart,
+      bo: tournament.bo,
     });
   } else {
     // Tournament does not exist, create it
@@ -63,6 +65,8 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       groups: tournament.groups,
       started: tournament.started,
       matches: tournament.matches,
+      readyToStart: false,
+      bo: tournament.bo,
     });
     console.log("Tournament created");
   }
