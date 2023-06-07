@@ -77,7 +77,6 @@ function App() {
   const [tournamentLocation, setTournamentLocation] = useState("");
   const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
   //const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
-  
 
   // states for tournamentinfo
   const [tournamentName, setTournamentName] = useState("");
@@ -349,14 +348,20 @@ function App() {
   };
   // login with google
   async function handleGoogleLogin() {
-    await login();
-    const user1 = await getUsernameAndSessionDuration();
-    if (user1) {
-      setUid(user1.uid);
-      setUserName(user1.username);
-      handleSetMyTournaments(user1.uid);
+    const result = await login();
+    if (result) {
+      const user = result.user;
+      console.log(user);
+      const user1 = await getUsernameAndSessionDuration();
+      if (user1) {
+        setUid(user1.uid);
+        setUserName(user1.username);
+        handleSetMyTournaments(user1.uid);
+        console.log(user1);
+      }
     }
   }
+
   // loads tournaments if not loaded already
   async function loadTournaments() {
     const user = await getUsernameAndSessionDuration();
@@ -364,8 +369,10 @@ function App() {
       setUid(user.uid);
       setUserName(user.username);
       handleSetMyTournaments(user.uid);
+      console.log(user);
     }
   }
+
   // go to tournament page and load tournament info
   const handleTournamentInfo = (tournament: Tournament) => {
     // console.log(tournament);
@@ -841,7 +848,6 @@ function App() {
         groups: addGroups,
         readyToStart: true,
         matches: [],
-        
       });
     }
     setShowDrawTournament(false);
@@ -1035,7 +1041,6 @@ function App() {
       }
       console.log("matches", matches);
       return matches;
-    
     }
     //console.log("currentTourbament.matches", currentTournament?.matches);
   }
@@ -1195,7 +1200,6 @@ function App() {
       setCheckWinner(1);
       setWonSetsPlayer1(wonSetsPlayer1);
       setWonSetsPlayer2(wonSetsPlayer2);
-      
     } catch (error: any) {
       setCheckWinner(-1);
       setErrorMessage(error.message);
@@ -1203,7 +1207,7 @@ function App() {
   }
   // sets the match scores for the sets to then be reported
   function handleMatchScore() {
-    console.log("handleMatchScore")
+    console.log("handleMatchScore");
     if (currentMatch !== null && currentMatch !== undefined) {
       const set1 = {
         player1Score: set1Player1,
@@ -1231,13 +1235,11 @@ function App() {
 
       let wonPointsPlayer1 = 0;
       let wonPointsPlayer2 = 0;
-      
 
       for (let i = 0; i < sets.length; i++) {
         const set = sets[i];
         wonPointsPlayer1 += set.player1Score;
         wonPointsPlayer2 += set.player2Score;
-        
       }
       const match = {
         ...currentMatch,
@@ -1424,8 +1426,6 @@ function App() {
       //handleSetAllValuesToDefault();
     }
   }
-
-  
 
   return (
     <Flex
@@ -2796,7 +2796,6 @@ function App() {
                     name={group.name}
                     players={group.players}
                     matches={group.matches}
-
                   />
                 </Box>
               );
@@ -2805,11 +2804,9 @@ function App() {
         )}
         {startBracket && readyToStart && (
           <Box>
-            <Text>
-              HEJ</Text>
-              </Box>
-              )}
-
+            <Text>HEJ</Text>
+          </Box>
+        )}
       </ChakraProvider>
     </Flex>
   );

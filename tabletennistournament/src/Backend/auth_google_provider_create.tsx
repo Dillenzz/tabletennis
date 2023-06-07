@@ -1,29 +1,37 @@
-import { getAuth, getRedirectResult, signInWithRedirect, GoogleAuthProvider, UserCredential, OAuthCredential } from "firebase/auth";
-import {app} from "./firebaseinit";
-
-
+import {
+  getAuth,
+  getRedirectResult,
+  signInWithRedirect,
+  GoogleAuthProvider,
+  UserCredential,
+  OAuthCredential,
+} from "firebase/auth";
+import { app } from "./firebaseinit";
 
 export async function getUsernameAndSessionDuration() {
   const auth = getAuth();
   const user = auth.currentUser;
-  
+
   if (user) {
     // Get the username
     const username = user.displayName || user.email || "Unknown";
-  
+
     const uid = user.uid;
     return { username, uid };
   }
   return null;
 }
 
-export default async function login(): Promise<UserCredential | null>{  
+export default async function login(): Promise<UserCredential | null> {
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-    signInWithRedirect(auth, provider);
+  // Set custom parameters to prompt user to select an account
+  provider.setCustomParameters({ prompt: "select_account" });
 
-    return getRedirectResult(auth)
+  signInWithRedirect(auth, provider);
+
+  return getRedirectResult(auth)
     .then((result: UserCredential | null) => {
       if (result) {
         // This gives you a Google Access Token. You can use it to access Google APIs.
@@ -34,8 +42,6 @@ export default async function login(): Promise<UserCredential | null>{
         // The signed-in user info.
         const user = result.user;
 
-        
-
         console.log(user, "user");
 
         return result;
@@ -43,18 +49,9 @@ export default async function login(): Promise<UserCredential | null>{
 
       return null;
     })
-    .catch(() => {
-      // Handle Errors here.
-      //const errorCode = error.code;
-      //const errorMessage = error.message;
-      // The email of the user's account used.
-      //const email = (error.customData as any).email;
-      // The AuthCredential type that was used.
-      //const credential = GoogleAuthProvider.credentialFromError(error);
-      // ...
+    .catch((error) => {
+      console.log(error, "error");
 
       return null;
     });
 }
-
- 
