@@ -10,9 +10,8 @@ import deleteTournament from "./Backend/deleteTournament";
 import {
   getUsernameAndSessionDuration,
   login,
-  signOut
+  signOut,
 } from "./Backend/auth_google_provider_create";
-
 
 import Tournament from "./components/Tournament";
 import SeededPlayer from "./components/SeededPlayer";
@@ -72,7 +71,6 @@ import {
 
 import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
-
 
 function App() {
   useEffect(() => {}, []);
@@ -309,6 +307,7 @@ function App() {
 
   const handleBoChange = (value: string) => {
     setBo(value);
+    
   };
 
   // show all tournaments
@@ -360,18 +359,18 @@ function App() {
   };
   // login with google
   async function handleGoogleLogin() {
-    console.log(uid)
+    console.log(uid);
     await signOut();
     const result = await login();
     if (result) {
       const user = result.user;
       console.log(user);
-  
+
       // Reset user-related state variables before setting with new user's information
       setUid("");
       setUserName("");
       setMyTournaments([]);
-  
+
       const user1 = await getUsernameAndSessionDuration();
       if (user1) {
         setUid(user1.uid);
@@ -380,30 +379,29 @@ function App() {
       }
     }
   }
-  
+
   async function handleLogout() {
     await signOut();
     handlegoToHome();
   }
-  
+
   async function loadTournaments() {
     setLoading(true);
     const user = await getUsernameAndSessionDuration();
-    
+
     if (user) {
       // Reset user-related state variables before setting with new user's information
       setUid("");
       setUserName("");
       setMyTournaments([]);
-  
+
       setUid(user.uid);
       setUserName(user.username);
       handleSetMyTournaments(user.uid);
-      
     }
     setLoading(false);
   }
-  
+
   // go to tournament page and load tournament info
   const handleTournamentInfo = (tournament: Tournament) => {
     // console.log(tournament);
@@ -1618,7 +1616,13 @@ function App() {
                   </Box>
                 );
               })}
-              {loading && ( <Center> <Text>Tournaments are loading please be patient</Text><Spinner size="xl" /></Center>)}
+            {loading && (
+              <Center>
+                {" "}
+                <Text>Tournaments are loading please be patient</Text>
+                <Spinner size="xl" />
+              </Center>
+            )}
           </Box>
         )}
 
@@ -2199,7 +2203,8 @@ function App() {
                         )}
                       </Box>
                     </Center>
-
+                    
+                    {(bo === "Bo3" || bo === "Bo5" || bo === "Bo7") && (
                     <Stack>
                       <Box p={1}>
                         <Flex>
@@ -2344,6 +2349,11 @@ function App() {
                           </Center>
                         </Flex>
                       </Box>
+                    </Stack>
+                   )}
+                 
+                    {(bo === "Bo5" || bo === "Bo7") && (
+                    <Stack>
                       <Box p={1}>
                         <Flex>
                           <Center>
@@ -2438,6 +2448,11 @@ function App() {
                           </Center>
                         </Flex>
                       </Box>
+                    </Stack>
+                    )}
+                   
+                    {bo === "Bo7" && (
+                    <Stack>
                       <Box p={1}>
                         <Flex>
                           <Center>
@@ -2539,6 +2554,7 @@ function App() {
                         </Flex>
                       </Box>
                     </Stack>
+                    )}
 
                     <Popover>
                       <PopoverTrigger>
@@ -2714,9 +2730,10 @@ function App() {
                 })}
             </Box>
 
-            {showGroups && (
+              {showGroups && (
               <Box>
                 <Flex>
+            
                   {currentTournament?.groups
                     ?.reduce((columns: JSX.Element[][], group, index) => {
                       const columnIndex = Math.floor(index / 4);
@@ -2726,21 +2743,24 @@ function App() {
                       }
 
                       columns[columnIndex].push(
+                        
                         <Box
-                          margin={"5"}
-                          width={"25%"}
+                          margin={"5"} 
+                          width={currentTournament.groups!.length < 4 ? "30%" : currentTournament.groups!.length > 12 ? "80%" : "60%"}
                           onClick={onOpenScoreModal}
                           key={group.name}
                         >
+                        
                           <Modal
                             finalFocusRef={inputSetRef}
                             isCentered
                             onClose={onCloseScoreModal}
                             isOpen={isOpenScoreModal}
                             motionPreset="slideInBottom"
+                            blockScrollOnMount={false}
                           >
-                            <ModalOverlay />
-
+                            <ModalOverlay opacity={0.6} 
+                            bg={"#"}/>
                             <ModalContent>
                               {currentPlayer && currentPlayer.name && (
                                 <ModalHeader>
@@ -2830,7 +2850,7 @@ function App() {
             {currentTournament?.groups?.map((group) => {
               console.log(group);
               return (
-                <Box margin={5} width={"25%"} key={group.name}>
+                <Box margin={5} width={"40%"} key={group.name}>
                   {" "}
                   {/* Add a key prop to the enclosing Box component */}
                   <GroupResult

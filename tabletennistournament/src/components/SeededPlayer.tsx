@@ -1,4 +1,4 @@
-import { Box, Text, Center } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 
 interface Player {
   worldRanking?: null | string;
@@ -26,11 +26,11 @@ function SeededPlayer(props: Player) {
       bg="#F5F0BB"
       rounded="lg"
     >
-      <Center>
+      
         <Text fontWeight={"bold"}>
           {props.name} - {props.club} ({props.class}) {props.points}
         </Text>
-      </Center>
+      
     </Box>
   );
 }
