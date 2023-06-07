@@ -5,8 +5,14 @@ import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase";
 import writeTournament from "./Backend/updateFirebase";
 import deleteTournament from "./Backend/deleteTournament";
-import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_create";
-import login from "./Backend/auth_google_provider_create";
+// import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_create";
+//import login from "./Backend/auth_google_provider_create";
+import {
+  getUsernameAndSessionDuration,
+  login,
+  signOut
+} from "./Backend/auth_google_provider_create";
+
 
 import Tournament from "./components/Tournament";
 import SeededPlayer from "./components/SeededPlayer";
@@ -66,6 +72,7 @@ import {
 
 import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
+
 
 function App() {
   useEffect(() => {}, []);
@@ -187,12 +194,13 @@ function App() {
     setShowPlayer(false);
   }, []);
   // Call the function on startup and when the state variable changes
-  useEffect(() => {
+  /*useEffect(() => {
     const intervalId = setInterval(() => {
       loadTournaments();
     }, 5000); // fetch data every 5 seconds
     return () => clearInterval(intervalId);
   }, [uid]);
+  */
 
   useEffect(() => {
     setSentPlayerIds(sentPlayerIds);
@@ -347,37 +355,54 @@ function App() {
     setShowDrawTournament(false);
     setShowGroups(false);
     setShowTournamentButtons(false);
-    setShowUserName(false);
+    setShowUserName(true);
+    loadTournaments();
   };
   // login with google
   async function handleGoogleLogin() {
+    await signOut();
     const result = await login();
     if (result) {
       const user = result.user;
       console.log(user);
+  
+      // Reset user-related state variables before setting with new user's information
+      setUid("");
+      setUserName("");
+      setMyTournaments([]);
+  
       const user1 = await getUsernameAndSessionDuration();
       if (user1) {
         setUid(user1.uid);
         setUserName(user1.username);
         handleSetMyTournaments(user1.uid);
-        
       }
     }
   }
-
-  // loads tournaments if not loaded already
+  
+  async function handleLogout() {
+    await signOut();
+    handlegoToHome();
+  }
+  
   async function loadTournaments() {
+    console.log("clicked")
     setLoading(true);
     const user = await getUsernameAndSessionDuration();
     if (user) {
+      // Reset user-related state variables before setting with new user's information
+      setUid("");
+      setUserName("");
+      setMyTournaments([]);
+  
       setUid(user.uid);
       setUserName(user.username);
       handleSetMyTournaments(user.uid);
-      
+      console.log("user", user);
     }
     setLoading(false);
   }
-
+  
   // go to tournament page and load tournament info
   const handleTournamentInfo = (tournament: Tournament) => {
     // console.log(tournament);
@@ -1472,7 +1497,16 @@ function App() {
                 ml={2}
               >
                 {" "}
-                Sign in
+                Sign in with Google
+              </Button>
+              <Button
+                colorScheme={"blue"}
+                margin={4}
+                onClick={() => handleLogout()}
+                ml={2}
+              >
+                {" "}
+                Sign out
               </Button>
             </Box>
           </Flex>

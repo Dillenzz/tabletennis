@@ -1,4 +1,4 @@
-import db from "./firebaseinit";
+import {db} from "./firebaseinit";
 import { ref, set, get } from "firebase/database";
 import Tournament from "../components/Tournament";
 
