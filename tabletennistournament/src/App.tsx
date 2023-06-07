@@ -360,6 +360,7 @@ function App() {
   };
   // login with google
   async function handleGoogleLogin() {
+    console.log(uid)
     await signOut();
     const result = await login();
     if (result) {
@@ -386,9 +387,9 @@ function App() {
   }
   
   async function loadTournaments() {
-    console.log("clicked")
     setLoading(true);
     const user = await getUsernameAndSessionDuration();
+    
     if (user) {
       // Reset user-related state variables before setting with new user's information
       setUid("");
@@ -398,7 +399,7 @@ function App() {
       setUid(user.uid);
       setUserName(user.username);
       handleSetMyTournaments(user.uid);
-      console.log("user", user);
+      
     }
     setLoading(false);
   }

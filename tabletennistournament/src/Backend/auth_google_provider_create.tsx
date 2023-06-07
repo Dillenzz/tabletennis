@@ -29,6 +29,9 @@ export async function login(): Promise<UserCredential | null> {
   // Set custom parameters to prompt user to select an account
   provider.setCustomParameters({ prompt: "select_account" });
 
+  clearStorage();
+  
+
   signInWithRedirect(auth, provider);
 
   return getRedirectResult(auth)
@@ -59,4 +62,12 @@ export async function login(): Promise<UserCredential | null> {
 
 export function signOut() {
   return auth.signOut();
+}
+
+function clearStorage() {
+  // Clear cookies
+  document.cookie = "your_cookie_name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+  // Clear local storage
+  localStorage.removeItem("your_localstorage_key");
 }
