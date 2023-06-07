@@ -61,6 +61,7 @@ import {
   PopoverArrow,
   PopoverCloseButton,
   Tooltip,
+  Spinner,
 } from "@chakra-ui/react";
 
 import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -174,6 +175,8 @@ function App() {
   const [currentPlayer, setCurrentPlayer] = useState<Player>();
 
   const [startBracket, setStartBracket] = useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // Reset all state variables to their initial values
@@ -357,20 +360,22 @@ function App() {
         setUid(user1.uid);
         setUserName(user1.username);
         handleSetMyTournaments(user1.uid);
-        console.log(user1);
+        
       }
     }
   }
 
   // loads tournaments if not loaded already
   async function loadTournaments() {
+    setLoading(true);
     const user = await getUsernameAndSessionDuration();
     if (user) {
       setUid(user.uid);
       setUserName(user.username);
       handleSetMyTournaments(user.uid);
-      console.log(user);
+      
     }
+    setLoading(false);
   }
 
   // go to tournament page and load tournament info
@@ -414,7 +419,7 @@ function App() {
   });
   // add player to tournament
   async function addPlayerToTournament(player: Player) {
-    // console.log(player);
+    console.log(player);
     const playerId = typeof player.id === "number" ? player.id : -1; // Use a default value if id is undefined
 
     if (sentPlayerIds.includes(playerId)) {
@@ -1578,6 +1583,7 @@ function App() {
                   </Box>
                 );
               })}
+              {loading && ( <Center> <Text>Tournaments are loading please be patient</Text><Spinner size="xl" /></Center>)}
           </Box>
         )}
 
