@@ -14,7 +14,7 @@ interface Player {
   score?: number;
   class?: string;
   isTopPlayer?: boolean;
-  intraMatchScore?: number | undefined;
+  intraMatchScore?: number
   intraSetScore?: string;
   intraPointScore?: string;
   onClick?: () => void;

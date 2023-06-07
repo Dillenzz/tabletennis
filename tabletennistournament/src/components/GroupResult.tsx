@@ -65,7 +65,12 @@ function checkIntraMatches(
     sortedPlayerIdsInGroup.forEach((playerId) => {
       const player = players.find((p) => p.id === playerId);
       if (player) {
-        player.intraMatchScore = intrapoints[playerId];
+        if (player.intraMatchScore) {
+          player.intraMatchScore = intrapoints[playerId];
+        }
+        else { 
+          player.intraMatchScore = 0;
+        }
       }
     });
     //console.log(intrapoints);
@@ -477,13 +482,13 @@ function GroupResult(props: Group) {
               key={player.player.id}
               id={player.player.id}
               name={player.player.name}
-              club={player.player.club}
+             
               score={player.score}
               class={player.player.class}
               isTopPlayer={topPlayers.includes(player)}
-              intraMatchScore={player.player.intraMatchScore}
-              intraSetScore={player.player.intraSetScore}
-              intraPointScore={player.player.intraPointScore}
+              intraMatchScore={player.player.intraMatchScore || 0}
+              intraSetScore={player.player.intraSetScore || ""}
+              intraPointScore={player.player.intraPointScore || ""}
             />
           ))}
         </Box>

@@ -31,6 +31,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
   if (tournamentSnapshot.exists()) {
     console.log("Tournament exists updating tournament");
     // Tournament already exists, update it
+    //console.log(tournament.players);
     await update(tournamentRef, {
       name: tournament.name,
       dateFrom: tournament.dateFrom,
@@ -47,6 +48,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       matches: tournament.matches,
       readyToStart: tournament.readyToStart,
       bo: tournament.bo,
+      
     });
   } else {
     // Tournament does not exist, create it
