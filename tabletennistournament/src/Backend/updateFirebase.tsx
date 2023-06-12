@@ -76,6 +76,8 @@ async function writeTournament(tournament: Tournament): Promise<void> {
 
 // gets the uid of the tournament to display for user
 export async function getTournamentsByUid(uid: string): Promise<Tournament[]> {
+  
+  
   const tournamentRef = ref(db, "tournament");
   const tournamentSnapshot = await get(tournamentRef);
   const tournamentList = tournamentSnapshot.val() || {};

@@ -1,26 +1,27 @@
 // firebaseauth.ts
 import {
-  
   getRedirectResult,
   signInWithRedirect,
   GoogleAuthProvider,
   UserCredential,
-  OAuthCredential,
 } from "firebase/auth";
 import { auth } from "./firebaseinit";
 
 export async function getUsernameAndSessionDuration() {
-  const user = auth.currentUser;
-
-  if (user) {
-    // Get the username
-    const username = user.displayName || user.email || "Unknown";
-    const uid = user.uid;
-
-    return { username, uid };
-  }
-
-  return null;
+  return new Promise<{ username: string; uid: string } | null>(
+    (resolve) => {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        unsubscribe();
+        if (user) {
+          const username = user.displayName || user.email || "Unknown";
+          const uid = user.uid;
+          resolve({ username, uid });
+        } else {
+          resolve(null);
+        }
+      });
+    }
+  );
 }
 
 export async function login(): Promise<UserCredential | null> {
@@ -30,7 +31,6 @@ export async function login(): Promise<UserCredential | null> {
   provider.setCustomParameters({ prompt: "select_account" });
 
   clearStorage();
-  
 
   signInWithRedirect(auth, provider);
 
@@ -38,15 +38,14 @@ export async function login(): Promise<UserCredential | null> {
     .then((result: UserCredential | null) => {
       if (result) {
         // This gives you a Google Access Token. You can use it to access Google APIs.
-        const credential: OAuthCredential | null =
-          GoogleAuthProvider.credentialFromResult(result);
-        const token = credential?.accessToken;
-        console.log(token, "token");
+        
+      
+        //console.log(token, "token");
 
         // The signed-in user info.
-        const user = result.user;
+        
 
-        console.log(user, "user");
+        
 
         return result;
       }
@@ -66,7 +65,8 @@ export function signOut() {
 
 function clearStorage() {
   // Clear cookies
-  document.cookie = "your_cookie_name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  document.cookie =
+    "your_cookie_name=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
   // Clear local storage
   localStorage.removeItem("your_localstorage_key");
