@@ -281,6 +281,9 @@ function App() {
     
     setTournamentStarted(false);
     }
+    else {
+      await handleGoogleLogin()
+    }
   };
   // from uid get tournaments and set them to myTournaments
   const handleSetMyTournaments = async (uid: string) => {
@@ -1482,7 +1485,7 @@ function App() {
               <Button
                 colorScheme={"blue"}
                 margin={4}
-                onClick={() => handleGoogleLogin()}
+                onClick={ async () => await handleGoogleLogin()}
                 ml={2}
               >
                 {" "}
