@@ -265,7 +265,7 @@ function App() {
 
    const handleCreateTournament = async () => {
     const user = await getUsernameAndSessionDuration();
-    if (user !== null && uid !== null){
+    if (user !== null && uid !== ""){
     setShowCreateTournament(true);
     setShowStartMenu(!showStartMenu);
 
@@ -281,9 +281,13 @@ function App() {
     
     setTournamentStarted(false);
     }
+    else if (user !== null ) {
+      setUid(user.uid)
+    }
     else {
       await handleGoogleLogin()
     }
+
   };
   // from uid get tournaments and set them to myTournaments
   const handleSetMyTournaments = async (uid: string) => {
