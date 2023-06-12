@@ -466,6 +466,7 @@ function App() {
         started: false,
         groups: currentTournament.groups ? currentTournament.groups : [],
         matches: currentTournament.matches ? currentTournament.matches : [],
+        uid: uid
       };
 
       writeTournament(newTournament);
