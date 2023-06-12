@@ -265,7 +265,7 @@ function App() {
 
    const handleCreateTournament = async () => {
     const user = await getUsernameAndSessionDuration();
-    if (user !== null){
+    if (user !== null || uid !== null){
     setShowCreateTournament(true);
     setShowStartMenu(!showStartMenu);
 
