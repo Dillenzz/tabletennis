@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, useRef } from "react";
+import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
 
 import Player from "./components/Player";
@@ -133,7 +133,7 @@ function App() {
   // States for loading the right tournaments for Uid
   const [userName, setUserName] = useState("");
   const [uid, setUid] = useState("");
-
+  
   // set search variables
   const [searchName, setSearchName] = useState("");
   const [searchClub, setSearchClub] = useState("");
@@ -201,6 +201,25 @@ function App() {
   }, [sentPlayerIds]);
   */
   // save or update the tournament to Firebase
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const user = await getUsernameAndSessionDuration();
+        if (user !== null){
+        setUid(user.uid);
+        setUserName(user.username);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+
 
   const createTournament = () => {
     setShowStartMenu(true);
