@@ -375,10 +375,7 @@ function App() {
     const result = await login();
 
     if (result) {
-      setUid(result.user.uid);
-      setUserName("");
-      setMyTournaments([]);
-
+     
       await loadTournaments();
     }
   }

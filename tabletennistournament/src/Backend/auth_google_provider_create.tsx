@@ -1,7 +1,6 @@
 // firebaseauth.ts
 import {
-  getRedirectResult,
-  signInWithRedirect,
+  signInWithPopup,
   GoogleAuthProvider,
   UserCredential,
 } from "firebase/auth";
@@ -30,31 +29,15 @@ export async function login(): Promise<UserCredential | null> {
   // Set custom parameters to prompt user to select an account
   provider.setCustomParameters({ prompt: "select_account" });
 
-  //clearStorage();
-
-  signInWithRedirect(auth, provider);
-
-  return getRedirectResult(auth)
-    .then((result: UserCredential | null) => {
-      if (result) {
-        // This gives you a Google Access Token. You can use it to access Google APIs.
-        
-      
-        //console.log(token, "token");
-
-        // The signed-in user info.
-        
-        return result;
-      }
-
-      return null;
-    })
-    .catch((error) => {
-      console.log(error, "error");
-
-      return null;
-    });
+  try {
+    const result = await signInWithPopup(auth, provider);
+    return result;
+  } catch (error) {
+    console.log(error, "error");
+    return null;
+  }
 }
+
 
 /*export function signOut() {
   return auth.signOut();
