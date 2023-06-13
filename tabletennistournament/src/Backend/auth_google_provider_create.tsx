@@ -30,7 +30,7 @@ export async function login(): Promise<UserCredential | null> {
   // Set custom parameters to prompt user to select an account
   provider.setCustomParameters({ prompt: "select_account" });
 
-  clearStorage();
+  //clearStorage();
 
   signInWithRedirect(auth, provider);
 
@@ -44,9 +44,6 @@ export async function login(): Promise<UserCredential | null> {
 
         // The signed-in user info.
         
-
-        
-
         return result;
       }
 
@@ -59,7 +56,7 @@ export async function login(): Promise<UserCredential | null> {
     });
 }
 
-export function signOut() {
+/*export function signOut() {
   return auth.signOut();
 }
 
@@ -71,3 +68,4 @@ function clearStorage() {
   // Clear local storage
   localStorage.removeItem("your_localstorage_key");
 }
+*/
