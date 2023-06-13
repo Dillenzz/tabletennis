@@ -10,7 +10,7 @@ import deleteTournament from "./Backend/deleteTournament";
 import {
   getUsernameAndSessionDuration,
   login,
-  signOut,
+  // signOut,
 } from "./Backend/auth_google_provider_create";
 
 import Tournament from "./components/Tournament";
@@ -371,7 +371,7 @@ function App() {
   };
   // login with google
   async function handleGoogleLogin() {
-    await signOut();
+    
     const result = await login();
 
     if (result) {
