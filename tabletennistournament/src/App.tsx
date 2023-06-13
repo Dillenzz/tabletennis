@@ -393,7 +393,7 @@ function App() {
       
       
   
-      setUid("");
+      setUid(result.user.uid);
       setUserName("");
       setMyTournaments([]);
   
