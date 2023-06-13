@@ -73,7 +73,6 @@ import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
 
 function App() {
-  
   // Call the function on startup
   // Empty array as second argument to run only on startup
 
@@ -133,7 +132,7 @@ function App() {
   // States for loading the right tournaments for Uid
   const [userName, setUserName] = useState("");
   const [uid, setUid] = useState("");
-  
+
   // set search variables
   const [searchName, setSearchName] = useState("");
   const [searchClub, setSearchClub] = useState("");
@@ -206,21 +205,17 @@ function App() {
     async function fetchData() {
       try {
         const user = await getUsernameAndSessionDuration();
-        if (user !== null){
-        setUid(user.uid);
-        setUserName(user.username);
-        
+        if (user !== null) {
+          setUid(user.uid);
+          setUserName(user.username);
         }
-        
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       }
     }
 
     fetchData();
   }, []);
-
-
 
   const createTournament = () => {
     setShowStartMenu(true);
@@ -283,36 +278,32 @@ function App() {
     setTournamentLocation(event.target.value);
   // changes view to tournament info
 
-   const handleCreateTournament = async () => {
+  const handleCreateTournament = async () => {
     const user = await getUsernameAndSessionDuration();
-    if (user !== null && uid !== ""){
-    setShowCreateTournament(true);
-    setShowStartMenu(!showStartMenu);
+    if (user !== null && uid !== "") {
+      setShowCreateTournament(true);
+      setShowStartMenu(!showStartMenu);
 
-    // reset all state variables to their initial values
-    setTournamentDateFrom("");
-    setTournamentDateTo("");
-    setTournamentLocation("");
-    setTournamentPlayers([]);
-    setTournamentName("");
-    setNumberInGroup(4);
-    setTournamentType("");
-    setTournamentSeededPlayers([]);
-    
-    setTournamentStarted(false);
-    }
-    else if (user !== null ) {
-      setUid(user.uid)
-    }
-    else {
-      alert("please log in")
-    }
+      // reset all state variables to their initial values
+      setTournamentDateFrom("");
+      setTournamentDateTo("");
+      setTournamentLocation("");
+      setTournamentPlayers([]);
+      setTournamentName("");
+      setNumberInGroup(4);
+      setTournamentType("");
+      setTournamentSeededPlayers([]);
 
+      setTournamentStarted(false);
+    } else if (user !== null) {
+      setUid(user.uid);
+    } else {
+      alert("please log in");
+    }
   };
   // from uid get tournaments and set them to myTournaments
   const handleSetMyTournaments = async (uid: string) => {
     if (uid !== null) {
-      
       const loadTournaments = await getTournamentsByUid(uid);
       setMyTournaments(loadTournaments);
     }
@@ -335,10 +326,8 @@ function App() {
 
   // show all tournaments
   const handleShowMyTournaments = () => {
-    setLoading(true)
-    handleGoToTournaments()
-    
-    
+    setLoading(true);
+    handleGoToTournaments();
   };
   // go home resets all state variables
   const handlegoToHome = () => {
@@ -356,7 +345,6 @@ function App() {
     setShowTournamentButtons(false);
     setTournamentPlayers([]);
     setTournamentSeededPlayers([]);
-    
 
     //setAllMatchesInTournament([]);
     setTournamentName("");
@@ -380,43 +368,35 @@ function App() {
     setShowTournamentButtons(false);
     setShowUserName(true);
     loadTournaments();
-    
   };
   // login with google
   async function handleGoogleLogin() {
-    
     await signOut();
     const result = await login();
-    
-  
+
     if (result) {
-      
-      
-  
       setUid(result.user.uid);
       setUserName("");
       setMyTournaments([]);
-  
+
       await loadTournaments();
     }
   }
 
-  
-  
   async function loadTournaments() {
     const user = await getUsernameAndSessionDuration();
-  
+
     if (user && user.uid !== null) {
       setUid(user.uid);
       setUserName(user.username);
       setMyTournaments([]);
-  
+
       await handleSetMyTournaments(user.uid);
     } else {
       // Handle the case when user.uid is not available
       // You can display an error message or take appropriate action
     }
-    setLoading(false)
+    setLoading(false);
   }
 
   // go to tournament page and load tournament info
@@ -490,7 +470,7 @@ function App() {
         started: false,
         groups: currentTournament.groups ? currentTournament.groups : [],
         matches: currentTournament.matches ? currentTournament.matches : [],
-        uid: uid
+        uid: uid,
       };
 
       writeTournament(newTournament);
@@ -1510,13 +1490,12 @@ function App() {
               <Button
                 colorScheme={"blue"}
                 margin={4}
-                onClick={ async () => await handleGoogleLogin()}
+                onClick={async () => await handleGoogleLogin()}
                 ml={2}
               >
                 {" "}
                 Sign in
               </Button>
-             
             </Box>
           </Flex>
         </Center>
@@ -1562,7 +1541,7 @@ function App() {
               {/**<Button bg={"green.300"} onClick={() => loadTournaments()}>
                 Load tournaments
               </Button>
- */   }
+ */}
             </Center>
             <Center>
               <Heading>My tournaments</Heading>
