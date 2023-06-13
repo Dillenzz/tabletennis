@@ -67,6 +67,7 @@ import {
   PopoverCloseButton,
   Tooltip,
   Spinner,
+  
 } from "@chakra-ui/react";
 
 import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -132,6 +133,7 @@ function App() {
   // States for loading the right tournaments for Uid
   const [userName, setUserName] = useState("");
   const [uid, setUid] = useState("");
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
 
   // set search variables
   const [searchName, setSearchName] = useState("");
@@ -208,6 +210,7 @@ function App() {
         if (user !== null) {
           setUid(user.uid);
           setUserName(user.username);
+          setUserLoggedIn(true);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -367,15 +370,16 @@ function App() {
     setShowGroups(false);
     setShowTournamentButtons(false);
     setShowUserName(true);
+    setShowGroups(false);
+    setShowUnreportedMatches(false);
+    setShowGroupResult(false);
     loadTournaments();
   };
   // login with google
   async function handleGoogleLogin() {
-    
     const result = await login();
 
     if (result) {
-     
       await loadTournaments();
     }
   }
@@ -1504,8 +1508,10 @@ function App() {
         {showStartMenu && (
           <Center>
             <Heading m={4} color="Black" fontWeight={"bold"}>
-              FirstToEleven
+              F211
             </Heading>
+            {/*} <Image src={"./f211_adobe_express.svg"} > </Image>
+             */}
           </Center>
         )}
         {showStartMenu && (
@@ -1513,13 +1519,15 @@ function App() {
             <Stack>
               <Center>
                 <Box>
-                  <Button
-                    bg={"#F5F0BB"}
-                    onClick={() => handleCreateTournament()}
-                    style={{ marginRight: "0.5em" }}
-                  >
-                    New Tournament
-                  </Button>
+                  {userLoggedIn && (
+                    <Button
+                      bg={"#F5F0BB"}
+                      onClick={() => handleCreateTournament()}
+                      style={{ marginRight: "0.5em" }}
+                    >
+                      New Tournament
+                    </Button>
+                  )}
                   <Button
                     bg={"#F5F0BB"}
                     onClick={() => handleShowMyTournaments()}
@@ -1792,7 +1800,7 @@ function App() {
                 <Box>
                   {currentTournament && (
                     <Center>
-                      <Heading fontFamily={"cursive"}>
+                      <Heading fontWeight={"bold"}>
                         {currentTournament.name}
                       </Heading>
                     </Center>
@@ -1801,7 +1809,7 @@ function App() {
                 <Button
                   size={"lg"}
                   fontSize={"30"}
-                  colorScheme="teal"
+                  bg={"#F7E1AE"}
                   onClick={onOpen}
                 >
                   Add players
@@ -1869,7 +1877,7 @@ function App() {
               <Button
                 size={"lg"}
                 fontSize={"30"}
-                colorScheme="blue"
+                bg={"#FFDEB4"}
                 p={1}
                 onClick={() => saveTournament()}
               >
@@ -1879,7 +1887,7 @@ function App() {
               <Button
                 size={"lg"}
                 fontSize={"30"}
-                colorScheme="purple"
+                bg={"#FDF7C3"}
                 p={1}
                 onClick={() =>
                   handleSetTournamentSeededPlayers(
@@ -1895,7 +1903,7 @@ function App() {
                 <Button
                   size={"lg"}
                   fontSize={"30"}
-                  colorScheme="yellow"
+                  bg={"#B2A4FF"}
                   p={1}
                   onClick={() => handleDrawTournament()}
                 >
@@ -1906,7 +1914,7 @@ function App() {
                 <Button
                   size={"lg"}
                   fontSize={"30"}
-                  colorScheme="green"
+                  bg={"#C9F4AA"}
                   p={1}
                   onClick={() => handleStartTournament()}
                 >
@@ -1916,7 +1924,7 @@ function App() {
 
               {currentTournament &&
                 (!currentTournament.readyToStart || tournamentStarted) && (
-                  <Button size={"lg"} fontSize={"30"} colorScheme="red" p={1}>
+                  <Button size={"lg"} fontSize={"30"} bg={"#FEA1A1"} p={1}>
                     Start Tournament
                   </Button>
                 )}
@@ -2597,7 +2605,16 @@ function App() {
                   <ModalFooter>
                     <Button
                       onClick={() => {
-                        onClose();
+                        if (checkWinner !== 1) {
+                          const result = window.confirm(
+                            "Please check the winner before closing the modal. Are you sure you want to proceed?"
+                          );
+                          if (result === true) {
+                            onClose();
+                          }
+                        } else {
+                          onClose();
+                        }
                       }}
                       bg={"#A0D8B3"}
                       mr={3}

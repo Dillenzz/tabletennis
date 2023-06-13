@@ -53,6 +53,9 @@ function GroupDisplayScore(props: GroupDisplayScore) {
           })}
         </Box>
       )}
+       <Center>
+      <Text style={{ fontWeight: "bold" }}>Group {groupName}</Text>
+      </Center>
     </Box>
   );
 }

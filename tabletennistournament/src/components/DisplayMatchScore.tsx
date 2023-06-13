@@ -12,7 +12,7 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
       width={"100%"}
       p="1"
       _hover={{ cursor: "pointer", bg: "green.100" }}
-      bg="orange.200"
+      bg="#B799FF"
       rounded="lg"
     >
       <Stack>

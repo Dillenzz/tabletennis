@@ -50,8 +50,12 @@ function Group(props: Group) {
               />
             );
           })}
+          
         </Box>
       )}
+      <Center>
+      <Text style={{ fontWeight: "bold" }}>Group {name}</Text>
+      </Center>
     </Box>
   );
 }
