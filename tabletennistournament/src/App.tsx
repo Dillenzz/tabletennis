@@ -209,7 +209,7 @@ function App() {
         if (user !== null){
         setUid(user.uid);
         setUserName(user.username);
-        loadTournaments();
+        
         }
         
       } catch (error) {
@@ -305,7 +305,7 @@ function App() {
       setUid(user.uid)
     }
     else {
-      await handleGoogleLogin()
+      alert("please log in")
     }
 
   };
