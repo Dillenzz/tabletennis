@@ -67,7 +67,6 @@ import {
   PopoverCloseButton,
   Tooltip,
   Spinner,
-  
 } from "@chakra-ui/react";
 
 import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -1507,9 +1506,11 @@ function App() {
         )}
         {showStartMenu && (
           <Center>
-            <Heading m={4} color="Black" fontWeight={"bold"}>
-              F211
-            </Heading>
+            <img
+              src="src/assets/FT11_logo.svg"
+              alt="SVG Image"
+              style={{ width: "20%", height: "20%", aspectRatio: "20/8" }}
+            />
             {/*} <Image src={"./f211_adobe_express.svg"} > </Image>
              */}
           </Center>
