@@ -1506,11 +1506,12 @@ function App() {
         )}
         {showStartMenu && (
           <Center>
-            <img
+          {/*  <img
               src="src/assets/FT11_logo.svg"
               alt="SVG Image"
               style={{ width: "20%", height: "20%", aspectRatio: "20/8" }}
             />
+        */}
             {/*} <Image src={"./f211_adobe_express.svg"} > </Image>
              */}
           </Center>
