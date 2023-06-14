@@ -68,10 +68,13 @@ import {
   PopoverCloseButton,
   Tooltip,
   Spinner,
+
+  
 } from "@chakra-ui/react";
 
 import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
+
 
 function App() {
   // Call the function on startup
@@ -1455,9 +1458,11 @@ function App() {
     }
   }
 
+  
+  //C1D0B5 color bg
   return (
     <Flex
-      bg="#C1D0B5"
+      bg="#FFFFF"
       minHeight="100vh"
       minWidth="100vw"
       display="flex"
@@ -1469,10 +1474,10 @@ function App() {
       <ChakraProvider>
         <Center>
           <Flex>
-            <Box width={"100%"} bg="#C1D0B5" p={1}>
+            <Box width={"100%"} bg="#FFFFF" p={1}> 
               <Menu>
                 <MenuButton
-                  bg="#C1D0B5"
+                  bg="#FFFFF"
                   colorScheme={"ghost"}
                   m={4}
                   as={IconButton}
@@ -1481,7 +1486,7 @@ function App() {
                   variant="outline"
                 />
                 <MenuList>
-                  <MenuItem onClick={() => handlegoToHome()}>Home</MenuItem>
+                  <MenuItem onClick={() => handlegoToHome()}>Home </MenuItem>
                   <MenuItem onClick={() => handleGoToTournaments()}>
                     My Tournaments
                   </MenuItem>
@@ -1543,7 +1548,7 @@ function App() {
         )}
 
         {showMyTournaments && (
-          <Box bg="#C1D0B5">
+          <Box bg="#FFFFF">
             <Center>
               {/**<Button bg={"green.300"} onClick={() => loadTournaments()}>
                 Load tournaments
@@ -2656,7 +2661,7 @@ function App() {
                 marginLeft="5"
                 fontSize={"30"}
                 size={"lg"}
-                bg={"green.300"}
+                bg={"blue.300"}
                 onClick={() => {
                   handleCheckGroupStatus();
                   setShowGroupResult(false);
