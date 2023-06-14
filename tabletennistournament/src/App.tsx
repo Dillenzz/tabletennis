@@ -1,5 +1,6 @@
 import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
+import logo from "./Free_Sample_By_Wix_adobe_express.svg";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase";
@@ -1506,14 +1507,13 @@ function App() {
         )}
         {showStartMenu && (
           <Center>
-          {/*  <img
-              src="src/assets/FT11_logo.svg"
+            <img
+              src={logo}
               alt="SVG Image"
               style={{ width: "20%", height: "20%", aspectRatio: "20/8" }}
             />
-        */}
-            {/*} <Image src={"./f211_adobe_express.svg"} > </Image>
-             */}
+        
+            
           </Center>
         )}
         {showStartMenu && (
