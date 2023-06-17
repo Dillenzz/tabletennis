@@ -4,6 +4,7 @@ import logo from "./Free_Sample_By_Wix_adobe_express.svg";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase";
+import { getAllPublicTournaments } from "./Backend/updateFirebase";
 import writeTournament from "./Backend/updateFirebase";
 import deleteTournament from "./Backend/deleteTournament";
 // import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_create";
@@ -68,13 +69,10 @@ import {
   PopoverCloseButton,
   Tooltip,
   Spinner,
-
-  
 } from "@chakra-ui/react";
 
 import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
-
 
 function App() {
   // Call the function on startup
@@ -85,6 +83,7 @@ function App() {
   const [tournamentDateTo, setTournamentDateTo] = useState("");
   const [tournamentLocation, setTournamentLocation] = useState("");
   const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
+  const [publicOrPrivate, setPublicOrPrivate] = useState("Private");
   //const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
 
   // states for tournamentinfo
@@ -106,6 +105,8 @@ function App() {
   const [showMyTournaments, setShowMyTournament] = useState(false);
   const [showTournamentInfo, setShowTournamentInfo] = useState(false);
   const [showPlayers, setShowPlayer] = useState(false);
+  const [showOpenTournaments, setShowOpenTournaments] = useState(false);
+  const [openTournaments, setOpenTournaments] = useState<Tournament[]>([]);
   //const [showEditTournament, setShowEditTournament] = useState(false);
 
   const [showDrawTournament, setShowDrawTournament] = useState(false);
@@ -114,6 +115,11 @@ function App() {
   const [showUserName, setShowUserName] = useState(true);
 
   // states for draw function
+
+  // for displaying tourament length
+
+  
+  const [maxWidth, setMaxWidth] = useState(0);
 
   const [tournamentStarted, setTournamentStarted] = useState(false);
   const [readyToStart, setReadyToStart] = useState(false);
@@ -244,12 +250,13 @@ function App() {
       matches: [],
       readyToStart: false,
       bo: bo,
+      public: publicOrPrivate,
     };
 
     const updatedTournaments = [...myTournaments, newTournament];
     writeTournament(newTournament); // Write to Firebase
     setMyTournaments(updatedTournaments);
-
+    calculateMyTournamentLength(updatedTournaments);
     setTournamentDateFrom("");
     setTournamentDateTo("");
     setTournamentLocation("");
@@ -312,6 +319,7 @@ function App() {
     if (uid !== null) {
       const loadTournaments = await getTournamentsByUid(uid);
       setMyTournaments(loadTournaments);
+      calculateMyTournamentLength(loadTournaments);
     }
   };
   // define group size
@@ -324,6 +332,10 @@ function App() {
   // button to decide if even groups go into groups of 5 or 3
   const handleRadioChange = (value: string) => {
     setThreeOrFive(value);
+  };
+
+  const handlePublicOrPrivate = (value: string) => {
+    setPublicOrPrivate(value);
   };
 
   const handleBoChange = (value: string) => {
@@ -351,6 +363,7 @@ function App() {
     setShowTournamentButtons(false);
     setTournamentPlayers([]);
     setTournamentSeededPlayers([]);
+    setShowOpenTournaments(false);
 
     //setAllMatchesInTournament([]);
     setTournamentName("");
@@ -1458,1431 +1471,1584 @@ function App() {
     }
   }
 
-  
+  function handleShowOpenTournaments() {
+    setShowOpenTournaments(true);
+    setShowMyTournament(false);
+    setShowCreateTournament(false);
+    setShowMyTournament(false);
+    setShowGroups(false);
+    setShowUnreportedMatches(false);
+    setShowGroupResult(false);
+    loadOpenTournaments();
+    setShowStartMenu(false);
+  }
+
+  async function loadOpenTournaments() {
+
+    const openTournaments = await getAllPublicTournaments();
+    setOpenTournaments(openTournaments);
+    console.log(openTournaments);
+    calculatePublicTournamentLength(openTournaments);
+  }
+
+  function calculateMyTournamentLength(tournaments: Tournament[]) {
+    const lengths = tournaments
+      .filter((tournament) => tournament.uid === uid)
+      .map((tournament) => tournament.name?.length || 0);
+    
+    setMaxWidth(Math.max(...lengths) * 20);
+  }
+
+  function calculatePublicTournamentLength(tournaments: Tournament[]) {
+    const lengths = tournaments
+      .filter((tournament) => tournament.public === "Public")
+      .map((tournament) => tournament.name?.length || 0);
+    
+    setMaxWidth(Math.max(...lengths) * 10);
+  }
+
   //C1D0B5 color bg
   return (
-    <Flex
-      bg="#FFFFF"
-      minHeight="100vh"
-      minWidth="100vw"
-      display="flex"
-      justifyContent="flex-start"
-      alignItems="top"
-      flexDirection="column"
-      //p={1}
-    >
-      <ChakraProvider>
-        <Center>
-          <Flex>
-            <Box width={"100%"} bg="#FFFFF" p={1}> 
-              <Menu>
-                <MenuButton
-                  bg="#FFFFF"
-                  colorScheme={"ghost"}
-                  m={4}
-                  as={IconButton}
-                  aria-label="Options"
-                  icon={<HamburgerIcon />}
-                  variant="outline"
-                />
-                <MenuList>
-                  <MenuItem onClick={() => handlegoToHome()}>Home </MenuItem>
-                  <MenuItem onClick={() => handleGoToTournaments()}>
-                    My Tournaments
-                  </MenuItem>
-                </MenuList>
-              </Menu>
+    <Box maxHeight="100vh" overflowY={"auto"} minWidth={"100vw"}>
+      <Flex
+        bg="white"
+        minHeight="100vh"
+        justifyContent="center"
+        //alignItems="center"
+        //p={1}
+      >
+        <ChakraProvider>
+          <Flex direction="column" align="center">
+            <Center>
+              <Box>
+                <Menu>
+                  <MenuButton
+                    bg="#FFFFF"
+                    colorScheme="ghost"
+                    m={4}
+                    as={Button}
+                    aria-label="Options"
+                    leftIcon={<HamburgerIcon />}
+                    variant="outline"
+                  >
+                    Menu
+                  </MenuButton>
 
-              <Button
-                colorScheme={"blue"}
-                margin={4}
-                onClick={async () => await handleGoogleLogin()}
-                ml={2}
-              >
-                {" "}
-                Sign in
-              </Button>
-            </Box>
-          </Flex>
-        </Center>
-        {showUserName && (
-          <Center>
-            {userName && <Text fontSize={"20"}> Logged in as {userName}</Text>}
-          </Center>
-        )}
-        {showStartMenu && (
-          <Center>
-            <img
-              src={logo}
-              alt="SVG Image"
-              style={{ width: "20%", height: "20%", aspectRatio: "20/8" }}
-            />
-        
-            
-          </Center>
-        )}
-        {showStartMenu && (
-          <Center>
-            <Stack>
-              <Center>
-                <Box>
+                  <MenuList>
+                    <MenuItem onClick={() => handlegoToHome()}>Home</MenuItem>
+                    <MenuItem onClick={() => handleGoToTournaments()}>
+                      My Tournaments
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+
+                <Button
+                  colorScheme="blue"
+                  margin={4}
+                  onClick={async () => await handleGoogleLogin()}
+                  ml={2}
+                >
+                  Sign in
+                </Button>
+              </Box>
+            </Center>
+            {showUserName && (
+              <Box mt={4}>
+                {userName && <Text fontSize="20">Logged in as {userName}</Text>}
+              </Box>
+            )}
+
+            {showStartMenu && (
+              <>
+                <Box mt={4}>
+                  <img
+                    src={logo}
+                    alt="SVG Image"
+                    style={{ width: "50%", margin: "auto" }}
+                  />
+                </Box>
+
+                <HStack mt={4}>
                   {userLoggedIn && (
+                    <Box>
+                      <Button
+                        bg="#F5F0BB"
+                        onClick={() => handleCreateTournament()}
+                        style={{ marginRight: "0.5em" }}
+                      >
+                        New Tournament
+                      </Button>
+
+                      <Button
+                        bg="#F5F0BB"
+                        onClick={() => handleShowMyTournaments()}
+                        style={{ marginRight: "0.5em" }}
+                      >
+                        My tournaments
+                      </Button>
+                    </Box>
+                  )}
+
+                  <Box>
                     <Button
-                      bg={"#F5F0BB"}
-                      onClick={() => handleCreateTournament()}
+                      bg="#F5F0BB"
+                      onClick={() => handleShowOpenTournaments()}
                       style={{ marginRight: "0.5em" }}
                     >
-                      New Tournament
+                      Open tournaments
                     </Button>
-                  )}
-                  <Button
-                    bg={"#F5F0BB"}
-                    onClick={() => handleShowMyTournaments()}
-                  >
-                    My tournaments
-                  </Button>
-                </Box>
-              </Center>
-            </Stack>
-          </Center>
-        )}
+                  </Box>
+                </HStack>
+              </>
+            )}
 
-        {showMyTournaments && (
-          <Box bg="#FFFFF">
-            <Center>
-              {/**<Button bg={"green.300"} onClick={() => loadTournaments()}>
-                Load tournaments
-              </Button>
- */}
-            </Center>
-            <Center>
-              <Heading>My tournaments</Heading>
-            </Center>
-            {myTournaments
-              .filter((tournament) => tournament.uid === uid)
-              .map((tournament, index) => {
-                return (
-                  <Box key={`${tournament.tournamentId}-${index}`}>
-                    <Center>
-                      <Box
-                        onClick={() => handleTournamentInfo(tournament)}
-                        width="35%"
-                        style={{ marginBottom: "0.5em", marginTop: "0.5em" }}
-                      >
+            {showMyTournaments && (
+              <Box maxWidth="100vw" bg="#FFFFF">
+                <Center>
+                  <Heading>My tournaments</Heading>
+                </Center>
+                {myTournaments
+                  .filter((tournament) => tournament.uid === uid)
+                  .map((tournament, index) => {
+                    return (
+                      <Box key={`${tournament.tournamentId}-${index}`}>
                         <Center>
-                          <Tournament
-                            name={tournament.name}
-                            dateFrom={tournament.dateFrom}
-                            dateTo={tournament.dateTo}
-                            location={tournament.location}
-                          />
+                          <Box
+                            onClick={() => handleTournamentInfo(tournament)}
+                            _hover={{ bg: "#A2CDB0", cursor: "pointer" }}
+                            rounded="lg"
+                            bg="#DBDFAA"
+                            m={1}
+                            width={"100%"}
+                            minWidth={`${maxWidth}px`}
+                          >
+                            <Center>
+                              <Tournament
+                                name={tournament.name}
+                                dateFrom={tournament.dateFrom}
+                                dateTo={tournament.dateTo}
+                                location={tournament.location}
+                              />
+                            </Center>
+                          </Box>
+
+                          <Box margin={2}>
+                            <Tooltip
+                              label={`Edit Tournament ${tournament.name}`}
+                              aria-label="edit-tooltip"
+                            >
+                              <EditIcon
+                                margin={10}
+                                color="black"
+                                boxSize={24}
+                                _hover={{ cursor: "pointer" }}
+                                aria-label="Edit Tournament"
+                                //onClick={() => handleEditTournaments(tournament)}
+                              />
+                            </Tooltip>
+
+                            <Tooltip
+                              label={`Delete Tournament ${tournament.name}`}
+                              aria-label="delete-tooltip"
+                            >
+                              <DeleteIcon
+                                color="black"
+                                boxSize={24}
+                                margin={10}
+                                _hover={{ cursor: "pointer" }}
+                                aria-label="Delete Tournament"
+                                onClick={() => {
+                                  const confirmDelete = window.confirm(
+                                    `Are you sure you want to delete the tournament "${tournament.name}"?`
+                                  );
+                                  if (confirmDelete) {
+                                    handleDeleteTournament(tournament);
+                                  }
+                                }}
+                              />
+                            </Tooltip>
+                          </Box>
                         </Center>
                       </Box>
-                      <Box margin={2}>
-                        <Tooltip
-                          label={`Edit Tournament ${tournament.name}`}
-                          aria-label="edit-tooltip"
-                        >
-                          <EditIcon
-                            margin={10}
-                            color="black"
-                            boxSize={24}
-                            _hover={{ cursor: "pointer" }}
-                            aria-label="Edit Tournament"
-                            //onClick={() => handleEditTournaments(tournament)}
-                          ></EditIcon>
-                        </Tooltip>
+                    );
+                  })}
+                {loading && (
+                  <Center>
+                    <Text>Tournaments are loading, please be patient</Text>
+                    <Spinner size="xl" />
+                  </Center>
+                )}
+              </Box>
+            )}
 
-                        <Tooltip
-                          label={`Delete Tournament ${tournament.name}`}
-                          aria-label="delete-tooltip"
-                        >
-                          <DeleteIcon
-                            color="black"
-                            boxSize={24}
-                            margin={10}
-                            _hover={{ cursor: "pointer" }}
-                            aria-label="Delete Tournament"
-                            onClick={() => {
-                              const confirmDelete = window.confirm(
-                                `Are you sure you want to delete the tournament "${tournament.name}"?`
-                              );
-                              if (confirmDelete) {
-                                handleDeleteTournament(tournament);
-                              }
-                            }}
-                          />
-                        </Tooltip>
+            {showCreateTournament && (
+              <Box>
+                <Center>
+                  <Stack>
+                    <FormControl>
+                      <Center>
+                        <FormLabel>Create Tournament</FormLabel>
+                      </Center>
+
+                      <Box p={2}>
+                        <Input
+                          isRequired
+                          borderRadius="md"
+                          bg={"white"}
+                          value={tournamentName}
+                          onChange={handleChange}
+                          placeholder="Tournament Name"
+                          size="lg"
+                        />
                       </Box>
+                      <Box p={2}>
+                        <Input
+                          bg={"white"}
+                          value={tournamentDateFrom}
+                          placeholder="Select Date and Time"
+                          size="lg"
+                          type="datetime-local"
+                          onChange={(e) =>
+                            setTournamentDateFrom(e.target.value)
+                          }
+                        ></Input>
+                      </Box>
+                      <Box p={2}>
+                        <Input
+                          bg={"white"}
+                          value={tournamentDateTo}
+                          placeholder="Select Date and Time"
+                          size="lg"
+                          type="datetime-local"
+                          onChange={(e) => setTournamentDateTo(e.target.value)}
+                        ></Input>
+                      </Box>
+                      <Box p={2}>
+                        <Input
+                          borderRadius="md"
+                          bg={"white"}
+                          value={tournamentLocation}
+                          onChange={handleLocationChange}
+                          placeholder="Tournament Location"
+                          size="lg"
+                        />
+                      </Box>
+                      <Center>
+                        <RadioGroup
+                          onChange={handlePublicOrPrivate}
+                          value={publicOrPrivate}
+                          defaultValue="Private"
+                        >
+                          <HStack spacing="24px">
+                            <Radio value="Public">Public</Radio>
+                            <Radio value="Private">Private</Radio>
+                          </HStack>
+                        </RadioGroup>
+                      </Center>
+                      <Center>
+                        <Button bg={"#F5F0BB"} m={4} onClick={onOpen}>
+                          Tournament type
+                        </Button>
+                      </Center>
+
+                      <Modal
+                        initialFocusRef={initialRef}
+                        finalFocusRef={finalRef}
+                        isOpen={isOpen}
+                        onClose={onClose}
+                      >
+                        <ModalOverlay />
+                        <ModalContent>
+                          <ModalHeader>Create your tournament</ModalHeader>
+                          <ModalCloseButton />
+                          <ModalBody pb={4}>
+                            <FormControl>
+                              <FormLabel>Type</FormLabel>
+                              <Select
+                                placeholder="Select option"
+                                onChange={handleTournamentType}
+                              >
+                                <option value="groups">Groups</option>
+                                <option value="bracket">Bracket</option>
+                                <option value="teamMatch">Team Match</option>
+                              </Select>
+                            </FormControl>
+                            {tournamentType == "groups" && (
+                              <FormControl>
+                                <Text>Groups of</Text>
+                                <NumberInput
+                                  value={numberInGroup}
+                                  onChange={handleNumberChange}
+                                  placeholder="4"
+                                  max={20}
+                                  min={3}
+                                >
+                                  <NumberInputField />
+                                  <NumberInputStepper>
+                                    <NumberIncrementStepper />
+                                    <NumberDecrementStepper />
+                                  </NumberInputStepper>
+                                </NumberInput>
+                                <FormLabel as="legend">
+                                  Uneven amount of players into groups of 3 or
+                                  5?.
+                                </FormLabel>
+                                <RadioGroup
+                                  onChange={handleRadioChange}
+                                  value={threeOrFive}
+                                  defaultValue="3"
+                                >
+                                  <HStack spacing="24px">
+                                    <Radio value="3">3</Radio>
+                                    <Radio value="5">5</Radio>
+                                  </HStack>
+                                </RadioGroup>
+                                <FormHelperText>
+                                  Only applies if groups of size 4
+                                </FormHelperText>
+
+                                <FormLabel as="legend">
+                                  Number of sets
+                                </FormLabel>
+                                <RadioGroup
+                                  onChange={handleBoChange}
+                                  value={bo}
+                                  defaultValue="Bo5"
+                                >
+                                  <HStack spacing="24px">
+                                    <Radio value="Bo3">Bo3</Radio>
+                                    <Radio value="Bo5">Bo5</Radio>
+                                    <Radio value="Bo7">Bo7</Radio>
+                                  </HStack>
+                                </RadioGroup>
+                              </FormControl>
+                            )}
+                            {tournamentType == "bracket" && (
+                              <FormControl>
+                                <RadioGroup defaultValue="Single elimination">
+                                  <HStack spacing="24px">
+                                    <Radio value="Single elimination">
+                                      Single elimination
+                                    </Radio>
+                                    <Radio value="Double elimination">
+                                      Double elimination
+                                    </Radio>
+                                  </HStack>
+                                </RadioGroup>
+                              </FormControl>
+                            )}
+
+                            {tournamentType == "teamMatch" && (
+                              <FormControl>
+                                <RadioGroup defaultValue="4v4">
+                                  <HStack spacing="24px">
+                                    <Radio value="2v2">2v2</Radio>
+                                    <Radio value="3v3">3v3</Radio>
+                                    <Radio value="4v4">4v4</Radio>
+                                  </HStack>
+                                </RadioGroup>
+                              </FormControl>
+                            )}
+                          </ModalBody>
+
+                          <ModalFooter>
+                            <Button
+                              onClick={() => {
+                                createTournament();
+                                onClose();
+                              }}
+                              colorScheme="blue"
+                            >
+                              Save and Close
+                            </Button>
+                          </ModalFooter>
+                        </ModalContent>
+                      </Modal>
+                    </FormControl>
+                  </Stack>
+                </Center>
+              </Box>
+            )}
+
+            {showOpenTournaments && (
+              <Box>
+                {openTournaments && (
+                  <Box m={4}>
+                    <Center>
+                      <Heading fontWeight={"bold"}>Open Tournaments</Heading>
                     </Center>
                   </Box>
-                );
-              })}
-            {loading && (
-              <Center>
-                {" "}
-                <Text>Tournaments are loading please be patient</Text>
-                <Spinner size="xl" />
-              </Center>
+                )}
+                {openTournaments.map((tournament: Tournament) => {
+                  return (
+                    <Box m={4}
+                      borderRadius="md"
+                      bg={"#F7E1AE"}
+                      key={tournament.tournamentId}
+                    >
+                      <Center>
+                        <Stack>
+                          <Box>
+                            <Center>
+                              <Heading>{tournament.name}</Heading>
+                            </Center>
+                          </Box>
+                          <Center>
+                            <Flex>
+                              <Button
+                                m={2}
+                                size={"md"}
+                                fontSize={"24"}
+                                mr={2}
+                                bg="blue.200"
+                                onClick={() => {
+                                  // joinTournament(tournament);
+                                }}
+                              >
+                                Info
+                              </Button>
+                              <Button
+                                m={2}
+                                size={"md"}
+                                fontSize={"24"}
+                                bg={"green.200"}
+                                onClick={() => {
+                                  // joinTournament(tournament);
+                                }}
+                              >
+                                Join
+                              </Button>
+                            </Flex>
+                          </Center>
+                        </Stack>
+                      </Center>
+                    </Box>
+                  );
+                })}
+              </Box>
             )}
-          </Box>
-        )}
 
-        {showCreateTournament && (
-          <Box>
-            <Center>
-              <Stack>
-                <FormControl>
-                  <Center>
-                    <FormLabel>Create Tournament</FormLabel>
-                  </Center>
-
-                  <Box p={2}>
-                    <Input
-                      isRequired
-                      borderRadius="md"
-                      bg={"white"}
-                      value={tournamentName}
-                      onChange={handleChange}
-                      placeholder="Tournament Name"
-                      size="lg"
-                    />
-                  </Box>
-                  <Box p={2}>
-                    <Input
-                      bg={"white"}
-                      value={tournamentDateFrom}
-                      placeholder="Select Date and Time"
-                      size="lg"
-                      type="datetime-local"
-                      onChange={(e) => setTournamentDateFrom(e.target.value)}
-                    ></Input>
-                  </Box>
-                  <Box p={2}>
-                    <Input
-                      bg={"white"}
-                      value={tournamentDateTo}
-                      placeholder="Select Date and Time"
-                      size="lg"
-                      type="datetime-local"
-                      onChange={(e) => setTournamentDateTo(e.target.value)}
-                    ></Input>
-                  </Box>
-                  <Box p={2}>
-                    <Input
-                      borderRadius="md"
-                      bg={"white"}
-                      value={tournamentLocation}
-                      onChange={handleLocationChange}
-                      placeholder="Tournament Location"
-                      size="lg"
-                    />
-                  </Box>
-                  <Center>
-                    <Button bg={"#F5F0BB"} m={4} onClick={onOpen}>
-                      Tournament type
+            {showTournamentInfo && !tournamentStarted && (
+              <Box m={4}>
+                <Center>
+                  <Stack>
+                    <Box>
+                      {currentTournament && (
+                        <Center>
+                          <Heading fontWeight={"bold"}>
+                            {currentTournament.name}
+                          </Heading>
+                        </Center>
+                      )}
+                    </Box>
+                    <Button
+                      size={"lg"}
+                      fontSize={"30"}
+                      bg={"#F7E1AE"}
+                      onClick={onOpen}
+                    >
+                      Add players
                     </Button>
-                  </Center>
+                  </Stack>
 
-                  <Modal
-                    initialFocusRef={initialRef}
-                    finalFocusRef={finalRef}
-                    isOpen={isOpen}
-                    onClose={onClose}
-                  >
+                  <Modal isOpen={isOpen} onClose={onClose}>
                     <ModalOverlay />
                     <ModalContent>
-                      <ModalHeader>Create your tournament</ModalHeader>
+                      <ModalHeader>Add player</ModalHeader>
                       <ModalCloseButton />
-                      <ModalBody pb={4}>
-                        <FormControl>
-                          <FormLabel>Type</FormLabel>
-                          <Select
-                            placeholder="Select option"
-                            onChange={handleTournamentType}
-                          >
-                            <option value="groups">Groups</option>
-                            <option value="bracket">Bracket</option>
-                            <option value="teamMatch">Team Match</option>
-                          </Select>
-                        </FormControl>
-                        {tournamentType == "groups" && (
-                          <FormControl>
-                            <Text>Groups of</Text>
-                            <NumberInput
-                              value={numberInGroup}
-                              onChange={handleNumberChange}
-                              placeholder="4"
-                              max={20}
-                              min={3}
-                            >
-                              <NumberInputField />
-                              <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                              </NumberInputStepper>
-                            </NumberInput>
-                            <FormLabel as="legend">
-                              Uneven amount of players into groups of 3 or 5?.
-                            </FormLabel>
-                            <RadioGroup
-                              onChange={handleRadioChange}
-                              value={threeOrFive}
-                              defaultValue="3"
-                            >
-                              <HStack spacing="24px">
-                                <Radio value="3">3</Radio>
-                                <Radio value="5">5</Radio>
-                              </HStack>
-                            </RadioGroup>
-                            <FormHelperText>
-                              Only applies if groups of size 4
-                            </FormHelperText>
+                      <ModalBody>
+                        <Text mb="8px">Name: {searchName}</Text>
+                        <Input
+                          value={searchName}
+                          onChange={handleNameSearch}
+                          placeholder=""
+                          borderRadius="md"
+                          size="sm"
+                        />
+                        <Text mb="8px">Club: {searchClub}</Text>
+                        <Flex>
+                          <Input
+                            borderRadius="md"
+                            value={searchClub}
+                            onChange={handleClubSearch}
+                            placeholder=""
+                            size="sm"
+                          />
+                          <Button colorScheme="blue" p={1} ml={1} size="s">
+                            Club
+                          </Button>
+                        </Flex>
+                        <Box mt={4}>
+                          {filteredPlayers.slice(0, 25).map((player) => {
+                            return (
+                              <Box
+                                mt={1}
+                                key={player.id}
+                                onClick={() => {
+                                  addPlayerToTournament(player);
+                                }}
+                              >
+                                <Player
+                                  class={player.class}
+                                  id={player.id}
+                                  name={player.name}
+                                  club={player.club}
+                                ></Player>
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      </ModalBody>
 
-                            <FormLabel as="legend">Number of sets</FormLabel>
-                            <RadioGroup
-                              onChange={handleBoChange}
-                              value={bo}
-                              defaultValue="Bo5"
+                      <ModalFooter>
+                        <Button onClick={onClose} colorScheme="blue" mr={3}>
+                          Done
+                        </Button>
+                        <Button variant="ghost">More players</Button>
+                      </ModalFooter>
+                    </ModalContent>
+                  </Modal>
+                </Center>
+              </Box>
+            )}
+            {showTournamentButtons && !tournamentStarted && (
+              <>
+                <Flex justifyContent="space-between">
+                  <Box mr={5}>
+                    <Button
+                      size="lg"
+                      fontSize="30"
+                      bg="#FFDEB4"
+                      onClick={() => saveTournament()}
+                    >
+                      Save Tournament
+                    </Button>
+                  </Box>
+                  <Box mr={5}>
+                    <Button
+                      size="lg"
+                      fontSize="30"
+                      bg="#FDF7C3"
+                      onClick={() =>
+                        handleSetTournamentSeededPlayers(
+                          currentTournament?.players || [],
+                          true
+                        )
+                      }
+                    >
+                      Seed players
+                    </Button>
+                  </Box>
+                  <Box mr={5}>
+                    {currentTournament && (
+                      <Button
+                        size="lg"
+                        fontSize="30"
+                        bg="#B2A4FF"
+                        onClick={() => handleDrawTournament()}
+                      >
+                        Draw Tournament
+                      </Button>
+                    )}
+                  </Box>
+                  <Box>
+                    {currentTournament && currentTournament.readyToStart && (
+                      <Button
+                        size="lg"
+                        fontSize="30"
+                        bg="#C9F4AA"
+                        onClick={() => handleStartTournament()}
+                      >
+                        Start Tournament
+                      </Button>
+                    )}
+                  </Box>
+                  <Spacer />
+                  <Box mr={2}>
+                    {currentTournament &&
+                      (!currentTournament.readyToStart ||
+                        tournamentStarted) && (
+                        <Button
+                          onClick={() => alert("Please draw tournament first")}
+                          size="lg"
+                          fontSize="30"
+                          bg="#FEA1A1"
+                        >
+                          Start Tournament
+                        </Button>
+                      )}
+                  </Box>
+                </Flex>
+              </>
+            )}
+
+            <Flex p={1}>
+              {showPlayers && !tournamentStarted && (
+                <Box width="35%">
+                  <Box
+                    style={{
+                      overflowY: "auto",
+                      maxHeight: "60%",
+                      maxWidth: "100%",
+                    }}
+                  >
+                    {currentTournament &&
+                      currentTournament.players &&
+                      currentTournament.players
+                        .sort((a, b) => {
+                          if (!a.points || !b.points) {
+                            return 0;
+                          }
+                          return b.points - a.points;
+                        })
+                        .map((player) => {
+                          //console.log(currentTournament.seededPlayersIds);
+                          const isSeeded =
+                            tournamentSeededPlayersIds?.includes(player.id) ||
+                            currentTournament.seededPlayersIds?.includes(
+                              player.id
+                            );
+
+                          return (
+                            <Box
+                              p={[0, 0.5]}
+                              key={player.id}
+                              display="flex"
+                              alignItems="horizontal"
                             >
-                              <HStack spacing="24px">
-                                <Radio value="Bo3">Bo3</Radio>
-                                <Radio value="Bo5">Bo5</Radio>
-                                <Radio value="Bo7">Bo7</Radio>
-                              </HStack>
-                            </RadioGroup>
-                          </FormControl>
-                        )}
-                        {tournamentType == "bracket" && (
-                          <FormControl>
-                            <RadioGroup defaultValue="Single elimination">
-                              <HStack spacing="24px">
-                                <Radio value="Single elimination">
-                                  Single elimination
-                                </Radio>
-                                <Radio value="Double elimination">
-                                  Double elimination
-                                </Radio>
-                              </HStack>
-                            </RadioGroup>
-                          </FormControl>
+                              <Flex>
+                                <IconButton
+                                  aria-label="Open chat"
+                                  icon={<DeleteIcon />}
+                                  colorScheme="red"
+                                  onClick={() => {
+                                    deletePlayerFromTournament(player);
+                                  }}
+                                  size={"sm"}
+                                />
+                                {isSeeded ? (
+                                  <SeededPlayer
+                                    name={player.name}
+                                    club={player.club}
+                                    points={player.points}
+                                    class={player.class}
+                                  />
+                                ) : (
+                                  <Player
+                                    id={player.id}
+                                    name={player.name}
+                                    club={player.club}
+                                    points={player.points}
+                                    class={player.class}
+                                  />
+                                )}
+                              </Flex>
+                            </Box>
+                          );
+                        })}
+                  </Box>
+                </Box>
+              )}
+              {showDrawTournament && !tournamentStarted && (
+                <Box>
+                  <Flex overflow={"auto"} maxHeight={"100%"} maxWidth={"100%"}>
+                    <Box flex="1" p={1}>
+                      {currentTournament?.groups
+                        ?.slice(
+                          0,
+                          Math.ceil(currentTournament.groups.length / 2)
+                        )
+                        .map((group) => (
+                          <Box p={1} key={group.name}>
+                            <Group
+                              seededPlayersIds={
+                                currentTournament.seededPlayersIds
+                              }
+                              name={group.name}
+                              players={group.players}
+                            />
+                          </Box>
+                        ))}
+                    </Box>
+                    <Box p={1}>
+                      {currentTournament?.groups
+                        ?.slice(Math.ceil(currentTournament.groups.length / 2))
+                        .map((group) => (
+                          <Box p={1} key={group.name}>
+                            <Group
+                              seededPlayersIds={
+                                currentTournament.seededPlayersIds
+                              }
+                              name={group.name}
+                              players={group.players}
+                            />
+                          </Box>
+                        ))}
+                    </Box>
+                  </Flex>
+                </Box>
+              )}
+            </Flex>
+            {currentTournament && tournamentStarted && (
+              <Box>
+                <Center>
+                  <Heading margin={"5"}>Tournament Overview</Heading>
+                </Center>
+                <Flex justifyContent="space-between">
+                  <Button
+                    marginLeft="5"
+                    fontSize={"30"}
+                    size={"lg"}
+                    // Color scheme for more colors use bg
+                    bg={"#F7E1AE"}
+                    onClick={() => {
+                      setShowGroups(true);
+                      setShowGroupResult(false);
+                      setShowUnreportedMatches(false);
+                      set;
+                    }}
+                  >
+                    Groups
+                  </Button>
+
+                  <Modal isOpen={isOpen} onClose={onClose}>
+                    <ModalOverlay />
+                    <ModalContent bg={"#DBDFAA"}>
+                      <ModalHeader fontSize="24">
+                        Report match score
+                      </ModalHeader>
+                      <ModalCloseButton />
+                      <ModalBody>
+                        <Box p={1}>
+                          <Center>
+                            <Flex>
+                              <Text fontSize="24" fontWeight={"bold"}>
+                                Match ID
+                              </Text>
+                              <Spacer />
+                              <Input
+                                ref={inputMatchIdRefA}
+                                bg={"white"}
+                                maxLength={5}
+                                fontWeight={"bold"}
+                                id="matchid"
+                                p={1}
+                                maxWidth={"30%"}
+                                maxHeight={"20%"}
+                                size="sm"
+                                value={matchId}
+                                onChange={(e) => setMatchId(e.target.value)}
+                              />
+                              <Spacer />
+                              <Button
+                                bg={"#A0D8B3"}
+                                onClick={() => {
+                                  console.log(matchId);
+                                  console.log(matchIdError);
+                                  loadReportPlayers(parseInt(matchId));
+                                }}
+                              >
+                                Load match
+                              </Button>
+                            </Flex>
+                          </Center>
+                        </Box>
+                        <Center>
+                          <Box margin={5}>
+                            {currentMatch && (
+                              <Flex>
+                                {matchIdError === -1 ? (
+                                  <>
+                                    <Flex>
+                                      <Center>
+                                        <Text fontFamily={"bold"} fontSize="24">
+                                          Invalid MatchID
+                                        </Text>
+                                      </Center>
+                                    </Flex>
+                                    {setCurrentMatch(undefined)}
+                                  </>
+                                ) : matchIdError === -2 ? (
+                                  <Center>
+                                    <>
+                                      <Center>
+                                        <Box>
+                                          <Stack align="center">
+                                            <Text
+                                              textColor={"red"}
+                                              fontWeight="bold"
+                                              fontSize="17"
+                                              textAlign="center"
+                                            >
+                                              Match already reported
+                                            </Text>
+                                            <Text textAlign="center">
+                                              Report again?
+                                            </Text>
+                                            <Box>
+                                              <Button
+                                                margin={2}
+                                                bg={"#A0D8B3"}
+                                                onClick={() =>
+                                                  setMatchIdError(0)
+                                                }
+                                              >
+                                                Yes
+                                              </Button>
+                                              <Button
+                                                margin={2}
+                                                bg={"#E76161"}
+                                                onClick={() => {
+                                                  setCurrentMatch(undefined);
+                                                  setMatchIdError(0);
+                                                }}
+                                              >
+                                                No
+                                              </Button>
+                                            </Box>
+                                          </Stack>
+                                        </Box>
+                                      </Center>
+                                    </>
+                                  </Center>
+                                ) : (
+                                  <>
+                                    <Flex
+                                      flexDirection="column"
+                                      alignItems="center"
+                                    >
+                                      <Text m={5} fontSize="40">
+                                        Match {currentMatch.matchId}
+                                      </Text>
+                                      <Flex
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                      >
+                                        <Box>
+                                          <Box maxWidth={150}>
+                                            <Text
+                                              fontWeight="bold"
+                                              fontSize="20"
+                                              overflowWrap="break-word"
+                                            >
+                                              {currentMatch.player1?.name}
+                                            </Text>
+                                          </Box>
+                                        </Box>
+                                        <Spacer />
+                                        <Box>
+                                          <Box maxWidth={150}>
+                                            <Text
+                                              marginLeft={12}
+                                              fontWeight="bold"
+                                              fontSize="20"
+                                              overflowWrap="break-word"
+                                            >
+                                              {currentMatch.player2?.name}
+                                            </Text>
+                                          </Box>
+                                        </Box>
+                                      </Flex>
+                                    </Flex>
+                                  </>
+                                )}
+                              </Flex>
+                            )}
+                            {matchIdError === -1 && !currentMatch && (
+                              <Center>
+                                <Text fontSize="40">Invalid MatchID</Text>
+                              </Center>
+                            )}
+                          </Box>
+                        </Center>
+
+                        {(bo === "Bo3" || bo === "Bo5" || bo === "Bo7") && (
+                          <Stack>
+                            <Box p={1}>
+                              <Flex>
+                                <Center>
+                                  <Input
+                                    m={1}
+                                    ref={inputSetRef}
+                                    value={set1Player1}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet1Player1(parseInt(inputValue));
+                                      } else {
+                                        setSet1Player1(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    bg="white"
+                                    id="set1player1"
+                                    borderRadius={"5px"}
+                                    maxWidth={"15%"}
+                                    size="md"
+                                    fontWeight={"bold"}
+                                  />
+                                  <Text fontSize={"30"} m={1}>
+                                    {" "}
+                                    -{" "}
+                                  </Text>
+                                  <Input
+                                    m={1}
+                                    value={set1Player2}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet1Player2(parseInt(inputValue));
+                                      } else {
+                                        setSet1Player2(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set1player2"
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                </Center>
+                              </Flex>
+                            </Box>
+                            <Box p={1}>
+                              <Flex>
+                                <Center>
+                                  <Input
+                                    m={1}
+                                    value={set2Player1}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet2Player1(parseInt(inputValue));
+                                      } else {
+                                        setSet2Player1(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set2player1"
+                                    borderRadius={"5px"}
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                  <Text fontSize={"30"} m={1}>
+                                    {" "}
+                                    -{" "}
+                                  </Text>
+                                  <Input
+                                    m={1}
+                                    minLength={1}
+                                    value={set2Player2}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet2Player2(parseInt(inputValue));
+                                      } else {
+                                        setSet2Player2(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set2player2"
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                </Center>
+                              </Flex>
+                            </Box>
+                            <Box p={1}>
+                              <Flex>
+                                <Center>
+                                  <Input
+                                    m={1}
+                                    value={set3Player1}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet3Player1(parseInt(inputValue));
+                                      } else {
+                                        setSet3Player1(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set3player1"
+                                    borderRadius={"5px"}
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                  <Text fontSize={"30"} m={1}>
+                                    {" "}
+                                    -{" "}
+                                  </Text>
+                                  <Input
+                                    m={1}
+                                    value={set3Player2}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet3Player2(parseInt(inputValue));
+                                      } else {
+                                        setSet3Player2(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set3player2"
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                </Center>
+                              </Flex>
+                            </Box>
+                          </Stack>
                         )}
 
-                        {tournamentType == "teamMatch" && (
-                          <FormControl>
-                            <RadioGroup defaultValue="4v4">
-                              <HStack spacing="24px">
-                                <Radio value="2v2">2v2</Radio>
-                                <Radio value="3v3">3v3</Radio>
-                                <Radio value="4v4">4v4</Radio>
-                              </HStack>
-                            </RadioGroup>
-                          </FormControl>
+                        {(bo === "Bo5" || bo === "Bo7") && (
+                          <Stack>
+                            <Box p={1}>
+                              <Flex>
+                                <Center>
+                                  <Input
+                                    m={1}
+                                    value={set4Player1}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet4Player1(parseInt(inputValue));
+                                      } else {
+                                        setSet4Player1(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set4player1"
+                                    borderRadius={"5px"}
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                  <Text fontSize={"30"} m={1}>
+                                    {" "}
+                                    -{" "}
+                                  </Text>
+                                  <Input
+                                    m={1}
+                                    value={set4Player2}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet4Player2(parseInt(inputValue));
+                                      } else {
+                                        setSet4Player2(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set4player2"
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                </Center>
+                              </Flex>
+                            </Box>
+                            <Box p={1}>
+                              <Flex>
+                                <Center>
+                                  <Input
+                                    m={1}
+                                    value={set5Player1}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet5Player1(parseInt(inputValue));
+                                      } else {
+                                        setSet5Player1(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set5player1"
+                                    borderRadius={"5px"}
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                  <Text fontSize={"30"} m={1}>
+                                    {" "}
+                                    -{" "}
+                                  </Text>
+                                  <Input
+                                    m={1}
+                                    value={set5Player2}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet5Player2(parseInt(inputValue));
+                                      } else {
+                                        setSet5Player2(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set5player2"
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                </Center>
+                              </Flex>
+                            </Box>
+                          </Stack>
                         )}
+
+                        {bo === "Bo7" && (
+                          <Stack>
+                            <Box p={1}>
+                              <Flex>
+                                <Center>
+                                  <Input
+                                    m={1}
+                                    value={set6Player1}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet6Player1(parseInt(inputValue));
+                                      } else {
+                                        setSet6Player1(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set6player1"
+                                    borderRadius={"5px"}
+                                    maxWidth={"15%"}
+                                    size="md"
+                                    colorScheme="whiteAlpha"
+                                  />
+
+                                  <Text fontSize={"30"} m={1}>
+                                    {" "}
+                                    -{" "}
+                                  </Text>
+
+                                  <Input
+                                    m={1}
+                                    value={set6Player2}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet6Player2(parseInt(inputValue));
+                                      } else {
+                                        setSet6Player2(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set6player2"
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                </Center>
+                              </Flex>
+                            </Box>
+                            <Box p={1}>
+                              <Flex>
+                                <Center>
+                                  <Input
+                                    m={1}
+                                    value={set7Player1}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet7Player1(parseInt(inputValue));
+                                      } else {
+                                        setSet7Player1(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set7player1"
+                                    borderRadius={"5px"}
+                                    maxWidth={"15%"}
+                                    size="md"
+                                    colorScheme="whiteAlpha"
+                                  />
+
+                                  <Text fontSize={"30"} m={1}>
+                                    {" "}
+                                    -{" "}
+                                  </Text>
+
+                                  <Input
+                                    m={1}
+                                    value={set7Player2}
+                                    onChange={(e) => {
+                                      const inputValue = e.target.value;
+                                      if (!isNaN(parseInt(inputValue))) {
+                                        setSet7Player2(parseInt(inputValue));
+                                      } else {
+                                        setSet7Player2(0);
+                                      }
+                                    }}
+                                    maxLength={2}
+                                    fontWeight={"bold"}
+                                    bg={"white"}
+                                    id="set7player2"
+                                    maxWidth={"15%"}
+                                    size="md"
+                                  />
+                                </Center>
+                              </Flex>
+                            </Box>
+                          </Stack>
+                        )}
+
+                        <Popover>
+                          <PopoverTrigger>
+                            <Center>
+                              <Button
+                                bg={"#FFF8D6"}
+                                margin={"4"}
+                                onClick={() => handleCheckWinner()}
+                              >
+                                Check Winner
+                              </Button>
+                            </Center>
+                          </PopoverTrigger>
+                          {checkWinner == -1 && (
+                            <PopoverContent>
+                              <PopoverArrow />
+                              <PopoverCloseButton />
+                              <PopoverBody>{errorMessage}</PopoverBody>
+                            </PopoverContent>
+                          )}
+                          {checkWinner == 1 && (
+                            <PopoverContent bg={"#F5F0BB"}>
+                              <PopoverArrow />
+                              <PopoverCloseButton />
+                              <Center>
+                                <PopoverBody fontSize={20} fontWeight={"bold"}>
+                                  {winner?.name} wins
+                                  <Center>
+                                    <Text>
+                                      {wonSetsPlayer1} - {wonSetsPlayer2}
+                                    </Text>
+                                  </Center>
+                                </PopoverBody>
+                              </Center>
+                              <Button
+                                margin={"2"}
+                                onClick={() => {
+                                  handleMatchScore();
+                                  const updatedMatches =
+                                    unreportedMatches.filter(
+                                      (match) =>
+                                        String(match.matchId!) !== matchId
+                                    );
+                                  setUnreportedMatches(updatedMatches);
+                                }}
+                                bg={"#A0D8B3"}
+                              >
+                                Correct
+                              </Button>
+                            </PopoverContent>
+                          )}
+                        </Popover>
                       </ModalBody>
 
                       <ModalFooter>
                         <Button
                           onClick={() => {
-                            createTournament();
-                            onClose();
+                            if (checkWinner !== 1) {
+                              const result = window.confirm(
+                                "Please check the winner before closing the modal. Are you sure you want to proceed?"
+                              );
+                              if (result === true) {
+                                onClose();
+                              }
+                            } else {
+                              onClose();
+                            }
                           }}
-                          colorScheme="blue"
+                          bg={"#A0D8B3"}
+                          mr={3}
                         >
-                          Save and Close
+                          Done
                         </Button>
                       </ModalFooter>
                     </ModalContent>
                   </Modal>
-                </FormControl>
-              </Stack>
-            </Center>
-          </Box>
-        )}
 
-        {showTournamentInfo && !tournamentStarted && (
-          <Box>
-            <Center>
-              <Stack>
-                <Box>
-                  {currentTournament && (
-                    <Center>
-                      <Heading fontWeight={"bold"}>
-                        {currentTournament.name}
-                      </Heading>
-                    </Center>
-                  )}
-                </Box>
-                <Button
-                  size={"lg"}
-                  fontSize={"30"}
-                  bg={"#F7E1AE"}
-                  onClick={onOpen}
-                >
-                  Add players
-                </Button>
-              </Stack>
-
-              <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent>
-                  <ModalHeader>Add player</ModalHeader>
-                  <ModalCloseButton />
-                  <ModalBody>
-                    <Text mb="8px">Name: {searchName}</Text>
-                    <Input
-                      value={searchName}
-                      onChange={handleNameSearch}
-                      placeholder=""
-                      size="sm"
-                    />
-                    <Text mb="8px">Club: {searchClub}</Text>
-                    <Box>
-                      <Input
-                        value={searchClub}
-                        onChange={handleClubSearch}
-                        placeholder=""
-                        size="sm"
-                      />
-                    </Box>
-                    <Box mt={4}>
-                      {filteredPlayers.slice(0, 25).map((player) => {
-                        return (
-                          <Box
-                            mt={1}
-                            key={player.id}
-                            onClick={() => {
-                              addPlayerToTournament(player);
-                            }}
-                          >
-                            <Player
-                              class={player.class}
-                              id={player.id}
-                              name={player.name}
-                              club={player.club}
-                            ></Player>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  </ModalBody>
-
-                  <ModalFooter>
-                    <Button onClick={onClose} colorScheme="blue" mr={3}>
-                      Done
-                    </Button>
-                    <Button variant="ghost">More players</Button>
-                  </ModalFooter>
-                </ModalContent>
-              </Modal>
-            </Center>
-          </Box>
-        )}
-        {showTournamentButtons && !tournamentStarted && (
-          <>
-            <Flex p={1} justifyContent={"space-between"}>
-              <Button
-                size={"lg"}
-                fontSize={"30"}
-                bg={"#FFDEB4"}
-                p={1}
-                onClick={() => saveTournament()}
-              >
-                Save Tournament
-              </Button>
-
-              <Button
-                size={"lg"}
-                fontSize={"30"}
-                bg={"#FDF7C3"}
-                p={1}
-                onClick={() =>
-                  handleSetTournamentSeededPlayers(
-                    currentTournament?.players || [],
-                    true
-                  )
-                }
-              >
-                Seed players
-              </Button>
-
-              {currentTournament && (
-                <Button
-                  size={"lg"}
-                  fontSize={"30"}
-                  bg={"#B2A4FF"}
-                  p={1}
-                  onClick={() => handleDrawTournament()}
-                >
-                  Draw Tournament
-                </Button>
-              )}
-              {currentTournament && currentTournament.readyToStart && (
-                <Button
-                  size={"lg"}
-                  fontSize={"30"}
-                  bg={"#C9F4AA"}
-                  p={1}
-                  onClick={() => handleStartTournament()}
-                >
-                  Start Tournament
-                </Button>
-              )}
-
-              {currentTournament &&
-                (!currentTournament.readyToStart || tournamentStarted) && (
-                  <Button size={"lg"} fontSize={"30"} bg={"#FEA1A1"} p={1}>
-                    Start Tournament
+                  <Button
+                    marginLeft={"5"}
+                    size="lg"
+                    fontSize={"30"}
+                    bg={"#F7E1AE"}
+                    onClick={() => {
+                      setShowGroupResult(true);
+                      setShowUnreportedMatches(false);
+                      setShowGroups(false);
+                    }}
+                  >
+                    Results
                   </Button>
-                )}
-            </Flex>
-          </>
-        )}
 
-        <Flex p={1}>
-          {showPlayers && !tournamentStarted && (
-            <Box width="35%">
-              <Box
-                style={{
-                  overflowY: "auto",
-                  maxHeight: "60vh",
-                  maxWidth: "65%",
-                }}
-              >
-                {currentTournament &&
-                  currentTournament.players &&
-                  currentTournament.players
-                    .sort((a, b) => {
-                      if (!a.points || !b.points) {
-                        return 0;
-                      }
-                      return b.points - a.points;
-                    })
-                    .map((player) => {
-                      //console.log(currentTournament.seededPlayersIds);
-                      const isSeeded =
-                        tournamentSeededPlayersIds?.includes(player.id) ||
-                        currentTournament.seededPlayersIds?.includes(player.id);
+                  <Button
+                    fontSize={"30"}
+                    size={"lg"}
+                    onClick={() => {
+                      onOpen();
+                    }}
+                    bg={"#F7E1AE"}
+                  >
+                    Report result
+                  </Button>
 
-                      return (
-                        <Box
-                          p={[0, 0.5]}
-                          key={player.id}
-                          display="flex"
-                          alignItems="horizontal"
-                        >
-                          <Flex>
-                            <IconButton
-                              aria-label="Open chat"
-                              icon={<DeleteIcon />}
-                              colorScheme="red"
-                              onClick={() => {
-                                deletePlayerFromTournament(player);
-                              }}
-                              size={"sm"}
-                            />
-                            {isSeeded ? (
-                              <SeededPlayer
-                                name={player.name}
-                                club={player.club}
-                                points={player.points}
-                                class={player.class}
-                              />
-                            ) : (
-                              <Player
-                                id={player.id}
-                                name={player.name}
-                                club={player.club}
-                                points={player.points}
-                                class={player.class}
-                              />
-                            )}
-                          </Flex>
-                        </Box>
-                      );
-                    })}
-              </Box>
-            </Box>
-          )}
-          {showDrawTournament && !tournamentStarted && (
-            <Box>
-              <Flex overflow={"auto"} maxHeight={"80vh"} maxWidth={"100vh"}>
-                <Box flex="1" p={1}>
-                  {currentTournament?.groups
-                    ?.slice(0, Math.ceil(currentTournament.groups.length / 2))
-                    .map((group) => (
-                      <Box p={1} key={group.name}>
-                        <Group
-                          seededPlayersIds={currentTournament.seededPlayersIds}
-                          name={group.name}
-                          players={group.players}
-                        />
-                      </Box>
-                    ))}
-                </Box>
-                <Box p={1}>
-                  {currentTournament?.groups
-                    ?.slice(Math.ceil(currentTournament.groups.length / 2))
-                    .map((group) => (
-                      <Box p={1} key={group.name}>
-                        <Group
-                          seededPlayersIds={currentTournament.seededPlayersIds}
-                          name={group.name}
-                          players={group.players}
-                        />
-                      </Box>
-                    ))}
-                </Box>
-              </Flex>
-            </Box>
-          )}
-        </Flex>
-        {currentTournament && tournamentStarted && (
-          <Box>
-            <Center>
-              <Heading margin={"5"}>Tournament Overview</Heading>
-            </Center>
-            <Flex justifyContent="space-between">
-              <Button
-                marginLeft="5"
-                fontSize={"30"}
-                size={"lg"}
-                // Color scheme for more colors use bg
-                bg={"#F7E1AE"}
-                onClick={() => {
-                  setShowGroups(true);
-                  setShowGroupResult(false);
-                  setShowUnreportedMatches(false);
-                  set;
-                }}
-              >
-                Groups
-              </Button>
-
-              <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent bg={"#DBDFAA"}>
-                  <ModalHeader fontSize="24">Report match score</ModalHeader>
-                  <ModalCloseButton />
-                  <ModalBody>
-                    <Box p={1}>
-                      <Center>
-                        <Flex>
-                          <Text fontSize="24" fontWeight={"bold"}>
-                            Match ID
-                          </Text>
-                          <Spacer />
-                          <Input
-                            ref={inputMatchIdRefA}
-                            bg={"white"}
-                            maxLength={5}
-                            fontWeight={"bold"}
-                            id="matchid"
-                            p={1}
-                            maxWidth={"30%"}
-                            maxHeight={"20%"}
-                            size="sm"
-                            value={matchId}
-                            onChange={(e) => setMatchId(e.target.value)}
-                          />
-                          <Spacer />
-                          <Button
-                            bg={"#A0D8B3"}
-                            onClick={() => {
-                              console.log(matchId);
-                              console.log(matchIdError);
-                              loadReportPlayers(parseInt(matchId));
-                            }}
-                          >
-                            Load match
-                          </Button>
-                        </Flex>
-                      </Center>
-                    </Box>
-                    <Center>
-                      <Box margin={5}>
-                        {currentMatch && (
-                          <Flex>
-                            {matchIdError === -1 ? (
-                              <>
-                                <Flex>
-                                  <Center>
-                                    <Text fontFamily={"bold"} fontSize="24">
-                                      Invalid MatchID
-                                    </Text>
-                                  </Center>
-                                </Flex>
-                                {setCurrentMatch(undefined)}
-                              </>
-                            ) : matchIdError === -2 ? (
-                              <Center>
-                                <>
-                                  <Center>
-                                    <Box>
-                                      <Stack align="center">
-                                        <Text
-                                          textColor={"red"}
-                                          fontWeight="bold"
-                                          fontSize="17"
-                                          textAlign="center"
-                                        >
-                                          Match already reported
-                                        </Text>
-                                        <Text textAlign="center">
-                                          Report again?
-                                        </Text>
-                                        <Box>
-                                          <Button
-                                            margin={2}
-                                            bg={"#A0D8B3"}
-                                            onClick={() => setMatchIdError(0)}
-                                          >
-                                            Yes
-                                          </Button>
-                                          <Button
-                                            margin={2}
-                                            bg={"#E76161"}
-                                            onClick={() => {
-                                              setCurrentMatch(undefined);
-                                              setMatchIdError(0);
-                                            }}
-                                          >
-                                            No
-                                          </Button>
-                                        </Box>
-                                      </Stack>
-                                    </Box>
-                                  </Center>
-                                </>
-                              </Center>
-                            ) : (
-                              <>
-                                <Flex
-                                  flexDirection="column"
-                                  alignItems="center"
-                                >
-                                  <Text m={5} fontSize="40">
-                                    Match {currentMatch.matchId}
-                                  </Text>
-                                  <Flex
-                                    justifyContent="space-between"
-                                    alignItems="center"
-                                  >
-                                    <Box>
-                                      <Box maxWidth={150}>
-                                        <Text
-                                          fontWeight="bold"
-                                          fontSize="20"
-                                          overflowWrap="break-word"
-                                        >
-                                          {currentMatch.player1?.name}
-                                        </Text>
-                                      </Box>
-                                    </Box>
-                                    <Spacer />
-                                    <Box>
-                                      <Box maxWidth={150}>
-                                        <Text
-                                          marginLeft={12}
-                                          fontWeight="bold"
-                                          fontSize="20"
-                                          overflowWrap="break-word"
-                                        >
-                                          {currentMatch.player2?.name}
-                                        </Text>
-                                      </Box>
-                                    </Box>
-                                  </Flex>
-                                </Flex>
-                              </>
-                            )}
-                          </Flex>
-                        )}
-                        {matchIdError === -1 && !currentMatch && (
-                          <Center>
-                            <Text fontSize="40">Invalid MatchID</Text>
-                          </Center>
-                        )}
-                      </Box>
-                    </Center>
-
-                    {(bo === "Bo3" || bo === "Bo5" || bo === "Bo7") && (
-                      <Stack>
-                        <Box p={1}>
-                          <Flex>
-                            <Center>
-                              <Input
-                                m={1}
-                                ref={inputSetRef}
-                                value={set1Player1}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet1Player1(parseInt(inputValue));
-                                  } else {
-                                    setSet1Player1(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                bg="white"
-                                id="set1player1"
-                                borderRadius={"5px"}
-                                maxWidth={"15%"}
-                                size="md"
-                                fontWeight={"bold"}
-                              />
-                              <Text fontSize={"30"} m={1}>
-                                {" "}
-                                -{" "}
-                              </Text>
-                              <Input
-                                m={1}
-                                value={set1Player2}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet1Player2(parseInt(inputValue));
-                                  } else {
-                                    setSet1Player2(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set1player2"
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                            </Center>
-                          </Flex>
-                        </Box>
-                        <Box p={1}>
-                          <Flex>
-                            <Center>
-                              <Input
-                                m={1}
-                                value={set2Player1}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet2Player1(parseInt(inputValue));
-                                  } else {
-                                    setSet2Player1(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set2player1"
-                                borderRadius={"5px"}
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                              <Text fontSize={"30"} m={1}>
-                                {" "}
-                                -{" "}
-                              </Text>
-                              <Input
-                                m={1}
-                                minLength={1}
-                                value={set2Player2}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet2Player2(parseInt(inputValue));
-                                  } else {
-                                    setSet2Player2(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set2player2"
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                            </Center>
-                          </Flex>
-                        </Box>
-                        <Box p={1}>
-                          <Flex>
-                            <Center>
-                              <Input
-                                m={1}
-                                value={set3Player1}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet3Player1(parseInt(inputValue));
-                                  } else {
-                                    setSet3Player1(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set3player1"
-                                borderRadius={"5px"}
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                              <Text fontSize={"30"} m={1}>
-                                {" "}
-                                -{" "}
-                              </Text>
-                              <Input
-                                m={1}
-                                value={set3Player2}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet3Player2(parseInt(inputValue));
-                                  } else {
-                                    setSet3Player2(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set3player2"
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                            </Center>
-                          </Flex>
-                        </Box>
-                      </Stack>
-                    )}
-
-                    {(bo === "Bo5" || bo === "Bo7") && (
-                      <Stack>
-                        <Box p={1}>
-                          <Flex>
-                            <Center>
-                              <Input
-                                m={1}
-                                value={set4Player1}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet4Player1(parseInt(inputValue));
-                                  } else {
-                                    setSet4Player1(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set4player1"
-                                borderRadius={"5px"}
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                              <Text fontSize={"30"} m={1}>
-                                {" "}
-                                -{" "}
-                              </Text>
-                              <Input
-                                m={1}
-                                value={set4Player2}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet4Player2(parseInt(inputValue));
-                                  } else {
-                                    setSet4Player2(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set4player2"
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                            </Center>
-                          </Flex>
-                        </Box>
-                        <Box p={1}>
-                          <Flex>
-                            <Center>
-                              <Input
-                                m={1}
-                                value={set5Player1}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet5Player1(parseInt(inputValue));
-                                  } else {
-                                    setSet5Player1(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set5player1"
-                                borderRadius={"5px"}
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                              <Text fontSize={"30"} m={1}>
-                                {" "}
-                                -{" "}
-                              </Text>
-                              <Input
-                                m={1}
-                                value={set5Player2}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet5Player2(parseInt(inputValue));
-                                  } else {
-                                    setSet5Player2(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set5player2"
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                            </Center>
-                          </Flex>
-                        </Box>
-                      </Stack>
-                    )}
-
-                    {bo === "Bo7" && (
-                      <Stack>
-                        <Box p={1}>
-                          <Flex>
-                            <Center>
-                              <Input
-                                m={1}
-                                value={set6Player1}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet6Player1(parseInt(inputValue));
-                                  } else {
-                                    setSet6Player1(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set6player1"
-                                borderRadius={"5px"}
-                                maxWidth={"15%"}
-                                size="md"
-                                colorScheme="whiteAlpha"
-                              />
-
-                              <Text fontSize={"30"} m={1}>
-                                {" "}
-                                -{" "}
-                              </Text>
-
-                              <Input
-                                m={1}
-                                value={set6Player2}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet6Player2(parseInt(inputValue));
-                                  } else {
-                                    setSet6Player2(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set6player2"
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                            </Center>
-                          </Flex>
-                        </Box>
-                        <Box p={1}>
-                          <Flex>
-                            <Center>
-                              <Input
-                                m={1}
-                                value={set7Player1}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet7Player1(parseInt(inputValue));
-                                  } else {
-                                    setSet7Player1(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set7player1"
-                                borderRadius={"5px"}
-                                maxWidth={"15%"}
-                                size="md"
-                                colorScheme="whiteAlpha"
-                              />
-
-                              <Text fontSize={"30"} m={1}>
-                                {" "}
-                                -{" "}
-                              </Text>
-
-                              <Input
-                                m={1}
-                                value={set7Player2}
-                                onChange={(e) => {
-                                  const inputValue = e.target.value;
-                                  if (!isNaN(parseInt(inputValue))) {
-                                    setSet7Player2(parseInt(inputValue));
-                                  } else {
-                                    setSet7Player2(0);
-                                  }
-                                }}
-                                maxLength={2}
-                                fontWeight={"bold"}
-                                bg={"white"}
-                                id="set7player2"
-                                maxWidth={"15%"}
-                                size="md"
-                              />
-                            </Center>
-                          </Flex>
-                        </Box>
-                      </Stack>
-                    )}
-
-                    <Popover>
-                      <PopoverTrigger>
-                        <Center>
-                          <Button
-                            bg={"#FFF8D6"}
-                            margin={"4"}
-                            onClick={() => handleCheckWinner()}
-                          >
-                            Check Winner
-                          </Button>
-                        </Center>
-                      </PopoverTrigger>
-                      {checkWinner == -1 && (
-                        <PopoverContent>
-                          <PopoverArrow />
-                          <PopoverCloseButton />
-                          <PopoverBody>{errorMessage}</PopoverBody>
-                        </PopoverContent>
-                      )}
-                      {checkWinner == 1 && (
-                        <PopoverContent bg={"#F5F0BB"}>
-                          <PopoverArrow />
-                          <PopoverCloseButton />
-                          <Center>
-                            <PopoverBody fontSize={20} fontWeight={"bold"}>
-                              {winner?.name} wins
-                              <Center>
-                                <Text>
-                                  {wonSetsPlayer1} - {wonSetsPlayer2}
-                                </Text>
-                              </Center>
-                            </PopoverBody>
-                          </Center>
-                          <Button
-                            margin={"2"}
-                            onClick={() => {
-                              handleMatchScore();
-                              const updatedMatches = unreportedMatches.filter(
-                                (match) => String(match.matchId!) !== matchId
-                              );
-                              setUnreportedMatches(updatedMatches);
-                            }}
-                            bg={"#A0D8B3"}
-                          >
-                            Correct
-                          </Button>
-                        </PopoverContent>
-                      )}
-                    </Popover>
-                  </ModalBody>
-
-                  <ModalFooter>
+                  <Button
+                    marginLeft="5"
+                    fontSize={"30"}
+                    size={"lg"}
+                    bg={"blue.300"}
+                    onClick={() => {
+                      handleCheckGroupStatus();
+                      setShowGroupResult(false);
+                      setShowGroups(false);
+                    }}
+                  >
+                    Status
+                  </Button>
+                  {unreportedMatches.length === 0 && (
                     <Button
                       onClick={() => {
-                        if (checkWinner !== 1) {
-                          const result = window.confirm(
-                            "Please check the winner before closing the modal. Are you sure you want to proceed?"
-                          );
-                          if (result === true) {
-                            onClose();
-                          }
-                        } else {
-                          onClose();
-                        }
+                        handleCheckIfStartBracket();
                       }}
-                      bg={"#A0D8B3"}
-                      mr={3}
+                      // justifyContent={"flex-end"}
+                      size="lg"
+                      fontSize="30"
+                      bg={"green.300"}
+                      marginRight={"5"}
                     >
-                      Done
+                      Start bracket
                     </Button>
-                  </ModalFooter>
-                </ModalContent>
-              </Modal>
+                  )}
 
-              <Button
-                marginLeft={"5"}
-                size="lg"
-                fontSize={"30"}
-                bg={"#F7E1AE"}
-                onClick={() => {
-                  setShowGroupResult(true);
-                  setShowUnreportedMatches(false);
-                  setShowGroups(false);
-                }}
-              >
-                Results
-              </Button>
-
-              <Button
-                fontSize={"30"}
-                size={"lg"}
-                onClick={() => {
-                  onOpen();
-                }}
-                bg={"#F7E1AE"}
-              >
-                Report result
-              </Button>
-
-              <Button
-                marginLeft="5"
-                fontSize={"30"}
-                size={"lg"}
-                bg={"blue.300"}
-                onClick={() => {
-                  handleCheckGroupStatus();
-                  setShowGroupResult(false);
-                  setShowGroups(false);
-                }}
-              >
-                Status
-              </Button>
-              {unreportedMatches.length === 0 && (
-                <Button
-                  onClick={() => {
-                    handleCheckIfStartBracket();
-                  }}
-                  // justifyContent={"flex-end"}
-                  size="lg"
-                  fontSize="30"
-                  bg={"green.300"}
-                >
-                  Start bracket
-                </Button>
-              )}
-
-              {(unreportedMatches.length !== 0 ||
-                unreportedMatches === null) && (
-                // red button
-                <Button
-                  onClick={() => {
-                    alert(unreportedMatches.length + `  unreported matches`);
-                  }}
-                  // justifyContent={"flex-end"}
-                  size="lg"
-                  fontSize="30"
-                  bg={"#E76161"}
-                >
-                  Start bracket
-                </Button>
-              )}
-            </Flex>
-            <Box>
-              {showUnreportedMatches && unreportedMatches.length !== 0 && (
-                <Center>
-                  <Text fontSize={"40"}>Unreported Matches</Text>
-                </Center>
-              )}
-              {showUnreportedMatches && unreportedMatches.length === 0 && (
-                <Center>
-                  <Text fontSize={"30"}>No unreported matches</Text>
-                </Center>
-              )}
-              {showUnreportedMatches &&
-                unreportedMatches.map((match) => {
-                  if (!match.matchId) {
-                    return null; // Skip the iteration if there is no matchId
-                  }
-
-                  return (
-                    <Center key={match.matchId}>
-                      <Box
-                        onClick={() => {
-                          onOpen();
-                          setMatchId(String(match.matchId));
-                          loadReportPlayers(match.matchId!);
-                          setCurrentMatch(match);
-                        }}
-                        width={"50%"}
-                        margin={"3px"}
-                      >
-                        <Match
-                          key={match.matchId}
-                          matchId={match.matchId}
-                          player1={match.player1}
-                          player2={match.player2}
-                        />
-                      </Box>
-                    </Center>
-                  );
-                })}
-            </Box>
-
-            {showGroups && (
-              <Box>
-                <Flex>
-                  {currentTournament?.groups
-                    ?.reduce((columns: JSX.Element[][], group, index) => {
-                      const columnIndex = Math.floor(index / 4);
-
-                      if (!columns[columnIndex]) {
-                        columns[columnIndex] = [];
-                      }
-
-                      columns[columnIndex].push(
-                        <Box
-                          margin={"5"}
-                          width={
-                            currentTournament.groups!.length < 4
-                              ? "30%"
-                              : currentTournament.groups!.length > 12
-                              ? "80%"
-                              : "60%"
-                          }
-                          onClick={onOpenScoreModal}
-                          key={group.name}
-                        >
-                          <Modal
-                            finalFocusRef={inputSetRef}
-                            isCentered
-                            onClose={onCloseScoreModal}
-                            isOpen={isOpenScoreModal}
-                            motionPreset="slideInBottom"
-                            blockScrollOnMount={false}
-                          >
-                            <ModalOverlay opacity={0.6} bg={"#"} />
-                            <ModalContent>
-                              {currentPlayer && currentPlayer.name && (
-                                <ModalHeader>
-                                  Matches for {currentPlayer.name}
-                                </ModalHeader>
-                              )}
-                              <ModalCloseButton />
-                              <ModalBody padding={5}>
-                                <Box>
-                                  {currentPlayer &&
-                                    currentTournament?.matches && (
-                                      <>
-                                        {currentTournament.matches
-                                          .filter(
-                                            (match) =>
-                                              match.player1?.id ===
-                                                currentPlayer.id ||
-                                              match.player2?.id ===
-                                                currentPlayer.id
-                                          )
-                                          .map((match) => {
-                                            // Add this console.log statement
-                                            return (
-                                              <Box
-                                                m={2}
-                                                key={match.matchId}
-                                                onClick={() => {
-                                                  setMatchId(
-                                                    String(match.matchId)
-                                                  );
-                                                  loadReportPlayers(
-                                                    match.matchId!
-                                                  );
-                                                  setCurrentMatch(match);
-                                                  onOpen();
-                                                }}
-                                              >
-                                                <DisplayMatchScore
-                                                  key={match.matchId}
-                                                  match={match}
-                                                />
-                                              </Box>
-                                            );
-                                          })}
-                                      </>
-                                    )}
-                                </Box>
-                              </ModalBody>
-
-                              <ModalFooter>
-                                <Button
-                                  colorScheme="blue"
-                                  mr={3}
-                                  onClick={onCloseScoreModal}
-                                >
-                                  Close
-                                </Button>
-                              </ModalFooter>
-                            </ModalContent>
-                          </Modal>
-
-                          <GroupDisplayScore
-                            onPlayerClick={handleLookUpPlayerScore}
-                            seededPlayersIds={
-                              currentTournament.seededPlayersIds
-                            }
-                            groupName={group.name}
-                            players={group.players}
-                          />
-                        </Box>
-                      );
-
-                      return columns;
-                    }, [])
-                    .map((column, columnIndex) => (
-                      <Box flex="1" key={columnIndex}>
-                        {column}
-                      </Box>
-                    ))}
+                  {(unreportedMatches.length !== 0 ||
+                    unreportedMatches === null) && (
+                    // red button
+                    <Button
+                      onClick={() => {
+                        alert(
+                          unreportedMatches.length + `  unreported matches`
+                        );
+                      }}
+                      // justifyContent={"flex-end"}
+                      size="lg"
+                      fontSize="30"
+                      bg={"#E76161"}
+                      marginRight={"5"}
+                    >
+                      Start bracket
+                    </Button>
+                  )}
                 </Flex>
+                <Box>
+                  {showUnreportedMatches && unreportedMatches.length !== 0 && (
+                    <Center>
+                      <Text fontSize={"40"}>Unreported Matches</Text>
+                    </Center>
+                  )}
+                  {showUnreportedMatches && unreportedMatches.length === 0 && (
+                    <Center>
+                      <Text fontSize={"30"}>No unreported matches</Text>
+                    </Center>
+                  )}
+                  <Box p={3}>
+                    {showUnreportedMatches &&
+                      unreportedMatches.map((match) => {
+                        if (!match.matchId) {
+                          return null; // Skip the iteration if there is no matchId
+                        }
+
+                        return (
+                          <Center key={match.matchId}>
+                            <Box
+                              onClick={() => {
+                                onOpen();
+                                setMatchId(String(match.matchId));
+                                loadReportPlayers(match.matchId!);
+                                setCurrentMatch(match);
+                              }}
+                              width={"50%"}
+                              margin={"3px"}
+                            >
+                              <Match
+                                key={match.matchId}
+                                matchId={match.matchId}
+                                player1={match.player1}
+                                player2={match.player2}
+                              />
+                            </Box>
+                          </Center>
+                        );
+                      })}
+                  </Box>
+                </Box>
+
+                {showGroups && (
+                  <Box>
+                    <Flex>
+                      {currentTournament?.groups
+                        ?.reduce((columns: JSX.Element[][], group, index) => {
+                          const columnIndex = Math.floor(index / 4);
+
+                          if (!columns[columnIndex]) {
+                            columns[columnIndex] = [];
+                          }
+
+                          columns[columnIndex].push(
+                            <Box
+                              margin={"5"}
+                              width={
+                                currentTournament.groups!.length < 4
+                                  ? "30%"
+                                  : currentTournament.groups!.length > 12
+                                  ? "80%"
+                                  : "60%"
+                              }
+                              onClick={onOpenScoreModal}
+                              key={group.name}
+                            >
+                              <Modal
+                                finalFocusRef={inputSetRef}
+                                isCentered
+                                onClose={onCloseScoreModal}
+                                isOpen={isOpenScoreModal}
+                                motionPreset="slideInBottom"
+                                blockScrollOnMount={false}
+                              >
+                                <ModalOverlay opacity={0.6} bg={"#"} />
+                                <ModalContent>
+                                  {currentPlayer && currentPlayer.name && (
+                                    <ModalHeader>
+                                      Matches for {currentPlayer.name}
+                                    </ModalHeader>
+                                  )}
+                                  <ModalCloseButton />
+                                  <ModalBody padding={5}>
+                                    <Box>
+                                      {currentPlayer &&
+                                        currentTournament?.matches && (
+                                          <>
+                                            {currentTournament.matches
+                                              .filter(
+                                                (match) =>
+                                                  match.player1?.id ===
+                                                    currentPlayer.id ||
+                                                  match.player2?.id ===
+                                                    currentPlayer.id
+                                              )
+                                              .map((match) => {
+                                                // Add this console.log statement
+                                                return (
+                                                  <Box
+                                                    m={2}
+                                                    key={match.matchId}
+                                                    onClick={() => {
+                                                      setMatchId(
+                                                        String(match.matchId)
+                                                      );
+                                                      loadReportPlayers(
+                                                        match.matchId!
+                                                      );
+                                                      setCurrentMatch(match);
+                                                      onOpen();
+                                                    }}
+                                                  >
+                                                    <DisplayMatchScore
+                                                      key={match.matchId}
+                                                      match={match}
+                                                    />
+                                                  </Box>
+                                                );
+                                              })}
+                                          </>
+                                        )}
+                                    </Box>
+                                  </ModalBody>
+
+                                  <ModalFooter>
+                                    <Button
+                                      colorScheme="blue"
+                                      mr={3}
+                                      onClick={onCloseScoreModal}
+                                    >
+                                      Close
+                                    </Button>
+                                  </ModalFooter>
+                                </ModalContent>
+                              </Modal>
+
+                              <GroupDisplayScore
+                                onPlayerClick={handleLookUpPlayerScore}
+                                seededPlayersIds={
+                                  currentTournament.seededPlayersIds
+                                }
+                                groupName={group.name}
+                                players={group.players}
+                              />
+                            </Box>
+                          );
+
+                          return columns;
+                        }, [])
+                        .map((column, columnIndex) => (
+                          <Box flex="1" key={columnIndex}>
+                            {column}
+                          </Box>
+                        ))}
+                    </Flex>
+                  </Box>
+                )}
               </Box>
             )}
-          </Box>
-        )}
-        {showGroupResult && (
-          <Box>
-            {currentTournament?.groups?.map((group) => {
-              console.log(group);
-              return (
-                <Box margin={5} width={"40%"} key={group.name}>
-                  {" "}
-                  {/* Add a key prop to the enclosing Box component */}
-                  <GroupResult
-                    name={group.name}
-                    players={group.players}
-                    matches={group.matches}
-                  />
-                </Box>
-              );
-            })}
-          </Box>
-        )}
-        {startBracket && readyToStart && (
-          <Box>
-            <Text>HEJ</Text>
-          </Box>
-        )}
-      </ChakraProvider>
-    </Flex>
+            {showGroupResult && (
+              <Box>
+                {currentTournament?.groups?.map((group) => {
+                  console.log(group);
+                  return (
+                    <Box margin={5} width={"40%"} key={group.name}>
+                      {" "}
+                      {/* Add a key prop to the enclosing Box component */}
+                      <GroupResult
+                        name={group.name}
+                        players={group.players}
+                        matches={group.matches}
+                      />
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+            {startBracket && readyToStart && (
+              <Box>
+                <Text>HEJ</Text>
+              </Box>
+            )}
+          </Flex>
+        </ChakraProvider>
+      </Flex>
+    </Box>
   );
 }
 

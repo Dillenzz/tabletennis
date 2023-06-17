@@ -27,6 +27,7 @@ function Player(props: Player) {
       onClick={props.onClick}
       width="100%"
       p="1"
+      borderRadius="md"
       _hover={{ bg: "blue.200", cursor: "pointer" }}
       bg={props.isTopPlayer ? "#A0D8B3" : "#F5F0BB"}
     >

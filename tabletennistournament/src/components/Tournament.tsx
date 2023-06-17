@@ -24,16 +24,12 @@ interface Tournament {
   readyToStart?: boolean;
   bo?: string;
   startBracket?: boolean;
+  public?: string;
 }
 
 function Tournament(props: Tournament) {
   return (
     <Box
-      width={"85%"}
-      p="2"
-      _hover={{ bg: "#DBDFAA" , cursor: "pointer" }}
-      bg="#F5F0BB"
-      rounded="lg"
     >
       <Box>
         <Center>
@@ -43,7 +39,7 @@ function Tournament(props: Tournament) {
         </Center>
       </Box>
 
-      <Box>
+      <Box justifyContent={"left"}>
         <Center>
           <Text fontWeight={"bold"} fontSize={"20"}>
             Location: {props.location}

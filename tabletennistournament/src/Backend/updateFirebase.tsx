@@ -48,6 +48,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       matches: tournament.matches,
       readyToStart: tournament.readyToStart,
       bo: tournament.bo,
+      public: tournament.public,
       
     });
   } else {
@@ -69,6 +70,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       matches: tournament.matches,
       readyToStart: false,
       bo: tournament.bo,
+      public: tournament.public,
     });
     console.log("Tournament created");
   }
@@ -86,6 +88,22 @@ export async function getTournamentsByUid(uid: string): Promise<Tournament[]> {
     if (tournamentList.hasOwnProperty(id)) {
       const tournament = tournamentList[id];
       if (tournament.uid === uid) {
+        tournaments.push(tournament);
+      }
+    }
+  }
+  return tournaments;
+}
+
+export async function getAllPublicTournaments(): Promise<Tournament[]> {
+  const tournamentRef = ref(db, "tournament");
+  const tournamentSnapshot = await get(tournamentRef);
+  const tournamentList = tournamentSnapshot.val() || {};
+  const tournaments: Tournament[] = [];
+  for (const id in tournamentList) {
+    if (tournamentList.hasOwnProperty(id)) {
+      const tournament = tournamentList[id];
+      if (tournament.public === "Public") {
         tournaments.push(tournament);
       }
     }
