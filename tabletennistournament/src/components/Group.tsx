@@ -18,7 +18,7 @@ function Group(props: Group) {
   const { name, players, seededPlayersIds } = props;
 
   return (
-    <Box width="100%" height=""  _hover={{ bg: "green.200" }} bg="#F5F0BB" rounded="lg">
+    <Box width="100%" height=""  _hover={{ bg: "green.200" }} bg="green.300" rounded="lg">
       <Center>
         <Text style={{ fontWeight: "bold" }}>Group {name}</Text>
       </Center>

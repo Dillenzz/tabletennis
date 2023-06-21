@@ -1,9 +1,26 @@
+import Player from "./Player";
+import Group from "./Group";
+import Match from "./Match";
+
+
 interface Class {
-    classId?: string;
-    tournamentId?: string;
-    className?: string;
-    players?: string[];
-    matches?: string[];
-    seed?: string;
+  uid?: string;
+  classId: number;
+  tournamentId: number;
+  name?: string;
+  players?: Player[] | undefined;
+  matches?: Match[];
+  format?: string;
+  numberInGroup?: number;
+  seeds?: number;
+  seededPlayersIds?: number[];
+  threeOrFive?: string;
+  groups?: Group[];
+  started?: boolean;
+  readyToStart?: boolean;
+  bo?: string;
+  startBracket?: boolean;
+  public?: string;
+  rating?: number;
 }
 export default Class;

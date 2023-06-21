@@ -1,5 +1,5 @@
 import {db} from "./firebaseinit";
-import { ref, set, get, update } from "firebase/database";
+import { ref, get} from "firebase/database";
 import Tournament from "../components/Tournament";
 
 // function that writes a tournament to the database
@@ -7,7 +7,12 @@ import Tournament from "../components/Tournament";
 
 // function that writes a tournament to the database
 // if tournament exists, update it
-async function writeTournament(tournament: Tournament): Promise<void> {
+
+
+
+
+
+/*async function writeTournament(tournament: Tournament): Promise<void> {
   const tournamentListRef = ref(db, "tournament");
   const tournamentListSnapshot = await get(tournamentListRef);
   const tournamentList = tournamentListSnapshot.val() || {};
@@ -37,10 +42,11 @@ async function writeTournament(tournament: Tournament): Promise<void> {
       dateFrom: tournament.dateFrom,
       dateTo: tournament.dateTo,
       location: tournament.location,
+      uid: tournament.uid,
+
       players: tournament.players,
       format: tournament.format,
       numberInGroup: tournament.numberInGroup,
-      uid: tournament.uid,
       seededPlayersIds: tournament.seededPlayersIds ? tournament.seededPlayersIds : [],
       threeOrFive: tournament.threeOrFive,
       groups: tournament.groups,
@@ -76,6 +82,7 @@ async function writeTournament(tournament: Tournament): Promise<void> {
   }
 }
 
+*/
 // gets the uid of the tournament to display for user
 export async function getTournamentsByUid(uid: string): Promise<Tournament[]> {
   
@@ -111,4 +118,4 @@ export async function getAllPublicTournaments(): Promise<Tournament[]> {
   return tournaments;
 }
 
-export default writeTournament;
+/*export default writeTournament;*/

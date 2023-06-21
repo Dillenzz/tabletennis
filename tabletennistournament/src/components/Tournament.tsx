@@ -1,8 +1,7 @@
 import { Box, Heading, Text, Center, Spacer } from "@chakra-ui/react";
-import Player from "./Player";
+
 import Class from "./Class";
-import Group from "./Group";
-import Match from "./Match";
+
 
 interface Tournament {
   uid?: string;
@@ -10,12 +9,14 @@ interface Tournament {
   dateFrom?: string;
   dateTo?: string;
   location?: string;
-  players?: Player[] | undefined;
+  tournamentId?: number;
+  classes?: Class[];
+
+
+  /*players?: Player[] | undefined;
   matches?: Match[];
   format?: string;
   numberInGroup?: number;
-  tournamentId?: number;
-  class?: Class[];
   seeds?: number;
   seededPlayersIds?: number[];
   threeOrFive?: string;
@@ -24,6 +25,7 @@ interface Tournament {
   readyToStart?: boolean;
   bo?: string;
   startBracket?: boolean;
+  */
   public?: string;
 }
 

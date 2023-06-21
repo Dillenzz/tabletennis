@@ -5,7 +5,10 @@ import logo from "./Free_Sample_By_Wix_adobe_express.svg";
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase";
 import { getAllPublicTournaments } from "./Backend/updateFirebase";
-import writeTournament from "./Backend/updateFirebase";
+import { loadTournamentClasses } from "./Backend/updateFirebase2";
+import { writeClass } from "./Backend/updateFirebase2";
+//import writeTournament from "./Backend/updateFirebase";
+import { writeTournament2 } from "./Backend/updateFirebase2";
 import deleteTournament from "./Backend/deleteTournament";
 // import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_create";
 //import login from "./Backend/auth_google_provider_create";
@@ -19,6 +22,7 @@ import Tournament from "./components/Tournament";
 import SeededPlayer from "./components/SeededPlayer";
 import Match from "./components/Match";
 import Group from "./components/Group";
+import Class from "./components/Class";
 
 import DisplayMatchScore from "./components/DisplayMatchScore";
 
@@ -82,61 +86,78 @@ function App() {
   const [tournamentDateFrom, setTournamentDateFrom] = useState("");
   const [tournamentDateTo, setTournamentDateTo] = useState("");
   const [tournamentLocation, setTournamentLocation] = useState("");
-  const [tournamentPlayers, setTournamentPlayers] = useState<Player[]>([]);
   const [publicOrPrivate, setPublicOrPrivate] = useState("Private");
-  //const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
-
-  // states for tournamentinfo
   const [tournamentName, setTournamentName] = useState("");
+
+  const [myTournaments, setMyTournaments] = useState<Tournament[]>([]);
+  const [currentTournament, setCurrentTournament] = useState<Tournament>();
+  //const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
+  const [tournamentId] = useState();
+
+  const [showClassInfo, setShowClassInfo] = useState(false);
+  const [classPlayers, setClassPlayers] = useState<Player[]>([]);
+  const [classStarted, setClassStarted] = useState(false);
+  const [classSeededPlayers, setClassSeededPlayers] = useState<number[]>([]);
+  const [currentClass, setCurrentClass] = useState<Class>();
+
+  // States for classes
   const [numberInGroup, setNumberInGroup] = useState(4); //TODO FIX DEFAULT VALUE
   const [tournamentType, setTournamentType] = useState("");
-  const [myTournaments, setMyTournaments] = useState<Tournament[]>([]);
   const [threeOrFive, setThreeOrFive] = useState("3");
-  const [currentTournament, setCurrentTournament] = useState<Tournament>();
-  const [tournamentSeededPlayersIds, setTournamentSeededPlayers] = useState<
-    number[]
-  >([]);
-  const [tournamentId] = useState();
   const [bo, setBo] = useState("Bo5");
 
   // define state variables for showing/hiding components
   const [showCreateTournament, setShowCreateTournament] = useState(false);
   const [showStartMenu, setShowStartMenu] = useState(true);
   const [showMyTournaments, setShowMyTournament] = useState(false);
-  const [showTournamentInfo, setShowTournamentInfo] = useState(false);
-  const [showPlayers, setShowPlayer] = useState(false);
+
   const [showOpenTournaments, setShowOpenTournaments] = useState(false);
   const [openTournaments, setOpenTournaments] = useState<Tournament[]>([]);
   //const [showEditTournament, setShowEditTournament] = useState(false);
 
-  const [showDrawTournament, setShowDrawTournament] = useState(false);
+  const [showPlayersAndGroups, setShowPlayersAndGroups] = useState(false);
 
   const [showTournamentButtons, setShowTournamentButtons] = useState(false);
   const [showUserName, setShowUserName] = useState(true);
 
-  // states for draw function
+  //
+  const [showTournamentOverview, setShowTournamentOverview] = useState(false);
 
   // for displaying tourament length
 
-  
   const [maxWidth, setMaxWidth] = useState(0);
+  const [maxOpenWidth, setMaxOpenWidth] = useState(0);
 
-  const [tournamentStarted, setTournamentStarted] = useState(false);
+  // const [tournamentStarted, setTournamentStarted] = useState(false);
   const [readyToStart, setReadyToStart] = useState(false);
 
   // States for showing groups and unreported matches
   const [showGroups, setShowGroups] = useState(true);
   const [showUnreportedMatches, setShowUnreportedMatches] = useState(false);
+  const [
+    showGroupsResultsAndUnreportedMatches,
+    setShowGroupsResultsAndUnreportedMatches,
+  ] = useState(false);
 
   // define state variables for player search
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isCreateClassModalOpen,
+    onOpen: onOpenCreateClassModal,
+    onClose: onCloseCreateClassModal,
+  } = useDisclosure();
 
   // modal for report score? or player score
   const {
     isOpen: isOpenScoreModal,
     onOpen: onOpenScoreModal,
     onClose: onCloseScoreModal,
+  } = useDisclosure();
+
+  const {
+    isOpen: isOpenAddPlayersModal,
+    onOpen: onOpenAddPlayersModal,
+    onClose: onCloseAddPlayersModal,
   } = useDisclosure();
 
   // States for loading the right tournaments for Uid
@@ -192,24 +213,20 @@ function App() {
   const [startBracket, setStartBracket] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [loadingOpenTournaments, setLoadingOpenTournaments] = useState(false);
 
   const initialRef = useRef(null);
   const finalRef = useRef(null);
   const inputSetRef = useRef(null);
 
-  // Call the function on startup and when the state variable changes
-  /*useEffect(() => {
-    const intervalId = setInterval(() => {
-      loadTournaments();
-    }, 5000); // fetch data every 5 seconds
-    return () => clearInterval(intervalId);
-  }, [uid]);
-  */
+  // CLASS VARIABLES
 
-  /*useEffect(() => {
-    setSentPlayerIds(sentPlayerIds);
-  }, [sentPlayerIds]);
-  */
+  // const [myClasses, setMyClasses] = useState<Class[]>([]);
+  const [tournamentClasses, setTournamentClasses] = useState<Class[]>([]);
+  const [classId, setClassId] = useState(-1);
+  const [publicOrPrivateClass, setPublicOrPrivateClass] = useState("public");
+  const [className, setClassName] = useState("");
+
   // save or update the tournament to Firebase
 
   useEffect(() => {
@@ -229,7 +246,10 @@ function App() {
     fetchData();
   }, []);
 
+  /** 
+
   const createTournament = () => {
+    // after creating a tournament, show the start menu
     setShowStartMenu(true);
     setShowCreateTournament(false);
 
@@ -239,6 +259,7 @@ function App() {
       dateFrom: tournamentDateFrom,
       dateTo: tournamentDateTo,
       location: tournamentLocation,
+
       format: tournamentType,
       numberInGroup: numberInGroup,
       threeOrFive: threeOrFive,
@@ -260,14 +281,72 @@ function App() {
     setTournamentDateFrom("");
     setTournamentDateTo("");
     setTournamentLocation("");
-    setTournamentPlayers([]);
+    //setTournamentPlayers([]);
 
     //setAllMatchesInTournament([]);
+    setCurrentTournament(newTournament);
+  }; */
+
+  const createTournament_2 = () => {
+    setShowStartMenu(true);
+    setShowCreateTournament(false);
+
+    const newTournament: Tournament = {
+      uid: uid,
+      name: tournamentName,
+      dateFrom: tournamentDateFrom,
+      dateTo: tournamentDateTo,
+      location: tournamentLocation,
+      public: publicOrPrivate,
+      tournamentId: tournamentId,
+    };
+
+    const updatedTournaments = [...myTournaments, newTournament];
+    writeTournament2(newTournament); // Write to Firebase
+    setMyTournaments(updatedTournaments);
+    calculateMyTournamentLength(updatedTournaments);
+    setCurrentTournament(newTournament);
+    setTournamentDateFrom("");
+    setTournamentDateTo("");
+    setTournamentLocation("");
     setTournamentName("");
+  };
+
+  async function createClass(tournament: Tournament) {
+    if (!tournament.tournamentId) {
+      return; // Handle the case when tournamentId is null
+    }
+
+    const newClass: Class = {
+      classId: -1,
+      uid: uid,
+      name: className,
+      format: tournamentType,
+      numberInGroup: numberInGroup,
+      threeOrFive: threeOrFive,
+      tournamentId: tournament.tournamentId,
+      players: [],
+      seededPlayersIds: [],
+      groups: [],
+      started: false,
+      matches: [],
+      readyToStart: false,
+      bo: bo,
+      public: publicOrPrivateClass,
+    };
+    const updatedClasses = [...tournamentClasses, newClass];
+
+    const classID = await writeClass(newClass); // Write to Firebase
+    console.log(classID, "classID");
+    setClassId(classID);
+    setTournamentClasses(updatedClasses);
+    //console.log(tournamentClasses, "tournamentClasses");
+    setClassPlayers([]);
+    setClassName("");
     setNumberInGroup(4);
     setTournamentType("");
-    setCurrentTournament(newTournament);
-  };
+  }
+
   // function to load players in search
   const handleNameSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchName(event.target.value);
@@ -301,13 +380,7 @@ function App() {
       setTournamentDateFrom("");
       setTournamentDateTo("");
       setTournamentLocation("");
-      setTournamentPlayers([]);
       setTournamentName("");
-      setNumberInGroup(4);
-      setTournamentType("");
-      setTournamentSeededPlayers([]);
-
-      setTournamentStarted(false);
     } else if (user !== null) {
       setUid(user.uid);
     } else {
@@ -338,6 +411,14 @@ function App() {
     setPublicOrPrivate(value);
   };
 
+  const handlePublicOrPrivateClass = (value: string) => {
+    setPublicOrPrivateClass(value);
+  };
+
+  const handleClassNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setClassName(event.target.value);
+  };
+
   const handleBoChange = (value: string) => {
     setBo(value);
   };
@@ -352,17 +433,20 @@ function App() {
     setShowMyTournament(false);
     setShowStartMenu(true);
     setShowCreateTournament(false);
-    setShowTournamentInfo(false);
-    setShowPlayer(false);
+    setShowClassInfo(false);
+    setShowPlayersAndGroups(false);
+    setShowTournamentOverview(false);
+    setShowGroupsResultsAndUnreportedMatches(false);
     //setShowEditTournament(false);
-    setShowDrawTournament(false);
+
     setShowTournamentButtons(false);
-    setTournamentStarted(false);
+
     setShowGroupResult(false);
     setShowGroups(false);
+
     setShowTournamentButtons(false);
-    setTournamentPlayers([]);
-    setTournamentSeededPlayers([]);
+
+    setClassSeededPlayers([]);
     setShowOpenTournaments(false);
 
     //setAllMatchesInTournament([]);
@@ -373,22 +457,24 @@ function App() {
     setTournamentType("");
     setShowUnreportedMatches(false);
     setShowUserName(true);
+
+    setUnreportedMatches([]);
   };
   // go to tournament info
   const handleGoToTournaments = () => {
     setShowMyTournament(true);
     setShowStartMenu(false);
     setShowCreateTournament(false);
-    setShowTournamentInfo(false);
-    setShowPlayer(false);
+    setShowClassInfo(false);
+    setShowPlayersAndGroups(false);
     setShowTournamentButtons(false);
-    setShowDrawTournament(false);
     setShowGroups(false);
     setShowTournamentButtons(false);
     setShowUserName(true);
     setShowGroups(false);
     setShowUnreportedMatches(false);
     setShowGroupResult(false);
+    setShowGroupsResultsAndUnreportedMatches(false);
     loadTournaments();
   };
   // login with google
@@ -417,11 +503,12 @@ function App() {
   }
 
   // go to tournament page and load tournament info
-  const handleTournamentInfo = (tournament: Tournament) => {
+  /**const handleTournamentInfo = (tournament: Tournament) => {
     // console.log(tournament);
     setCurrentTournament(tournament);
     setTournamentPlayers(tournament.players ? tournament.players : []);
     setTournamentStarted(tournament.started ? tournament.started : false);
+    setShowTournamentOverview(false);
     // console.log(tournament.seededPlayersIds);
     setTournamentSeededPlayers(
       tournament.seededPlayersIds ? tournament.seededPlayersIds : []
@@ -455,6 +542,53 @@ function App() {
 
     return nameMatch && clubMatch;
   });
+  */
+
+  const handleGoToClassInfo = (myClass: Class) => {
+    setShowClassInfo(true);
+
+    setCurrentClass(myClass);
+    setClassPlayers(myClass.players ? myClass.players : []);
+    setClassStarted(myClass.started ? myClass.started : false);
+    setShowTournamentOverview(false);
+    setClassSeededPlayers(
+      myClass.seededPlayersIds ? myClass.seededPlayersIds : []
+    );
+    setShowTournamentButtons(true);
+    setShowUserName(false);
+
+    setShowPlayersAndGroups(true);
+    setSentPlayerIds(
+      myClass.players
+        ? myClass.players
+            .filter((player) => player.id !== undefined)
+            .map((player) => player.id as number)
+        : []
+    );
+  };
+  const filteredPlayers = realPlayers.filter((player) => {
+    const nameMatch = player.name
+      .toLowerCase()
+      .includes(searchName.toLowerCase());
+    const clubMatch = player.club
+      .toLowerCase()
+      .includes(searchClub.toLowerCase());
+
+    return nameMatch && clubMatch;
+  });
+
+  async function handleTournamentOverview(tournament: Tournament) {
+    setShowTournamentOverview(true);
+    //setShowClassInfo(false);
+    setShowMyTournament(false);
+    setCurrentTournament(tournament);
+    const tournamentClasses = await loadTournamentClasses(
+      tournament.tournamentId!
+    );
+    setTournamentClasses(tournamentClasses);
+    console.log(tournamentClasses);
+  }
+
   // add player to tournament
   async function addPlayerToTournament(player: Player) {
     console.log(player);
@@ -465,11 +599,11 @@ function App() {
       return;
     }
 
-    const newPlayers = [...tournamentPlayers, player];
-    setTournamentPlayers(newPlayers);
-    if (currentTournament) {
-      setCurrentTournament({
-        ...currentTournament,
+    const newPlayers = [...classPlayers, player];
+    setClassPlayers(newPlayers);
+    if (currentClass) {
+      setCurrentClass({
+        ...currentClass,
         players: newPlayers,
       });
     }
@@ -477,48 +611,46 @@ function App() {
   }
   // save tournament to firebase
   function saveTournament() {
-    if (currentTournament) {
-      const newTournament: Tournament = {
-        ...currentTournament,
-        players: currentTournament.players ? currentTournament.players : [],
-        seededPlayersIds: currentTournament.seededPlayersIds
-          ? currentTournament.seededPlayersIds
+    if (currentClass) {
+      console.log(currentClass.players);
+      const newClass: Class = {
+        ...currentClass,
+        classId: classId ? classId : -1,
+        players: currentClass.players ? currentClass.players : [],
+        seededPlayersIds: currentClass.seededPlayersIds
+          ? currentClass.seededPlayersIds
           : [],
         started: false,
-        groups: currentTournament.groups ? currentTournament.groups : [],
-        matches: currentTournament.matches ? currentTournament.matches : [],
+        groups: currentClass.groups ? currentClass.groups : [],
+        matches: currentClass.matches ? currentClass.matches : [],
         uid: uid,
       };
 
-      writeTournament(newTournament);
-      setCurrentTournament(newTournament);
+      writeClass(newClass);
+      setCurrentClass(newClass);
     }
   }
   // delete player from tournament
   function deletePlayerFromTournament(player: Player) {
-    const newPlayers = tournamentPlayers.filter((p) => p.id !== player.id);
-
-    setTournamentPlayers(newPlayers);
+    const newPlayers = classPlayers.filter((p) => p.id !== player.id);
+    setClassPlayers(newPlayers);
     setSentPlayerIds(sentPlayerIds.filter((id) => id !== player.id));
-    if (currentTournament) {
-      setCurrentTournament({
-        ...currentTournament,
+    if (currentClass) {
+      setCurrentClass({
+        ...currentClass,
         players: newPlayers,
       });
     }
   }
 
   // calculate how many players to seed according to amount of players
-  function handleSetTournamentSeededPlayers(
-    players: Player[],
-    seeded: boolean
-  ) {
+  function handleSetClassSeededPlayers(players: Player[], seeded: boolean) {
     //console.log(players);
     if (seeded == false) {
-      setTournamentSeededPlayers([]);
-      currentTournament &&
-        setCurrentTournament({
-          ...currentTournament,
+      setClassSeededPlayers([]);
+      currentClass &&
+        setCurrentClass({
+          ...currentClass,
           seededPlayersIds: [],
         });
     }
@@ -544,10 +676,10 @@ function App() {
     const seededPlayers = players.slice(0, numSeeds);
     const seededPlayersIds = seededPlayers.map((player) => player.id as number);
 
-    setTournamentSeededPlayers(seededPlayersIds);
-    currentTournament &&
-      setCurrentTournament({
-        ...currentTournament,
+    setClassSeededPlayers(seededPlayersIds);
+    currentClass &&
+      setCurrentClass({
+        ...currentClass,
         seededPlayersIds: seededPlayersIds,
       });
   }
@@ -566,18 +698,14 @@ function App() {
 
   // sets states to display the drawn groups
   function handleDrawTournament() {
-    if (
-      currentTournament &&
-      currentTournament.players &&
-      currentTournament.numberInGroup
-    ) {
-      if (currentTournament.players?.length === 0) {
+    if (currentClass && currentClass.players && currentClass.numberInGroup) {
+      if (currentClass.players?.length === 0) {
         alert("Please add players to the tournament");
         setReadyToStart(false);
         return;
       } else if (
-        currentTournament.players?.length < 4 &&
-        currentTournament.numberInGroup === 4
+        currentClass.players?.length < 4 &&
+        currentClass.numberInGroup === 4
       ) {
         alert("Please add atleast 4 players to the tournament");
         setReadyToStart(false);
@@ -588,38 +716,39 @@ function App() {
       setReadyToStart(false);
       return;
     }
-    if (currentTournament?.seededPlayersIds === undefined) {
+    if (currentClass?.seededPlayersIds === undefined) {
       if (currentTournament) {
-        const newTournament: Tournament = {
-          ...currentTournament,
+        const newClass: Class = {
+          ...currentClass,
+          classId: classId ? classId : -1,
           groups: [],
           seededPlayersIds: [],
           matches: [],
         };
         console.log("before error");
-        writeTournament(newTournament);
+        writeClass(newClass);
         console.log("after error");
-        setCurrentTournament(newTournament);
-        drawTournament(newTournament);
+        setCurrentTournament(newClass);
+        drawTournament(newClass);
       }
     } else {
-      drawTournament(currentTournament);
+      drawTournament(currentClass);
     }
     //saveTournament();
 
     setShowMyTournament(false);
     setShowStartMenu(false);
     setShowCreateTournament(false);
-    setShowTournamentInfo(true);
+    setShowClassInfo(true);
     //setShowEditTournament(false);
-    setShowDrawTournament(true);
+    setShowPlayersAndGroups(true);
   }
 
   // this fuction is a disaster but it takes the amount of players and first iteraters and
   // makes groups, we then use these group sizes to generate the real groups when we know our desired size
   // it uses 3 aux functions to determine if the draw is legal otherwise it draws again
   // infinite loop should be fixed if it hangs then call me
-  function drawTournament(tournament: Tournament): void {
+  function drawTournament(myClass: Class): void {
     console.log("draw tournament");
     let noGroups = 0;
     let no3Groups = 0;
@@ -627,77 +756,73 @@ function App() {
     let groups: Player[][] = [];
     // divide players into groups based on class before drawing tournament groups
     //players.class
-    if (tournament.seededPlayersIds === undefined) {
-      setTournamentSeededPlayers([]);
-      currentTournament &&
-        setCurrentTournament({
-          ...currentTournament,
+    if (myClass.seededPlayersIds === undefined) {
+      setClassSeededPlayers([]);
+      currentClass &&
+        setCurrentClass({
+          ...currentClass,
           seededPlayersIds: [],
         });
     }
 
-    if (
-      tournament &&
-      tournament.players &&
-      tournament.seededPlayersIds !== undefined
-    ) {
-      console.log("tournament. player length", tournament.players.length);
-      if (tournament.threeOrFive === "3") {
-        if (tournament.players.length % 4 != 0) {
-          noGroups = Math.floor(tournament?.players?.length / 4) + 1;
+    if (myClass && myClass.players && myClass.seededPlayersIds !== undefined) {
+      console.log("tournament. player length", myClass.players.length);
+      if (myClass.threeOrFive === "3") {
+        if (myClass.players.length % 4 != 0) {
+          noGroups = Math.floor(myClass?.players?.length / 4) + 1;
 
-          if (tournament.players.length == 9) {
+          if (myClass.players.length == 9) {
             noGroups = 2;
             no5Groups = 1;
           }
-          if (tournament.players.length == 5) {
+          if (myClass.players.length == 5) {
             noGroups = 1;
             no5Groups = 1;
           }
 
-          if (tournament.players.length == 7) {
+          if (myClass.players.length == 7) {
             noGroups = 2;
             no3Groups = 0;
           }
         } else {
-          noGroups = Math.floor(tournament?.players?.length / 4);
+          noGroups = Math.floor(myClass?.players?.length / 4);
         }
         setNumberInGroup(noGroups);
-        if (tournament.players.length % 4 == 1) {
+        if (myClass.players.length % 4 == 1) {
           // console.log("3 here 1");
 
           no3Groups = 3;
           // console.log("no3Groups", no3Groups);
         }
 
-        if (tournament.players.length % 4 == 2) {
+        if (myClass.players.length % 4 == 2) {
           no3Groups = 2;
         }
 
-        if (tournament.players.length % 4 == 3) {
+        if (myClass.players.length % 4 == 3) {
           no3Groups = 1;
         }
-      } else if (tournament.threeOrFive === "5") {
-        noGroups = Math.floor(tournament?.players?.length / 4);
+      } else if (myClass.threeOrFive === "5") {
+        noGroups = Math.floor(myClass?.players?.length / 4);
         setNumberInGroup(noGroups);
 
-        if (tournament.players.length % 4 == 1) {
+        if (myClass.players.length % 4 == 1) {
           no5Groups = 1;
         }
-        if (tournament.players.length % 4 == 2) {
+        if (myClass.players.length % 4 == 2) {
           no5Groups = 2;
         }
-        if (tournament.players.length % 4 == 3) {
+        if (myClass.players.length % 4 == 3) {
           no5Groups = 3;
         }
       }
       // assign the seeded players to the groups in order to
-      const unseededPlayers = tournament.players.filter(
-        (player) => !tournament.seededPlayersIds?.includes(player.id)
+      const unseededPlayers = myClass.players.filter(
+        (player) => !myClass.seededPlayersIds?.includes(player.id)
       );
 
-      const unseededPlayers2 = tournament.players.filter(
-        (player) => !tournament.seededPlayersIds?.includes(player.id)
+      const unseededPlayers2 = myClass.players.filter(
+        (player) => !myClass.seededPlayersIds?.includes(player.id)
       );
 
       // ensure that they are not in the same group
@@ -705,12 +830,10 @@ function App() {
         groups.push([]);
       }
 
-      if (tournament.seededPlayersIds && tournament.players) {
-        for (let i = 0; i < tournament.seededPlayersIds.length; i++) {
-          const seededPlayerId = tournament.seededPlayersIds[i];
-          const player = tournament.players.find(
-            (p) => p.id === seededPlayerId
-          );
+      if (myClass.seededPlayersIds && myClass.players) {
+        for (let i = 0; i < myClass.seededPlayersIds.length; i++) {
+          const seededPlayerId = myClass.seededPlayersIds[i];
+          const player = myClass.players.find((p) => p.id === seededPlayerId);
           if (player) {
             groups[i % noGroups]?.push(player);
             //console.log(groups);
@@ -740,23 +863,23 @@ function App() {
       for (const clubArray of clubArrays) {
         for (const player of clubArray) {
           if (no5Groups === 0) {
-            if (iterations < noGroups - tournament.seededPlayersIds.length) {
+            if (iterations < noGroups - myClass.seededPlayersIds.length) {
               groupIndex =
                 iterations +
                 noGroups -
-                (noGroups - tournament.seededPlayersIds.length);
+                (noGroups - myClass.seededPlayersIds.length);
             }
-            if (iterations === noGroups - tournament.seededPlayersIds.length) {
+            if (iterations === noGroups - myClass.seededPlayersIds.length) {
               groupIndex = no3Groups;
             }
           } else if (no5Groups > 0) {
-            if (iterations < noGroups - tournament.seededPlayersIds.length) {
+            if (iterations < noGroups - myClass.seededPlayersIds.length) {
               groupIndex =
                 iterations +
                 noGroups -
-                (noGroups - tournament.seededPlayersIds.length);
+                (noGroups - myClass.seededPlayersIds.length);
             }
-            if (iterations === noGroups - tournament.seededPlayersIds.length) {
+            if (iterations === noGroups - myClass.seededPlayersIds.length) {
               groupIndex = noGroups - no5Groups;
             }
           }
@@ -776,25 +899,23 @@ function App() {
 
       groups = [];
 
-      if (tournament.players.length == 6) {
+      if (myClass.players.length == 6) {
         groupLengths = [3, 3];
       }
 
-      if (tournament.players.length < 6) {
+      if (myClass.players.length < 6) {
         noGroups = 1;
-        groupLengths = [tournament.players.length];
+        groupLengths = [myClass.players.length];
       }
 
       for (let i = 0; i < noGroups; i++) {
         groups.push([]);
       }
 
-      if (tournament.seededPlayersIds && tournament.players) {
-        for (let i = 0; i < tournament.seededPlayersIds.length; i++) {
-          const seededPlayerId = tournament.seededPlayersIds[i];
-          const player = tournament.players.find(
-            (p) => p.id === seededPlayerId
-          );
+      if (myClass.seededPlayersIds && myClass.players) {
+        for (let i = 0; i < myClass.seededPlayersIds.length; i++) {
+          const seededPlayerId = myClass.seededPlayersIds[i];
+          const player = myClass.players.find((p) => p.id === seededPlayerId);
           if (player) {
             groups[i % noGroups]?.push(player);
             //console.log(groups);
@@ -874,28 +995,28 @@ function App() {
 
       addGroups = setGroupsForTournament(groups);
     } else {
-      drawTournament(tournament);
+      drawTournament(myClass);
       return;
     }
 
     // console.log(tournamentGroups);
 
-    if (currentTournament) {
-      setCurrentTournament({
-        ...tournament,
+    if (currentClass) {
+      setCurrentClass({
+        ...myClass,
         groups: addGroups,
         readyToStart: true,
         matches: [],
       });
-      writeTournament({
-        ...tournament,
+      writeClass({
+        ...myClass,
         groups: addGroups,
         readyToStart: true,
         matches: [],
       });
     }
-    setShowDrawTournament(false);
-    setShowDrawTournament(true);
+    setShowPlayersAndGroups(false);
+    setShowPlayersAndGroups(true);
 
     //console.log(currentTournament?.groups);
   }
@@ -1034,27 +1155,29 @@ function App() {
     */
 
   // function put tournament in start state after draw has been done.
-  function handleStartTournament() {
-    setShowTournamentInfo(false);
-    setShowDrawTournament(false);
-    setShowPlayer(false);
+  function handleStartClass() {
+    setShowGroupsResultsAndUnreportedMatches(true);
+    setShowClassInfo(false);
+    setShowTournamentOverview(false);
+    setShowPlayersAndGroups(false);
     setShowMyTournament(false);
-    setShowTournamentButtons(true);
+    setShowTournamentButtons(false);
     setCurrentTournament(currentTournament);
-    const matches = assignMatchesInTournament(currentTournament);
-    setTournamentStarted(true);
+    setCurrentClass(currentClass);
+    const matches = assignMatchesInTournament(currentClass);
+    //setClassStarted(true);
     setShowUnreportedMatches(false);
     setShowGroups(true);
 
-    if (currentTournament) {
-      setCurrentTournament({
-        ...currentTournament,
+    if (currentClass) {
+      setCurrentClass({
+        ...currentClass,
         started: true,
         readyToStart: false,
         matches: matches,
       });
-      writeTournament({
-        ...currentTournament,
+      writeClass({
+        ...currentClass,
         started: true,
         readyToStart: false,
         matches: matches,
@@ -1065,18 +1188,18 @@ function App() {
   }
 
   // from the groups sets matches in every group according to order
-  function assignMatchesInTournament(tournament: Tournament | undefined) {
+  function assignMatchesInTournament(myClass: Class | undefined) {
     console.log("assignMatchesInTournament");
-    if (tournament) {
+    if (myClass) {
       console.log("inside if statement");
       let matchIdCounter = 1; // Variable to track match IDs
       const matches: Match[] = [];
 
-      if (tournament.groups) {
+      if (myClass.groups) {
         console.log("inside 2nd if statement");
-        console.log("tournament.groups", tournament.groups);
-        for (const group of tournament.groups) {
-          console.log("tournament.groups", tournament.groups);
+        console.log("myClass.groups", myClass.groups);
+        for (const group of myClass.groups) {
+          console.log("myClass.groups", myClass.groups);
           const newMatches = createMatchesForGroup(group, matchIdCounter);
           matchIdCounter += newMatches.length; // Update the match ID counter
           matches.push(...newMatches);
@@ -1086,7 +1209,7 @@ function App() {
       console.log("matches", matches);
       return matches;
     }
-    //console.log("currentTourbament.matches", currentTournament?.matches);
+    //console.log("myClass.matches", myClass?.matches);
   }
 
   // aux function to create matches in every group
@@ -1300,16 +1423,16 @@ function App() {
         player2lostPoints: wonPointsPlayer1,
       };
 
-      if (currentTournament !== null && currentTournament !== undefined) {
-        const updatedTournament = {
-          ...currentTournament,
-          matches: currentTournament.matches?.map((tournamentMatch) => {
+      if (currentClass !== null && currentClass !== undefined) {
+        const updatedClass = {
+          ...currentClass,
+          matches: currentClass.matches?.map((tournamentMatch) => {
             if (tournamentMatch.matchId === currentMatch.matchId) {
               return match;
             }
             return tournamentMatch;
           }),
-          groups: currentTournament.groups?.map((group) => {
+          groups: currentClass.groups?.map((group) => {
             const updatedMatches = group.matches?.map((groupMatch) => {
               if (groupMatch.matchId === currentMatch.matchId) {
                 return match;
@@ -1324,14 +1447,15 @@ function App() {
           }),
         };
 
-        console.log(updatedTournament);
-        writeTournament(updatedTournament);
-        setCurrentTournament(updatedTournament);
+        console.log(updatedClass);
+        writeClass(updatedClass);
+        setCurrentClass(updatedClass);
 
         clearMatchScore();
       }
     }
   }
+
   //clears all the match scores to report the next match
   function clearMatchScore() {
     setSet1Player1(0);
@@ -1363,8 +1487,8 @@ function App() {
   function loadReportPlayers(matchID: number) {
     console.log("loadReportPlayers");
     setMatchIdError(0);
-    if (currentTournament !== undefined && currentTournament !== null) {
-      const match = currentTournament.matches?.find(
+    if (currentClass !== undefined && currentClass !== null) {
+      const match = currentClass.matches?.find(
         (match) => match.matchId === matchID
       );
 
@@ -1389,8 +1513,8 @@ function App() {
   function handleCheckGroupStatus() {
     const matchIds: Match[] = []; // Array to store the matchIds
 
-    if (currentTournament) {
-      const groups = currentTournament.groups;
+    if (currentClass) {
+      const groups = currentClass.groups;
 
       if (groups) {
         groups.forEach((group) => {
@@ -1421,8 +1545,8 @@ function App() {
   // displays the scores for every player in every match
   function handleLookUpPlayerScore(playerToDisplay: Player) {
     console.log("handleLookUpPlayerScore");
-    if (currentTournament !== undefined && currentTournament !== null) {
-      const player = currentTournament.players?.find(
+    if (currentClass !== undefined && currentClass !== null) {
+      const player = currentClass.players?.find(
         (player) => player.id === playerToDisplay.id
       );
 
@@ -1438,11 +1562,11 @@ function App() {
       return;
     }
 
-    if (currentTournament !== undefined && currentTournament !== null) {
+    if (currentClass !== undefined && currentClass !== null) {
       if (unreportedMatches.length === 0) {
         setStartBracket(true);
-        writeTournament({
-          ...currentTournament,
+        writeClass({
+          ...currentClass,
           startBracket: true,
         });
         //checkGroupAdvancement();
@@ -1475,41 +1599,43 @@ function App() {
     setShowOpenTournaments(true);
     setShowMyTournament(false);
     setShowCreateTournament(false);
-    setShowMyTournament(false);
+
     setShowGroups(false);
     setShowUnreportedMatches(false);
     setShowGroupResult(false);
     loadOpenTournaments();
     setShowStartMenu(false);
+    setLoadingOpenTournaments(true);
   }
 
   async function loadOpenTournaments() {
-
     const openTournaments = await getAllPublicTournaments();
+    calculatePublicTournamentLength(openTournaments);
     setOpenTournaments(openTournaments);
     console.log(openTournaments);
-    calculatePublicTournamentLength(openTournaments);
+    setLoadingOpenTournaments(false);
   }
 
   function calculateMyTournamentLength(tournaments: Tournament[]) {
     const lengths = tournaments
       .filter((tournament) => tournament.uid === uid)
       .map((tournament) => tournament.name?.length || 0);
-    
-    setMaxWidth(Math.max(...lengths) * 20);
+    setMaxWidth(Math.max(...lengths) * 18);
   }
 
   function calculatePublicTournamentLength(tournaments: Tournament[]) {
     const lengths = tournaments
       .filter((tournament) => tournament.public === "Public")
       .map((tournament) => tournament.name?.length || 0);
-    
-    setMaxWidth(Math.max(...lengths) * 10);
+    3;
+    setMaxOpenWidth(Math.max(...lengths) * 18);
   }
 
   //C1D0B5 color bg
+
+  // App start
   return (
-    <Box maxHeight="100vh" overflowY={"auto"} minWidth={"100vw"}>
+    <Box maxHeight="100vh" overflowY={"auto"} minWidth="100vw">
       <Flex
         bg="white"
         minHeight="100vh"
@@ -1554,13 +1680,13 @@ function App() {
             </Center>
             {showUserName && (
               <Box mt={4}>
-                {userName && <Text fontSize="20">Logged in as {userName}</Text>}
+                {userName && <Text fontSize="14">Logged in as {userName}</Text>}
               </Box>
             )}
 
             {showStartMenu && (
               <>
-                <Box mt={4}>
+                <Box mt={2}>
                   <img
                     src={logo}
                     alt="SVG Image"
@@ -1568,13 +1694,13 @@ function App() {
                   />
                 </Box>
 
-                <HStack mt={4}>
+                <Flex>
                   {userLoggedIn && (
                     <Box>
                       <Button
                         bg="#F5F0BB"
                         onClick={() => handleCreateTournament()}
-                        style={{ marginRight: "0.5em" }}
+                        margin={0.5}
                       >
                         New Tournament
                       </Button>
@@ -1582,7 +1708,7 @@ function App() {
                       <Button
                         bg="#F5F0BB"
                         onClick={() => handleShowMyTournaments()}
-                        style={{ marginRight: "0.5em" }}
+                        margin={0.5}
                       >
                         My tournaments
                       </Button>
@@ -1593,12 +1719,12 @@ function App() {
                     <Button
                       bg="#F5F0BB"
                       onClick={() => handleShowOpenTournaments()}
-                      style={{ marginRight: "0.5em" }}
+                      margin={0.5}
                     >
                       Open tournaments
                     </Button>
                   </Box>
-                </HStack>
+                </Flex>
               </>
             )}
 
@@ -1614,7 +1740,7 @@ function App() {
                       <Box key={`${tournament.tournamentId}-${index}`}>
                         <Center>
                           <Box
-                            onClick={() => handleTournamentInfo(tournament)}
+                            onClick={() => handleTournamentOverview(tournament)}
                             _hover={{ bg: "#A2CDB0", cursor: "pointer" }}
                             rounded="lg"
                             bg="#DBDFAA"
@@ -1746,11 +1872,15 @@ function App() {
                         </RadioGroup>
                       </Center>
                       <Center>
-                        <Button bg={"#F5F0BB"} m={4} onClick={onOpen}>
-                          Tournament type
+                        <Button
+                          bg={"#F5F0BB"}
+                          m={4}
+                          onClick={() => createTournament_2()}
+                        >
+                          Done
                         </Button>
                       </Center>
-
+                      {/** 
                       <Modal
                         initialFocusRef={initialRef}
                         finalFocusRef={finalRef}
@@ -1761,10 +1891,11 @@ function App() {
                         <ModalContent>
                           <ModalHeader>Create your tournament</ModalHeader>
                           <ModalCloseButton />
-                          <ModalBody pb={4}>
+                          <ModalBody pb={8}>
                             <FormControl>
                               <FormLabel>Type</FormLabel>
                               <Select
+                                borderRadius="md"
                                 placeholder="Select option"
                                 onChange={handleTournamentType}
                               >
@@ -1864,6 +1995,7 @@ function App() {
                           </ModalFooter>
                         </ModalContent>
                       </Modal>
+                            */}
                     </FormControl>
                   </Stack>
                 </Center>
@@ -1871,7 +2003,7 @@ function App() {
             )}
 
             {showOpenTournaments && (
-              <Box>
+              <Box maxWidth="100vw">
                 {openTournaments && (
                   <Box m={4}>
                     <Center>
@@ -1879,12 +2011,21 @@ function App() {
                     </Center>
                   </Box>
                 )}
+                {loadingOpenTournaments && (
+                  <Center>
+                    <Text>Tournaments are loading, please be patient</Text>
+                    <Spinner size="xl" />
+                  </Center>
+                )}
                 {openTournaments.map((tournament: Tournament) => {
                   return (
-                    <Box m={4}
+                    <Box
+                      m={4}
                       borderRadius="md"
                       bg={"#F7E1AE"}
                       key={tournament.tournamentId}
+                      p={4}
+                      minWidth={`${maxOpenWidth}px`}
                     >
                       <Center>
                         <Stack>
@@ -1928,7 +2069,187 @@ function App() {
               </Box>
             )}
 
-            {showTournamentInfo && !tournamentStarted && (
+            {showTournamentOverview && (
+              <Center>
+                <Box maxWidth="100vw">
+                  {currentTournament && (
+                    <Center>
+                      <Box>
+                        <Heading m={4} fontWeight="bold">
+                          {currentTournament.name}
+                        </Heading>
+                      </Box>
+                    </Center>
+                  )}
+
+                  <Box>
+                    <Center>
+                      <Button bg="#F5F0BB" onClick={onOpenCreateClassModal}>
+                        New class
+                      </Button>
+                    </Center>
+                  </Box>
+
+                  <FormControl>
+                    <Modal
+                      initialFocusRef={initialRef}
+                      finalFocusRef={finalRef}
+                      isOpen={isCreateClassModalOpen}
+                      onClose={onCloseCreateClassModal}
+                    >
+                      <ModalOverlay />
+                      <ModalContent>
+                        <ModalHeader>Create new class</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody pb={8}>
+                          <FormControl isRequired>
+                            <FormLabel>Name</FormLabel>
+                            <Input
+                              placeholder="Classname"
+                              value={className}
+                              onChange={handleClassNameChange}
+                            />
+                          </FormControl>
+                          <FormControl>
+                            <FormLabel>Type</FormLabel>
+                            <Select
+                              borderRadius="md"
+                              placeholder="Select option"
+                              onChange={handleTournamentType}
+                            >
+                              <option value="groups">Groups</option>
+                              <option value="bracket">Bracket</option>
+                              <option value="teamMatch">Team Match</option>
+                            </Select>
+                          </FormControl>
+                          {tournamentType === "groups" && (
+                            <FormControl>
+                              <FormLabel>Groups of</FormLabel>
+                              <NumberInput
+                                value={numberInGroup}
+                                onChange={handleNumberChange}
+                                placeholder="4"
+                                max={20}
+                                min={3}
+                              >
+                                <NumberInputField />
+                                <NumberInputStepper>
+                                  <NumberIncrementStepper />
+                                  <NumberDecrementStepper />
+                                </NumberInputStepper>
+                              </NumberInput>
+                              <FormLabel as="legend">
+                                Uneven amount of players into groups of 3 or 5?
+                              </FormLabel>
+                              <RadioGroup
+                                onChange={handleRadioChange}
+                                value={threeOrFive}
+                                defaultValue="3"
+                              >
+                                <HStack spacing="24px">
+                                  <Radio value="3">3</Radio>
+                                  <Radio value="5">5</Radio>
+                                </HStack>
+                              </RadioGroup>
+                              <FormHelperText>
+                                Only applies if groups of size 4
+                              </FormHelperText>
+
+                              <FormLabel as="legend">
+                                Number of sets in group
+                              </FormLabel>
+                              <RadioGroup
+                                onChange={handleBoChange}
+                                value={bo}
+                                defaultValue="Bo5"
+                              >
+                                <HStack spacing="24px">
+                                  <Radio value="Bo3">Bo3</Radio>
+                                  <Radio value="Bo5">Bo5</Radio>
+                                  <Radio value="Bo7">Bo7</Radio>
+                                </HStack>
+                              </RadioGroup>
+                              <FormLabel as="legend">
+                                Public or Private
+                              </FormLabel>
+                              <RadioGroup
+                                onChange={handlePublicOrPrivateClass}
+                                value={publicOrPrivateClass}
+                                defaultValue="Private"
+                              >
+                                <HStack spacing="24px">
+                                  <Radio value="Public">Public</Radio>
+                                  <Radio value="Private">Private</Radio>
+                                </HStack>
+                              </RadioGroup>
+                            </FormControl>
+                          )}
+                          {tournamentType === "bracket" && (
+                            <FormControl>
+                              <RadioGroup defaultValue="Single elimination">
+                                <HStack spacing="24px">
+                                  <Radio value="Single elimination">
+                                    Single elimination
+                                  </Radio>
+                                  <Radio value="Double elimination">
+                                    Double elimination
+                                  </Radio>
+                                </HStack>
+                              </RadioGroup>
+                            </FormControl>
+                          )}
+
+                          {tournamentType === "teamMatch" && (
+                            <FormControl>
+                              <RadioGroup defaultValue="4v4">
+                                <HStack spacing="24px">
+                                  <Radio value="2v2">2v2</Radio>
+                                  <Radio value="3v3">3v3</Radio>
+                                  <Radio value="4v4">4v4</Radio>
+                                </HStack>
+                              </RadioGroup>
+                            </FormControl>
+                          )}
+                        </ModalBody>
+
+                        <ModalFooter>
+                          <Button
+                            onClick={() => {
+                              createClass(currentTournament!);
+                              onCloseCreateClassModal();
+                            }}
+                            colorScheme="blue"
+                          >
+                            Save and Close
+                          </Button>
+                        </ModalFooter>
+                      </ModalContent>
+                    </Modal>
+                  </FormControl>
+
+                  <Box>
+                    {tournamentClasses.map((myClass: Class, index) => (
+                      <Box
+                        key={`${myClass.classId}-${index}`}
+                        _hover={{ bg: "green.300" }}
+                        bg="pink.100"
+                        m={4}
+                        borderRadius="md"
+                        onClick={() => handleGoToClassInfo(myClass)}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        cursor="pointer"
+                      >
+                        <Text fontSize={40}>{myClass.name}</Text>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              </Center>
+            )}
+            {/** Class info */}
+            {showClassInfo && !classStarted && (
               <Box m={4}>
                 <Center>
                   <Stack>
@@ -1944,14 +2265,17 @@ function App() {
                     <Button
                       size={"lg"}
                       fontSize={"30"}
-                      bg={"#F7E1AE"}
-                      onClick={onOpen}
+                      colorScheme="blue"
+                      onClick={onOpenAddPlayersModal}
                     >
                       Add players
                     </Button>
                   </Stack>
 
-                  <Modal isOpen={isOpen} onClose={onClose}>
+                  <Modal
+                    isOpen={isOpenAddPlayersModal}
+                    onClose={onCloseAddPlayersModal}
+                  >
                     <ModalOverlay />
                     <ModalContent>
                       <ModalHeader>Add player</ModalHeader>
@@ -1982,6 +2306,7 @@ function App() {
                           {filteredPlayers.slice(0, 25).map((player) => {
                             return (
                               <Box
+                                width="100%"
                                 mt={1}
                                 key={player.id}
                                 onClick={() => {
@@ -1989,11 +2314,12 @@ function App() {
                                 }}
                               >
                                 <Player
+                                  sentPlayerIds={sentPlayerIds}
                                   class={player.class}
                                   id={player.id}
                                   name={player.name}
                                   club={player.club}
-                                ></Player>
+                                />
                               </Box>
                             );
                           })}
@@ -2001,7 +2327,11 @@ function App() {
                       </ModalBody>
 
                       <ModalFooter>
-                        <Button onClick={onClose} colorScheme="blue" mr={3}>
+                        <Button
+                          onClick={onCloseAddPlayersModal}
+                          colorScheme="blue"
+                          mr={3}
+                        >
                           Done
                         </Button>
                         <Button variant="ghost">More players</Button>
@@ -2011,27 +2341,27 @@ function App() {
                 </Center>
               </Box>
             )}
-            {showTournamentButtons && !tournamentStarted && (
+            {showTournamentButtons && !classStarted && (
               <>
-                <Flex justifyContent="space-between">
+                <Flex m={2} justifyContent="space-between">
                   <Box mr={5}>
                     <Button
                       size="lg"
                       fontSize="30"
-                      bg="#FFDEB4"
+                      bg="green.200"
                       onClick={() => saveTournament()}
                     >
-                      Save Tournament
+                      Save Class
                     </Button>
                   </Box>
                   <Box mr={5}>
                     <Button
                       size="lg"
                       fontSize="30"
-                      bg="#FDF7C3"
+                      bg="orange.200"
                       onClick={() =>
-                        handleSetTournamentSeededPlayers(
-                          currentTournament?.players || [],
+                        handleSetClassSeededPlayers(
+                          currentClass?.players || [],
                           true
                         )
                       }
@@ -2047,34 +2377,33 @@ function App() {
                         bg="#B2A4FF"
                         onClick={() => handleDrawTournament()}
                       >
-                        Draw Tournament
+                        Draw Class
                       </Button>
                     )}
                   </Box>
                   <Box>
-                    {currentTournament && currentTournament.readyToStart && (
+                    {currentClass && currentClass.readyToStart && (
                       <Button
                         size="lg"
                         fontSize="30"
                         bg="#C9F4AA"
-                        onClick={() => handleStartTournament()}
+                        onClick={() => handleStartClass()}
                       >
-                        Start Tournament
+                        Start Class
                       </Button>
                     )}
                   </Box>
                   <Spacer />
                   <Box mr={2}>
-                    {currentTournament &&
-                      (!currentTournament.readyToStart ||
-                        tournamentStarted) && (
+                    {currentClass &&
+                      (!currentClass.readyToStart || classStarted) && (
                         <Button
                           onClick={() => alert("Please draw tournament first")}
                           size="lg"
                           fontSize="30"
                           bg="#FEA1A1"
                         >
-                          Start Tournament
+                          Start Class
                         </Button>
                       )}
                   </Box>
@@ -2082,88 +2411,17 @@ function App() {
               </>
             )}
 
-            <Flex p={1}>
-              {showPlayers && !tournamentStarted && (
-                <Box width="35%">
-                  <Box
-                    style={{
-                      overflowY: "auto",
-                      maxHeight: "60%",
-                      maxWidth: "100%",
-                    }}
-                  >
-                    {currentTournament &&
-                      currentTournament.players &&
-                      currentTournament.players
-                        .sort((a, b) => {
-                          if (!a.points || !b.points) {
-                            return 0;
-                          }
-                          return b.points - a.points;
-                        })
-                        .map((player) => {
-                          //console.log(currentTournament.seededPlayersIds);
-                          const isSeeded =
-                            tournamentSeededPlayersIds?.includes(player.id) ||
-                            currentTournament.seededPlayersIds?.includes(
-                              player.id
-                            );
-
-                          return (
-                            <Box
-                              p={[0, 0.5]}
-                              key={player.id}
-                              display="flex"
-                              alignItems="horizontal"
-                            >
-                              <Flex>
-                                <IconButton
-                                  aria-label="Open chat"
-                                  icon={<DeleteIcon />}
-                                  colorScheme="red"
-                                  onClick={() => {
-                                    deletePlayerFromTournament(player);
-                                  }}
-                                  size={"sm"}
-                                />
-                                {isSeeded ? (
-                                  <SeededPlayer
-                                    name={player.name}
-                                    club={player.club}
-                                    points={player.points}
-                                    class={player.class}
-                                  />
-                                ) : (
-                                  <Player
-                                    id={player.id}
-                                    name={player.name}
-                                    club={player.club}
-                                    points={player.points}
-                                    class={player.class}
-                                  />
-                                )}
-                              </Flex>
-                            </Box>
-                          );
-                        })}
-                  </Box>
-                </Box>
-              )}
-              {showDrawTournament && !tournamentStarted && (
-                <Box>
-                  <Flex overflow={"auto"} maxHeight={"100%"} maxWidth={"100%"}>
+            {showPlayersAndGroups && !classStarted && (
+              <Flex>
+                <Box m={2}>
+                  <Flex overflow="hidden" maxHeight="100%">
                     <Box flex="1" p={1}>
-                      {currentTournament?.groups
-                        ?.slice(
-                          0,
-                          Math.ceil(currentTournament.groups.length / 2)
-                        )
+                      {currentClass?.groups
+                        ?.slice(0, Math.ceil(currentClass.groups.length / 2))
                         .map((group) => (
                           <Box p={1} key={group.name}>
                             <Group
-                              seededPlayersIds={
-                                currentTournament.seededPlayersIds
-                              }
+                              seededPlayersIds={currentClass.seededPlayersIds}
                               name={group.name}
                               players={group.players}
                             />
@@ -2171,14 +2429,12 @@ function App() {
                         ))}
                     </Box>
                     <Box p={1}>
-                      {currentTournament?.groups
-                        ?.slice(Math.ceil(currentTournament.groups.length / 2))
+                      {currentClass?.groups
+                        ?.slice(Math.ceil(currentClass.groups.length / 2))
                         .map((group) => (
                           <Box p={1} key={group.name}>
                             <Group
-                              seededPlayersIds={
-                                currentTournament.seededPlayersIds
-                              }
+                              seededPlayersIds={currentClass.seededPlayersIds}
                               name={group.name}
                               players={group.players}
                             />
@@ -2187,844 +2443,912 @@ function App() {
                     </Box>
                   </Flex>
                 </Box>
-              )}
-            </Flex>
-            {currentTournament && tournamentStarted && (
-              <Box>
-                <Center>
-                  <Heading margin={"5"}>Tournament Overview</Heading>
-                </Center>
-                <Flex justifyContent="space-between">
-                  <Button
-                    marginLeft="5"
-                    fontSize={"30"}
-                    size={"lg"}
-                    // Color scheme for more colors use bg
-                    bg={"#F7E1AE"}
-                    onClick={() => {
-                      setShowGroups(true);
-                      setShowGroupResult(false);
-                      setShowUnreportedMatches(false);
-                      set;
-                    }}
-                  >
-                    Groups
-                  </Button>
 
-                  <Modal isOpen={isOpen} onClose={onClose}>
-                    <ModalOverlay />
-                    <ModalContent bg={"#DBDFAA"}>
-                      <ModalHeader fontSize="24">
-                        Report match score
-                      </ModalHeader>
-                      <ModalCloseButton />
-                      <ModalBody>
-                        <Box p={1}>
-                          <Center>
-                            <Flex>
-                              <Text fontSize="24" fontWeight={"bold"}>
-                                Match ID
-                              </Text>
-                              <Spacer />
-                              <Input
-                                ref={inputMatchIdRefA}
-                                bg={"white"}
-                                maxLength={5}
-                                fontWeight={"bold"}
-                                id="matchid"
-                                p={1}
-                                maxWidth={"30%"}
-                                maxHeight={"20%"}
-                                size="sm"
-                                value={matchId}
-                                onChange={(e) => setMatchId(e.target.value)}
-                              />
-                              <Spacer />
-                              <Button
-                                bg={"#A0D8B3"}
-                                onClick={() => {
-                                  console.log(matchId);
-                                  console.log(matchIdError);
-                                  loadReportPlayers(parseInt(matchId));
-                                }}
-                              >
-                                Load match
-                              </Button>
-                            </Flex>
-                          </Center>
-                        </Box>
-                        <Center>
-                          <Box margin={5}>
-                            {currentMatch && (
-                              <Flex>
-                                {matchIdError === -1 ? (
-                                  <>
-                                    <Flex>
-                                      <Center>
-                                        <Text fontFamily={"bold"} fontSize="24">
-                                          Invalid MatchID
-                                        </Text>
-                                      </Center>
-                                    </Flex>
-                                    {setCurrentMatch(undefined)}
-                                  </>
-                                ) : matchIdError === -2 ? (
-                                  <Center>
-                                    <>
-                                      <Center>
-                                        <Box>
-                                          <Stack align="center">
-                                            <Text
-                                              textColor={"red"}
-                                              fontWeight="bold"
-                                              fontSize="17"
-                                              textAlign="center"
-                                            >
-                                              Match already reported
-                                            </Text>
-                                            <Text textAlign="center">
-                                              Report again?
-                                            </Text>
-                                            <Box>
-                                              <Button
-                                                margin={2}
-                                                bg={"#A0D8B3"}
-                                                onClick={() =>
-                                                  setMatchIdError(0)
-                                                }
-                                              >
-                                                Yes
-                                              </Button>
-                                              <Button
-                                                margin={2}
-                                                bg={"#E76161"}
-                                                onClick={() => {
-                                                  setCurrentMatch(undefined);
-                                                  setMatchIdError(0);
-                                                }}
-                                              >
-                                                No
-                                              </Button>
-                                            </Box>
-                                          </Stack>
-                                        </Box>
-                                      </Center>
-                                    </>
-                                  </Center>
-                                ) : (
-                                  <>
-                                    <Flex
-                                      flexDirection="column"
-                                      alignItems="center"
-                                    >
-                                      <Text m={5} fontSize="40">
-                                        Match {currentMatch.matchId}
-                                      </Text>
-                                      <Flex
-                                        justifyContent="space-between"
-                                        alignItems="center"
-                                      >
-                                        <Box>
-                                          <Box maxWidth={150}>
-                                            <Text
-                                              fontWeight="bold"
-                                              fontSize="20"
-                                              overflowWrap="break-word"
-                                            >
-                                              {currentMatch.player1?.name}
-                                            </Text>
-                                          </Box>
-                                        </Box>
-                                        <Spacer />
-                                        <Box>
-                                          <Box maxWidth={150}>
-                                            <Text
-                                              marginLeft={12}
-                                              fontWeight="bold"
-                                              fontSize="20"
-                                              overflowWrap="break-word"
-                                            >
-                                              {currentMatch.player2?.name}
-                                            </Text>
-                                          </Box>
-                                        </Box>
-                                      </Flex>
-                                    </Flex>
-                                  </>
-                                )}
-                              </Flex>
-                            )}
-                            {matchIdError === -1 && !currentMatch && (
-                              <Center>
-                                <Text fontSize="40">Invalid MatchID</Text>
-                              </Center>
-                            )}
-                          </Box>
-                        </Center>
-
-                        {(bo === "Bo3" || bo === "Bo5" || bo === "Bo7") && (
-                          <Stack>
-                            <Box p={1}>
-                              <Flex>
-                                <Center>
-                                  <Input
-                                    m={1}
-                                    ref={inputSetRef}
-                                    value={set1Player1}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet1Player1(parseInt(inputValue));
-                                      } else {
-                                        setSet1Player1(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    bg="white"
-                                    id="set1player1"
-                                    borderRadius={"5px"}
-                                    maxWidth={"15%"}
-                                    size="md"
-                                    fontWeight={"bold"}
-                                  />
-                                  <Text fontSize={"30"} m={1}>
-                                    {" "}
-                                    -{" "}
-                                  </Text>
-                                  <Input
-                                    m={1}
-                                    value={set1Player2}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet1Player2(parseInt(inputValue));
-                                      } else {
-                                        setSet1Player2(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set1player2"
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                </Center>
-                              </Flex>
-                            </Box>
-                            <Box p={1}>
-                              <Flex>
-                                <Center>
-                                  <Input
-                                    m={1}
-                                    value={set2Player1}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet2Player1(parseInt(inputValue));
-                                      } else {
-                                        setSet2Player1(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set2player1"
-                                    borderRadius={"5px"}
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                  <Text fontSize={"30"} m={1}>
-                                    {" "}
-                                    -{" "}
-                                  </Text>
-                                  <Input
-                                    m={1}
-                                    minLength={1}
-                                    value={set2Player2}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet2Player2(parseInt(inputValue));
-                                      } else {
-                                        setSet2Player2(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set2player2"
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                </Center>
-                              </Flex>
-                            </Box>
-                            <Box p={1}>
-                              <Flex>
-                                <Center>
-                                  <Input
-                                    m={1}
-                                    value={set3Player1}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet3Player1(parseInt(inputValue));
-                                      } else {
-                                        setSet3Player1(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set3player1"
-                                    borderRadius={"5px"}
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                  <Text fontSize={"30"} m={1}>
-                                    {" "}
-                                    -{" "}
-                                  </Text>
-                                  <Input
-                                    m={1}
-                                    value={set3Player2}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet3Player2(parseInt(inputValue));
-                                      } else {
-                                        setSet3Player2(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set3player2"
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                </Center>
-                              </Flex>
-                            </Box>
-                          </Stack>
-                        )}
-
-                        {(bo === "Bo5" || bo === "Bo7") && (
-                          <Stack>
-                            <Box p={1}>
-                              <Flex>
-                                <Center>
-                                  <Input
-                                    m={1}
-                                    value={set4Player1}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet4Player1(parseInt(inputValue));
-                                      } else {
-                                        setSet4Player1(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set4player1"
-                                    borderRadius={"5px"}
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                  <Text fontSize={"30"} m={1}>
-                                    {" "}
-                                    -{" "}
-                                  </Text>
-                                  <Input
-                                    m={1}
-                                    value={set4Player2}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet4Player2(parseInt(inputValue));
-                                      } else {
-                                        setSet4Player2(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set4player2"
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                </Center>
-                              </Flex>
-                            </Box>
-                            <Box p={1}>
-                              <Flex>
-                                <Center>
-                                  <Input
-                                    m={1}
-                                    value={set5Player1}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet5Player1(parseInt(inputValue));
-                                      } else {
-                                        setSet5Player1(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set5player1"
-                                    borderRadius={"5px"}
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                  <Text fontSize={"30"} m={1}>
-                                    {" "}
-                                    -{" "}
-                                  </Text>
-                                  <Input
-                                    m={1}
-                                    value={set5Player2}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet5Player2(parseInt(inputValue));
-                                      } else {
-                                        setSet5Player2(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set5player2"
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                </Center>
-                              </Flex>
-                            </Box>
-                          </Stack>
-                        )}
-
-                        {bo === "Bo7" && (
-                          <Stack>
-                            <Box p={1}>
-                              <Flex>
-                                <Center>
-                                  <Input
-                                    m={1}
-                                    value={set6Player1}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet6Player1(parseInt(inputValue));
-                                      } else {
-                                        setSet6Player1(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set6player1"
-                                    borderRadius={"5px"}
-                                    maxWidth={"15%"}
-                                    size="md"
-                                    colorScheme="whiteAlpha"
-                                  />
-
-                                  <Text fontSize={"30"} m={1}>
-                                    {" "}
-                                    -{" "}
-                                  </Text>
-
-                                  <Input
-                                    m={1}
-                                    value={set6Player2}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet6Player2(parseInt(inputValue));
-                                      } else {
-                                        setSet6Player2(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set6player2"
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                </Center>
-                              </Flex>
-                            </Box>
-                            <Box p={1}>
-                              <Flex>
-                                <Center>
-                                  <Input
-                                    m={1}
-                                    value={set7Player1}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet7Player1(parseInt(inputValue));
-                                      } else {
-                                        setSet7Player1(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set7player1"
-                                    borderRadius={"5px"}
-                                    maxWidth={"15%"}
-                                    size="md"
-                                    colorScheme="whiteAlpha"
-                                  />
-
-                                  <Text fontSize={"30"} m={1}>
-                                    {" "}
-                                    -{" "}
-                                  </Text>
-
-                                  <Input
-                                    m={1}
-                                    value={set7Player2}
-                                    onChange={(e) => {
-                                      const inputValue = e.target.value;
-                                      if (!isNaN(parseInt(inputValue))) {
-                                        setSet7Player2(parseInt(inputValue));
-                                      } else {
-                                        setSet7Player2(0);
-                                      }
-                                    }}
-                                    maxLength={2}
-                                    fontWeight={"bold"}
-                                    bg={"white"}
-                                    id="set7player2"
-                                    maxWidth={"15%"}
-                                    size="md"
-                                  />
-                                </Center>
-                              </Flex>
-                            </Box>
-                          </Stack>
-                        )}
-
-                        <Popover>
-                          <PopoverTrigger>
-                            <Center>
-                              <Button
-                                bg={"#FFF8D6"}
-                                margin={"4"}
-                                onClick={() => handleCheckWinner()}
-                              >
-                                Check Winner
-                              </Button>
-                            </Center>
-                          </PopoverTrigger>
-                          {checkWinner == -1 && (
-                            <PopoverContent>
-                              <PopoverArrow />
-                              <PopoverCloseButton />
-                              <PopoverBody>{errorMessage}</PopoverBody>
-                            </PopoverContent>
-                          )}
-                          {checkWinner == 1 && (
-                            <PopoverContent bg={"#F5F0BB"}>
-                              <PopoverArrow />
-                              <PopoverCloseButton />
-                              <Center>
-                                <PopoverBody fontSize={20} fontWeight={"bold"}>
-                                  {winner?.name} wins
-                                  <Center>
-                                    <Text>
-                                      {wonSetsPlayer1} - {wonSetsPlayer2}
-                                    </Text>
-                                  </Center>
-                                </PopoverBody>
-                              </Center>
-                              <Button
-                                margin={"2"}
-                                onClick={() => {
-                                  handleMatchScore();
-                                  const updatedMatches =
-                                    unreportedMatches.filter(
-                                      (match) =>
-                                        String(match.matchId!) !== matchId
-                                    );
-                                  setUnreportedMatches(updatedMatches);
-                                }}
-                                bg={"#A0D8B3"}
-                              >
-                                Correct
-                              </Button>
-                            </PopoverContent>
-                          )}
-                        </Popover>
-                      </ModalBody>
-
-                      <ModalFooter>
-                        <Button
-                          onClick={() => {
-                            if (checkWinner !== 1) {
-                              const result = window.confirm(
-                                "Please check the winner before closing the modal. Are you sure you want to proceed?"
-                              );
-                              if (result === true) {
-                                onClose();
-                              }
-                            } else {
-                              onClose();
-                            }
-                          }}
-                          bg={"#A0D8B3"}
-                          mr={3}
-                        >
-                          Done
-                        </Button>
-                      </ModalFooter>
-                    </ModalContent>
-                  </Modal>
-
-                  <Button
-                    marginLeft={"5"}
-                    size="lg"
-                    fontSize={"30"}
-                    bg={"#F7E1AE"}
-                    onClick={() => {
-                      setShowGroupResult(true);
-                      setShowUnreportedMatches(false);
-                      setShowGroups(false);
-                    }}
-                  >
-                    Results
-                  </Button>
-
-                  <Button
-                    fontSize={"30"}
-                    size={"lg"}
-                    onClick={() => {
-                      onOpen();
-                    }}
-                    bg={"#F7E1AE"}
-                  >
-                    Report result
-                  </Button>
-
-                  <Button
-                    marginLeft="5"
-                    fontSize={"30"}
-                    size={"lg"}
-                    bg={"blue.300"}
-                    onClick={() => {
-                      handleCheckGroupStatus();
-                      setShowGroupResult(false);
-                      setShowGroups(false);
-                    }}
-                  >
-                    Status
-                  </Button>
-                  {unreportedMatches.length === 0 && (
-                    <Button
-                      onClick={() => {
-                        handleCheckIfStartBracket();
-                      }}
-                      // justifyContent={"flex-end"}
-                      size="lg"
-                      fontSize="30"
-                      bg={"green.300"}
-                      marginRight={"5"}
-                    >
-                      Start bracket
-                    </Button>
-                  )}
-
-                  {(unreportedMatches.length !== 0 ||
-                    unreportedMatches === null) && (
-                    // red button
-                    <Button
-                      onClick={() => {
-                        alert(
-                          unreportedMatches.length + `  unreported matches`
-                        );
-                      }}
-                      // justifyContent={"flex-end"}
-                      size="lg"
-                      fontSize="30"
-                      bg={"#E76161"}
-                      marginRight={"5"}
-                    >
-                      Start bracket
-                    </Button>
-                  )}
-                </Flex>
-                <Box>
-                  {showUnreportedMatches && unreportedMatches.length !== 0 && (
-                    <Center>
-                      <Text fontSize={"40"}>Unreported Matches</Text>
-                    </Center>
-                  )}
-                  {showUnreportedMatches && unreportedMatches.length === 0 && (
-                    <Center>
-                      <Text fontSize={"30"}>No unreported matches</Text>
-                    </Center>
-                  )}
-                  <Box p={3}>
-                    {showUnreportedMatches &&
-                      unreportedMatches.map((match) => {
-                        if (!match.matchId) {
-                          return null; // Skip the iteration if there is no matchId
+                <Box m={2} flex="1" maxHeight="100%">
+                  {currentClass &&
+                    currentClass.players &&
+                    currentClass.players
+                      .sort((a, b) => {
+                        if (!a.points || !b.points) {
+                          return 0;
                         }
+                        return b.points - a.points;
+                      })
+                      .map((player) => {
+                        const isSeeded =
+                          classSeededPlayers?.includes(player.id) ||
+                          currentClass.seededPlayersIds?.includes(player.id);
 
                         return (
-                          <Center key={match.matchId}>
-                            <Box
-                              onClick={() => {
-                                onOpen();
-                                setMatchId(String(match.matchId));
-                                loadReportPlayers(match.matchId!);
-                                setCurrentMatch(match);
-                              }}
-                              width={"50%"}
-                              margin={"3px"}
-                            >
-                              <Match
-                                key={match.matchId}
-                                matchId={match.matchId}
-                                player1={match.player1}
-                                player2={match.player2}
+                          <Box
+                            p={[0, 0.5]}
+                            key={player.id}
+                            style={{ flex: "0 0 auto" }}
+                          >
+                            <Flex>
+                              <IconButton
+                                aria-label="Open chat"
+                                icon={<DeleteIcon />}
+                                colorScheme="red"
+                                onClick={() => {
+                                  deletePlayerFromTournament(player);
+                                }}
+                                size={"sm"}
                               />
-                            </Box>
-                          </Center>
+                              {isSeeded ? (
+                                <SeededPlayer
+                                  name={player.name}
+                                  club={player.club}
+                                  points={player.points}
+                                  class={player.class}
+                                />
+                              ) : (
+                                <Player
+                                  id={player.id}
+                                  name={player.name}
+                                  club={player.club}
+                                  points={player.points}
+                                  class={player.class}
+                                />
+                              )}
+                            </Flex>
+                          </Box>
                         );
                       })}
-                  </Box>
                 </Box>
+              </Flex>
+            )}
 
-                {showGroups && (
+            {currentClass &&
+              currentClass.started === true &&
+              showGroupsResultsAndUnreportedMatches && (
+                <Box>
+                  {/*console.log("currentClass", currentClass)*/}
+                  <Center>
+                    <Heading margin={5}>{currentClass?.name || ""}</Heading>
+                  </Center>
+                  <Flex justifyContent="space-between">
+                    <Button
+                      marginLeft="5"
+                      fontSize={"30"}
+                      size={"lg"}
+                      // Color scheme for more colors use bg
+                      bg={"#F7E1AE"}
+                      onClick={() => {
+                        setShowGroups(true);
+                        setShowGroupResult(false);
+                        setShowUnreportedMatches(false);
+                        set;
+                      }}
+                    >
+                      Groups
+                    </Button>
+
+                    <Modal
+                      isOpen={isOpenScoreModal}
+                      onClose={onCloseScoreModal}
+                    >
+                      <ModalOverlay />
+                      <ModalContent bg={"#DBDFAA"}>
+                        <ModalHeader fontSize="24">
+                          Report match score
+                        </ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                          <Box p={1}>
+                            <Center>
+                              <Flex>
+                                <Text fontSize="24" fontWeight={"bold"}>
+                                  Match ID
+                                </Text>
+                                <Spacer />
+                                <Input
+                                  ref={inputMatchIdRefA}
+                                  bg={"white"}
+                                  maxLength={5}
+                                  fontWeight={"bold"}
+                                  id="matchid"
+                                  p={1}
+                                  maxWidth={"30%"}
+                                  maxHeight={"20%"}
+                                  size="sm"
+                                  value={matchId}
+                                  onChange={(e) => setMatchId(e.target.value)}
+                                />
+                                <Spacer />
+                                <Button
+                                  bg={"#A0D8B3"}
+                                  onClick={() => {
+                                    console.log(matchId);
+                                    console.log(matchIdError);
+                                    loadReportPlayers(parseInt(matchId));
+                                  }}
+                                >
+                                  Load match
+                                </Button>
+                              </Flex>
+                            </Center>
+                          </Box>
+                          <Center>
+                            <Box margin={5}>
+                              {currentMatch && (
+                                <Flex>
+                                  {matchIdError === -1 ? (
+                                    <>
+                                      <Flex>
+                                        <Center>
+                                          <Text
+                                            fontFamily={"bold"}
+                                            fontSize="24"
+                                          >
+                                            Invalid MatchID
+                                          </Text>
+                                        </Center>
+                                      </Flex>
+                                      {setCurrentMatch(undefined)}
+                                    </>
+                                  ) : matchIdError === -2 ? (
+                                    <Center>
+                                      <>
+                                        <Center>
+                                          <Box>
+                                            <Stack align="center">
+                                              <Text
+                                                textColor={"red"}
+                                                fontWeight="bold"
+                                                fontSize="17"
+                                                textAlign="center"
+                                              >
+                                                Match already reported
+                                              </Text>
+                                              <Text textAlign="center">
+                                                Report again?
+                                              </Text>
+                                              <Box>
+                                                <Button
+                                                  margin={2}
+                                                  bg={"#A0D8B3"}
+                                                  onClick={() =>
+                                                    setMatchIdError(0)
+                                                  }
+                                                >
+                                                  Yes
+                                                </Button>
+                                                <Button
+                                                  margin={2}
+                                                  bg={"#E76161"}
+                                                  onClick={() => {
+                                                    setCurrentMatch(undefined);
+                                                    setMatchIdError(0);
+                                                  }}
+                                                >
+                                                  No
+                                                </Button>
+                                              </Box>
+                                            </Stack>
+                                          </Box>
+                                        </Center>
+                                      </>
+                                    </Center>
+                                  ) : (
+                                    <>
+                                      <Flex
+                                        flexDirection="column"
+                                        alignItems="center"
+                                      >
+                                        <Text m={5} fontSize="40">
+                                          Match {currentMatch.matchId}
+                                        </Text>
+                                        <Flex
+                                          justifyContent="space-between"
+                                          alignItems="center"
+                                        >
+                                          <Box>
+                                            <Box maxWidth={150}>
+                                              <Text
+                                                fontWeight="bold"
+                                                fontSize="20"
+                                                overflowWrap="break-word"
+                                              >
+                                                {currentMatch.player1?.name}
+                                              </Text>
+                                            </Box>
+                                          </Box>
+                                          <Spacer />
+                                          <Box>
+                                            <Box maxWidth={150}>
+                                              <Text
+                                                marginLeft={12}
+                                                fontWeight="bold"
+                                                fontSize="20"
+                                                overflowWrap="break-word"
+                                              >
+                                                {currentMatch.player2?.name}
+                                              </Text>
+                                            </Box>
+                                          </Box>
+                                        </Flex>
+                                      </Flex>
+                                    </>
+                                  )}
+                                </Flex>
+                              )}
+                              {matchIdError === -1 && !currentMatch && (
+                                <Center>
+                                  <Text fontSize="40">Invalid MatchID</Text>
+                                </Center>
+                              )}
+                            </Box>
+                          </Center>
+
+                          {(bo === "Bo3" || bo === "Bo5" || bo === "Bo7") && (
+                            <Stack>
+                              <Box p={1}>
+                                <Flex>
+                                  <Center>
+                                    <Input
+                                      m={1}
+                                      ref={inputSetRef}
+                                      value={set1Player1}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet1Player1(parseInt(inputValue));
+                                        } else {
+                                          setSet1Player1(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      bg="white"
+                                      id="set1player1"
+                                      borderRadius={"5px"}
+                                      maxWidth={"15%"}
+                                      size="md"
+                                      fontWeight={"bold"}
+                                    />
+                                    <Text fontSize={"30"} m={1}>
+                                      {" "}
+                                      -{" "}
+                                    </Text>
+                                    <Input
+                                      m={1}
+                                      value={set1Player2}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet1Player2(parseInt(inputValue));
+                                        } else {
+                                          setSet1Player2(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set1player2"
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                  </Center>
+                                </Flex>
+                              </Box>
+                              <Box p={1}>
+                                <Flex>
+                                  <Center>
+                                    <Input
+                                      m={1}
+                                      value={set2Player1}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet2Player1(parseInt(inputValue));
+                                        } else {
+                                          setSet2Player1(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set2player1"
+                                      borderRadius={"5px"}
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                    <Text fontSize={"30"} m={1}>
+                                      {" "}
+                                      -{" "}
+                                    </Text>
+                                    <Input
+                                      m={1}
+                                      minLength={1}
+                                      value={set2Player2}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet2Player2(parseInt(inputValue));
+                                        } else {
+                                          setSet2Player2(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set2player2"
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                  </Center>
+                                </Flex>
+                              </Box>
+                              <Box p={1}>
+                                <Flex>
+                                  <Center>
+                                    <Input
+                                      m={1}
+                                      value={set3Player1}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet3Player1(parseInt(inputValue));
+                                        } else {
+                                          setSet3Player1(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set3player1"
+                                      borderRadius={"5px"}
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                    <Text fontSize={"30"} m={1}>
+                                      {" "}
+                                      -{" "}
+                                    </Text>
+                                    <Input
+                                      m={1}
+                                      value={set3Player2}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet3Player2(parseInt(inputValue));
+                                        } else {
+                                          setSet3Player2(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set3player2"
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                  </Center>
+                                </Flex>
+                              </Box>
+                            </Stack>
+                          )}
+
+                          {(bo === "Bo5" || bo === "Bo7") && (
+                            <Stack>
+                              <Box p={1}>
+                                <Flex>
+                                  <Center>
+                                    <Input
+                                      m={1}
+                                      value={set4Player1}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet4Player1(parseInt(inputValue));
+                                        } else {
+                                          setSet4Player1(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set4player1"
+                                      borderRadius={"5px"}
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                    <Text fontSize={"30"} m={1}>
+                                      {" "}
+                                      -{" "}
+                                    </Text>
+                                    <Input
+                                      m={1}
+                                      value={set4Player2}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet4Player2(parseInt(inputValue));
+                                        } else {
+                                          setSet4Player2(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set4player2"
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                  </Center>
+                                </Flex>
+                              </Box>
+                              <Box p={1}>
+                                <Flex>
+                                  <Center>
+                                    <Input
+                                      m={1}
+                                      value={set5Player1}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet5Player1(parseInt(inputValue));
+                                        } else {
+                                          setSet5Player1(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set5player1"
+                                      borderRadius={"5px"}
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                    <Text fontSize={"30"} m={1}>
+                                      {" "}
+                                      -{" "}
+                                    </Text>
+                                    <Input
+                                      m={1}
+                                      value={set5Player2}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet5Player2(parseInt(inputValue));
+                                        } else {
+                                          setSet5Player2(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set5player2"
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                  </Center>
+                                </Flex>
+                              </Box>
+                            </Stack>
+                          )}
+
+                          {bo === "Bo7" && (
+                            <Stack>
+                              <Box p={1}>
+                                <Flex>
+                                  <Center>
+                                    <Input
+                                      m={1}
+                                      value={set6Player1}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet6Player1(parseInt(inputValue));
+                                        } else {
+                                          setSet6Player1(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set6player1"
+                                      borderRadius={"5px"}
+                                      maxWidth={"15%"}
+                                      size="md"
+                                      colorScheme="whiteAlpha"
+                                    />
+
+                                    <Text fontSize={"30"} m={1}>
+                                      {" "}
+                                      -{" "}
+                                    </Text>
+
+                                    <Input
+                                      m={1}
+                                      value={set6Player2}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet6Player2(parseInt(inputValue));
+                                        } else {
+                                          setSet6Player2(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set6player2"
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                  </Center>
+                                </Flex>
+                              </Box>
+                              <Box p={1}>
+                                <Flex>
+                                  <Center>
+                                    <Input
+                                      m={1}
+                                      value={set7Player1}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet7Player1(parseInt(inputValue));
+                                        } else {
+                                          setSet7Player1(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set7player1"
+                                      borderRadius={"5px"}
+                                      maxWidth={"15%"}
+                                      size="md"
+                                      colorScheme="whiteAlpha"
+                                    />
+
+                                    <Text fontSize={"30"} m={1}>
+                                      {" "}
+                                      -{" "}
+                                    </Text>
+
+                                    <Input
+                                      m={1}
+                                      value={set7Player2}
+                                      onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        if (!isNaN(parseInt(inputValue))) {
+                                          setSet7Player2(parseInt(inputValue));
+                                        } else {
+                                          setSet7Player2(0);
+                                        }
+                                      }}
+                                      maxLength={2}
+                                      fontWeight={"bold"}
+                                      bg={"white"}
+                                      id="set7player2"
+                                      maxWidth={"15%"}
+                                      size="md"
+                                    />
+                                  </Center>
+                                </Flex>
+                              </Box>
+                            </Stack>
+                          )}
+
+                          <Popover>
+                            <PopoverTrigger>
+                              <Center>
+                                <Button
+                                  bg={"#FFF8D6"}
+                                  margin={"4"}
+                                  onClick={() => handleCheckWinner()}
+                                >
+                                  Check Winner
+                                </Button>
+                              </Center>
+                            </PopoverTrigger>
+                            {checkWinner == -1 && (
+                              <PopoverContent>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <PopoverBody>{errorMessage}</PopoverBody>
+                              </PopoverContent>
+                            )}
+                            {checkWinner == 1 && (
+                              <PopoverContent bg={"#F5F0BB"}>
+                                <PopoverArrow />
+                                <PopoverCloseButton />
+                                <Center>
+                                  <PopoverBody
+                                    fontSize={20}
+                                    fontWeight={"bold"}
+                                  >
+                                    {winner?.name} wins
+                                    <Center>
+                                      <Text>
+                                        {wonSetsPlayer1} - {wonSetsPlayer2}
+                                      </Text>
+                                    </Center>
+                                  </PopoverBody>
+                                </Center>
+                                <Button
+                                  margin={"2"}
+                                  onClick={() => {
+                                    handleMatchScore();
+                                    const updatedMatches =
+                                      unreportedMatches.filter(
+                                        (match) =>
+                                          String(match.matchId!) !== matchId
+                                      );
+                                    setUnreportedMatches(updatedMatches);
+                                  }}
+                                  bg={"#A0D8B3"}
+                                >
+                                  Correct
+                                </Button>
+                              </PopoverContent>
+                            )}
+                          </Popover>
+                        </ModalBody>
+
+                        <ModalFooter>
+                          <Button
+                            onClick={() => {
+                              if (checkWinner !== 1) {
+                                const result = window.confirm(
+                                  "Please check the winner before closing the modal. Are you sure you want to proceed?"
+                                );
+                                if (result === true) {
+                                  onCloseScoreModal();
+                                }
+                              } else {
+                                onCloseScoreModal();
+                              }
+                            }}
+                            bg={"#A0D8B3"}
+                            mr={3}
+                          >
+                            Done
+                          </Button>
+                        </ModalFooter>
+                      </ModalContent>
+                    </Modal>
+
+                    <Button
+                      marginLeft={"5"}
+                      size="lg"
+                      fontSize={"30"}
+                      bg={"#F7E1AE"}
+                      onClick={() => {
+                        setShowGroupResult(true);
+                        setShowUnreportedMatches(false);
+                        setShowGroups(false);
+                      }}
+                    >
+                      Results
+                    </Button>
+
+                    <Button
+                      fontSize={"30"}
+                      size={"lg"}
+                      onClick={() => {
+                        onOpenScoreModal();
+                      }}
+                      bg={"#F7E1AE"}
+                    >
+                      Report result
+                    </Button>
+
+                    <Button
+                      marginLeft="5"
+                      fontSize={"30"}
+                      size={"lg"}
+                      bg={"blue.300"}
+                      onClick={() => {
+                        handleCheckGroupStatus();
+                        setShowGroupResult(false);
+                        setShowGroups(false);
+                      }}
+                    >
+                      Status
+                    </Button>
+                    {unreportedMatches.length === 0 && (
+                      <Button
+                        onClick={() => {
+                          handleCheckIfStartBracket();
+                        }}
+                        // justifyContent={"flex-end"}
+                        size="lg"
+                        fontSize="30"
+                        bg={"green.300"}
+                        marginRight={"5"}
+                      >
+                        Start bracket
+                      </Button>
+                    )}
+
+                    {(unreportedMatches.length !== 0 ||
+                      unreportedMatches === null) && (
+                      // red button
+                      <Button
+                        onClick={() => {
+                          alert(
+                            unreportedMatches.length + `  unreported matches`
+                          );
+                        }}
+                        // justifyContent={"flex-end"}
+                        size="lg"
+                        fontSize="30"
+                        bg={"#E76161"}
+                        marginRight={"5"}
+                      >
+                        Start bracket
+                      </Button>
+                    )}
+                  </Flex>
                   <Box>
-                    <Flex>
-                      {currentTournament?.groups
-                        ?.reduce((columns: JSX.Element[][], group, index) => {
-                          const columnIndex = Math.floor(index / 4);
-
-                          if (!columns[columnIndex]) {
-                            columns[columnIndex] = [];
+                    {showUnreportedMatches &&
+                      unreportedMatches.length !== 0 && (
+                        <Center>
+                          <Text fontSize={"40"}>Unreported Matches</Text>
+                        </Center>
+                      )}
+                    {showUnreportedMatches &&
+                      unreportedMatches.length === 0 && (
+                        <Center>
+                          <Text fontSize={"30"}>No unreported matches</Text>
+                        </Center>
+                      )}
+                    <Box p={3}>
+                      {showUnreportedMatches &&
+                        unreportedMatches.map((match) => {
+                          if (!match.matchId) {
+                            return null; // Skip the iteration if there is no matchId
                           }
 
-                          columns[columnIndex].push(
-                            <Box
-                              margin={"5"}
-                              width={
-                                currentTournament.groups!.length < 4
-                                  ? "30%"
-                                  : currentTournament.groups!.length > 12
-                                  ? "80%"
-                                  : "60%"
-                              }
-                              onClick={onOpenScoreModal}
-                              key={group.name}
-                            >
-                              <Modal
-                                finalFocusRef={inputSetRef}
-                                isCentered
-                                onClose={onCloseScoreModal}
-                                isOpen={isOpenScoreModal}
-                                motionPreset="slideInBottom"
-                                blockScrollOnMount={false}
+                          return (
+                            <Center key={match.matchId}>
+                              <Box
+                                onClick={() => {
+                                  onOpenScoreModal();
+                                  setMatchId(String(match.matchId));
+                                  loadReportPlayers(match.matchId!);
+                                  setCurrentMatch(match);
+                                }}
+                                width={"50%"}
+                                margin={"3px"}
                               >
-                                <ModalOverlay opacity={0.6} bg={"#"} />
-                                <ModalContent>
-                                  {currentPlayer && currentPlayer.name && (
-                                    <ModalHeader>
-                                      Matches for {currentPlayer.name}
-                                    </ModalHeader>
-                                  )}
-                                  <ModalCloseButton />
-                                  <ModalBody padding={5}>
-                                    <Box>
-                                      {currentPlayer &&
-                                        currentTournament?.matches && (
-                                          <>
-                                            {currentTournament.matches
-                                              .filter(
-                                                (match) =>
-                                                  match.player1?.id ===
-                                                    currentPlayer.id ||
-                                                  match.player2?.id ===
-                                                    currentPlayer.id
-                                              )
-                                              .map((match) => {
-                                                // Add this console.log statement
-                                                return (
-                                                  <Box
-                                                    m={2}
-                                                    key={match.matchId}
-                                                    onClick={() => {
-                                                      setMatchId(
-                                                        String(match.matchId)
-                                                      );
-                                                      loadReportPlayers(
-                                                        match.matchId!
-                                                      );
-                                                      setCurrentMatch(match);
-                                                      onOpen();
-                                                    }}
-                                                  >
-                                                    <DisplayMatchScore
-                                                      key={match.matchId}
-                                                      match={match}
-                                                    />
-                                                  </Box>
-                                                );
-                                              })}
-                                          </>
-                                        )}
-                                    </Box>
-                                  </ModalBody>
-
-                                  <ModalFooter>
-                                    <Button
-                                      colorScheme="blue"
-                                      mr={3}
-                                      onClick={onCloseScoreModal}
-                                    >
-                                      Close
-                                    </Button>
-                                  </ModalFooter>
-                                </ModalContent>
-                              </Modal>
-
-                              <GroupDisplayScore
-                                onPlayerClick={handleLookUpPlayerScore}
-                                seededPlayersIds={
-                                  currentTournament.seededPlayersIds
-                                }
-                                groupName={group.name}
-                                players={group.players}
-                              />
-                            </Box>
+                                <Match
+                                  key={match.matchId}
+                                  matchId={match.matchId}
+                                  player1={match.player1}
+                                  player2={match.player2}
+                                />
+                              </Box>
+                            </Center>
                           );
-
-                          return columns;
-                        }, [])
-                        .map((column, columnIndex) => (
-                          <Box flex="1" key={columnIndex}>
-                            {column}
-                          </Box>
-                        ))}
-                    </Flex>
+                        })}
+                    </Box>
                   </Box>
-                )}
-              </Box>
-            )}
+
+                  {showGroups && (
+                    <Box>
+                      <Flex>
+                        {currentClass?.groups
+                          ?.reduce((columns: JSX.Element[][], group, index) => {
+                            const columnIndex = Math.floor(index / 4);
+
+                            if (!columns[columnIndex]) {
+                              columns[columnIndex] = [];
+                            }
+
+                            columns[columnIndex].push(
+                              <Box
+                                margin={"5"}
+                                width={
+                                  currentClass.groups!.length < 4
+                                    ? "30%"
+                                    : currentClass.groups!.length > 12
+                                    ? "80%"
+                                    : "60%"
+                                }
+                                onClick={onOpenScoreModal}
+                                key={group.name}
+                              >
+                                <Modal
+                                  finalFocusRef={inputSetRef}
+                                  isCentered
+                                  onClose={onCloseScoreModal}
+                                  isOpen={isOpenScoreModal}
+                                  motionPreset="slideInBottom"
+                                  blockScrollOnMount={false}
+                                >
+                                  <ModalOverlay opacity={0.6} bg={"#"} />
+                                  <ModalContent>
+                                    {currentPlayer && currentPlayer.name && (
+                                      <ModalHeader>
+                                        Matches for {currentPlayer.name}
+                                      </ModalHeader>
+                                    )}
+                                    <ModalCloseButton />
+                                    <ModalBody padding={5}>
+                                      <Box>
+                                        {currentPlayer &&
+                                          currentClass?.matches && (
+                                            <>
+                                              {currentClass.matches
+                                                .filter(
+                                                  (match) =>
+                                                    match.player1?.id ===
+                                                      currentPlayer.id ||
+                                                    match.player2?.id ===
+                                                      currentPlayer.id
+                                                )
+                                                .map((match) => {
+                                                  // Add this console.log statement
+                                                  return (
+                                                    <Box
+                                                      m={2}
+                                                      key={match.matchId}
+                                                      onClick={() => {
+                                                        setMatchId(
+                                                          String(match.matchId)
+                                                        );
+                                                        loadReportPlayers(
+                                                          match.matchId!
+                                                        );
+                                                        setCurrentMatch(match);
+                                                        onOpenScoreModal();
+                                                      }}
+                                                    >
+                                                      <DisplayMatchScore
+                                                        key={match.matchId}
+                                                        match={match}
+                                                      />
+                                                    </Box>
+                                                  );
+                                                })}
+                                            </>
+                                          )}
+                                      </Box>
+                                    </ModalBody>
+
+                                    <ModalFooter>
+                                      <Button
+                                        colorScheme="blue"
+                                        mr={3}
+                                        onClick={onCloseScoreModal}
+                                      >
+                                        Close
+                                      </Button>
+                                    </ModalFooter>
+                                  </ModalContent>
+                                </Modal>
+
+                                <GroupDisplayScore
+                                  onPlayerClick={handleLookUpPlayerScore}
+                                  seededPlayersIds={
+                                    currentClass.seededPlayersIds
+                                  }
+                                  groupName={group.name}
+                                  players={group.players}
+                                />
+                              </Box>
+                            );
+
+                            return columns;
+                          }, [])
+                          .map((column, columnIndex) => (
+                            <Box flex="1" key={columnIndex}>
+                              {column}
+                            </Box>
+                          ))}
+                      </Flex>
+                    </Box>
+                  )}
+                </Box>
+              )}
             {showGroupResult && (
               <Box>
-                {currentTournament?.groups?.map((group) => {
+                {currentClass?.groups?.map((group) => {
                   console.log(group);
                   return (
                     <Box margin={5} width={"40%"} key={group.name}>

@@ -18,10 +18,11 @@ interface Player {
   intraSetScore?: string;
   intraPointScore?: string;
   onClick?: () => void;
+  sentPlayerIds?: number[];
 }
 function Player(props: Player) {
-  // console.log(props.intraMatchScore);
-  //console.log(props.intraSetScore);
+  const isSentPlayer = props.sentPlayerIds?.includes(props.id);
+  const backgroundColor = isSentPlayer ? "green.200" : props.isTopPlayer ? "#A0D8B3" : "#F5F0BB";
   return (
     <Box
       onClick={props.onClick}
@@ -29,7 +30,7 @@ function Player(props: Player) {
       p="1"
       borderRadius="md"
       _hover={{ bg: "blue.200", cursor: "pointer" }}
-      bg={props.isTopPlayer ? "#A0D8B3" : "#F5F0BB"}
+      bg={backgroundColor}
     >
       {props.score !== undefined && (
         <Flex alignItems="center">
