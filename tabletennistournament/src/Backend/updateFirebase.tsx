@@ -115,6 +115,7 @@ export async function getAllPublicTournaments(): Promise<Tournament[]> {
       }
     }
   }
+  console.log(tournaments);
   return tournaments;
 }
 

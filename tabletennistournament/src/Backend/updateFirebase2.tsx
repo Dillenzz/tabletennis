@@ -32,7 +32,7 @@ async function getTournamentId(): Promise<number> {
   return maxTournamentId + 1;
 }
 
-async function updateTournament(
+async function  updateTournament(
   tournamentRef: any,
   tournament: Tournament
 ): Promise<void> {
@@ -58,17 +58,18 @@ async function createTournament(
     dateTo: tournament.dateTo,
     location: tournament.location,
     uid: tournament.uid,
+    public: tournament.public,
     // other properties to create
   });
 }
 
-export async function writeClass(classs: Class): Promise<number> {
+export async function writeClass(update: boolean,classs: Class): Promise<number> {
   let classId = classs.classId;
 
-  if (classId === -1) {
-    classId = await getClassId(classs.tournamentId);
+  if (update === false){
+    classId = await getClassId();
   }
-
+  
   const classRef = ref(db, `class/${classId}`);
   const classSnapshot = await get(classRef);
 
@@ -82,23 +83,21 @@ export async function writeClass(classs: Class): Promise<number> {
   return classId;
 }
 
-async function getClassId(tournamentId: number): Promise<number> {
+async function getClassId(): Promise<number> {
   const classListRef = ref(db, "class");
   const classListSnapshot = await get(classListRef);
   const classList: Record<string, Class> = classListSnapshot.val() || {};
   let maxClassId: number = 0;
 
   Object.values<Class>(classList).forEach((classItem: Class) => {
-    if (
-      classItem.tournamentId === tournamentId &&
-      classItem.classId > maxClassId
-    ) {
+    if (classItem.classId > maxClassId) {
       maxClassId = classItem.classId;
     }
   });
 
   return maxClassId + 1;
 }
+
 
 async function createClass(
   classRef: any,

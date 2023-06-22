@@ -11,21 +11,6 @@ interface Tournament {
   location?: string;
   tournamentId?: number;
   classes?: Class[];
-
-
-  /*players?: Player[] | undefined;
-  matches?: Match[];
-  format?: string;
-  numberInGroup?: number;
-  seeds?: number;
-  seededPlayersIds?: number[];
-  threeOrFive?: string;
-  groups?: Group[];
-  started?: boolean;
-  readyToStart?: boolean;
-  bo?: string;
-  startBracket?: boolean;
-  */
   public?: string;
 }
 
