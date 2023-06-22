@@ -1558,6 +1558,7 @@ function App() {
 
   function handleJoinTournament(tournament: Tournament) {
     console.log("handleJoinTournament");
+    console.log(tournament);
 
   }
 
