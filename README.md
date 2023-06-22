@@ -1,4 +1,4 @@
-# Table Tennis Tournament Management Application
+# Table Tennis Tournament Management Application FTO11!
 Welcome to my table tennis tournament management application FTO11! This application is designed to simplify the process of tournament registration and creation, making it easier for players and organizers to manage table tennis events.
 
 
@@ -21,4 +21,4 @@ I'm continuously working on enhancing the application to provide the best possib
 
 Please note that the application is still a work in progress, and I appreciate your patience and support as I strive to deliver a comprehensive and reliable platform for table tennis tournaments.
 
-Feel free to explore the website and provide us with any feedback or suggestions. Input is greatly appriciated and I look forward to making this application even better with your help!
+Feel free to explore the website and provide us with any feedback or suggestions. Input is greatly appriciated and I look forward to making this application even better with your help! [FTO11](https://fto11.netlify.app "Visit Fto11")
