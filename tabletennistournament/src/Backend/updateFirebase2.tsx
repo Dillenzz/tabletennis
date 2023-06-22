@@ -4,35 +4,49 @@ import Tournament from "../components/Tournament";
 import Class from "../components/Class";
 
 export async function writeTournament2(tournament: Tournament): Promise<void> {
-  const tournamentId = await getTournamentId();
+  console.log("tournament ID inside writeTournament2", tournament.tournamentId);
 
-  const tournamentRef = ref(db, `tournament/${tournamentId}`);
-  const tournamentSnapshot = await get(tournamentRef);
+  if (tournament.tournamentId === -1) {
+    const tournamentListRef = ref(db, "tournament");
+    const tournamentListSnapshot = await get(tournamentListRef);
+    const tournamentList = tournamentListSnapshot.val() || {};
 
-  if (tournamentSnapshot.exists()) {
-    console.log("Tournament exists, updating tournament");
-    await updateTournament(tournamentRef, tournament);
-  } else {
-    console.log("Tournament does not exist, creating tournament");
+    const maxTournamentId = await getTournamentId(tournamentList);
+    const tournamentId = maxTournamentId + 1;
+
+    console.log("Creating new tournament with ID", tournamentId);
+
+    const tournamentRef = ref(db, `tournament/${tournamentId}`);
     await createTournament(tournamentRef, tournamentId, tournament);
+  } else {
+    const tournamentRef = ref(db, `tournament/${tournament.tournamentId}`);
+    const tournamentSnapshot = await get(tournamentRef);
+
+    if (tournamentSnapshot.exists()) {
+      console.log("Tournament exists, updating tournament");
+      await updateTournament(tournamentRef, tournament);
+    } else {
+      console.log("Tournament does not exist");
+      // Handle the scenario when the provided tournament ID does not exist
+    }
   }
 }
 
-async function getTournamentId(): Promise<number> {
-  const tournamentListRef = ref(db, "tournament");
-  const tournamentListSnapshot = await get(tournamentListRef);
-  const tournamentList = tournamentListSnapshot.val() || {};
+async function getTournamentId(tournamentList: any): Promise<number> {
   let maxTournamentId: number = 0;
-  if (tournamentList) {
-    maxTournamentId = Object.keys(tournamentList).reduce((maxId, id) => {
-      const tournamentId = parseInt(id);
-      return tournamentId > maxId ? tournamentId : maxId;
-    }, 0);
-  }
-  return maxTournamentId + 1;
+
+  // Iterate over the existing tournaments and find the maximum tournamentId
+  Object.values(tournamentList).forEach((tournament: any) => {
+    const tournamentId = tournament.tournamentId;
+    if (tournamentId > maxTournamentId) {
+      maxTournamentId = tournamentId;
+    }
+  });
+
+  return maxTournamentId;
 }
 
-async function  updateTournament(
+async function updateTournament(
   tournamentRef: any,
   tournament: Tournament
 ): Promise<void> {
@@ -42,6 +56,7 @@ async function  updateTournament(
     dateTo: tournament.dateTo,
     location: tournament.location,
     uid: tournament.uid,
+    public: tournament.public,
     // other properties to update
   });
 }
@@ -63,13 +78,16 @@ async function createTournament(
   });
 }
 
-export async function writeClass(update: boolean,classs: Class): Promise<number> {
+export async function writeClass(
+  update: boolean,
+  classs: Class
+): Promise<number> {
   let classId = classs.classId;
 
-  if (update === false){
+  if (update === false) {
     classId = await getClassId();
   }
-  
+
   const classRef = ref(db, `class/${classId}`);
   const classSnapshot = await get(classRef);
 
@@ -97,7 +115,6 @@ async function getClassId(): Promise<number> {
 
   return maxClassId + 1;
 }
-
 
 async function createClass(
   classRef: any,
@@ -138,7 +155,6 @@ async function updateClass(classRef: any, classs: Class): Promise<void> {
     readyToStart: classs.readyToStart,
     bo: classs.bo,
     public: classs.public,
-    
   });
 }
 
@@ -160,4 +176,39 @@ export async function loadTournamentClasses(
   }
 
   return tournamentClasses;
+}
+
+export async function getTournamentsByUid(uid: string): Promise<Tournament[]> {
+  
+  
+  const tournamentRef = ref(db, "tournament");
+  const tournamentSnapshot = await get(tournamentRef);
+  const tournamentList = tournamentSnapshot.val() || {};
+  const tournaments: Tournament[] = [];
+  for (const id in tournamentList) {
+    if (tournamentList.hasOwnProperty(id)) {
+      const tournament = tournamentList[id];
+      if (tournament.uid === uid) {
+        tournaments.push(tournament);
+      }
+    }
+  }
+  return tournaments;
+}
+
+export async function getAllPublicTournaments(): Promise<Tournament[]> {
+  const tournamentRef = ref(db, "tournament");
+  const tournamentSnapshot = await get(tournamentRef);
+  const tournamentList = tournamentSnapshot.val() || {};
+  const tournaments: Tournament[] = [];
+  for (const id in tournamentList) {
+    if (tournamentList.hasOwnProperty(id)) {
+      const tournament = tournamentList[id];
+      if (tournament.public === "Public") {
+        tournaments.push(tournament);
+      }
+    }
+  }
+  console.log(tournaments);
+  return tournaments;
 }

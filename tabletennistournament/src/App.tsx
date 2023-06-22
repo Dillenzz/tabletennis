@@ -1,21 +1,20 @@
 import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
-import logo from "./Free_Sample_By_Wix_adobe_express.svg";
+//import logo from "./Free_Sample_By_Wix_adobe_express.svg";
 
 import Player from "./components/Player";
-import { getTournamentsByUid } from "./Backend/updateFirebase";
-import { getAllPublicTournaments } from "./Backend/updateFirebase";
+import { getTournamentsByUid } from "./Backend/updateFirebase2";
+import { getAllPublicTournaments } from "./Backend/updateFirebase2";
 import { loadTournamentClasses } from "./Backend/updateFirebase2";
 import { writeClass } from "./Backend/updateFirebase2";
-//import writeTournament from "./Backend/updateFirebase";
+
 import { writeTournament2 } from "./Backend/updateFirebase2";
 import deleteTournament from "./Backend/deleteTournament";
-// import { getUsernameAndSessionDuration } from "./Backend/auth_google_provider_create";
-//import login from "./Backend/auth_google_provider_create";
+
 import {
   getUsernameAndSessionDuration,
   login,
-  // signOut,
+  
 } from "./Backend/auth_google_provider_create";
 
 import Tournament from "./components/Tournament";
@@ -82,56 +81,58 @@ function App() {
   // Call the function on startup
   // Empty array as second argument to run only on startup
 
+  const [myTournaments, setMyTournaments] = useState<Tournament[]>([]);
+  const [currentTournament, setCurrentTournament] = useState<Tournament>();
+  const [openTournaments, setOpenTournaments] = useState<Tournament[]>([]);
+
   // define state variables
   const [tournamentDateFrom, setTournamentDateFrom] = useState("");
   const [tournamentDateTo, setTournamentDateTo] = useState("");
   const [tournamentLocation, setTournamentLocation] = useState("");
   const [publicOrPrivate, setPublicOrPrivate] = useState("Private");
   const [tournamentName, setTournamentName] = useState("");
+  const [tournamentId, setTournamentId] = useState(-1);
 
-  const [myTournaments, setMyTournaments] = useState<Tournament[]>([]);
-  const [currentTournament, setCurrentTournament] = useState<Tournament>();
-  //const [tournamentPlayersID, setTournamentPlayersID] = useState<number[]>([]);
-  const [tournamentId] = useState();
 
-  const [showClassInfo, setShowClassInfo] = useState(false);
+  // states for clarity
+  const [editTournament, setEditTournament] = useState(false);
+  const [showUserName, setShowUserName] = useState(true);
+ 
+
+  const [currentClass, setCurrentClass] = useState<Class>();
   const [classPlayers, setClassPlayers] = useState<Player[]>([]);
   const [classStarted, setClassStarted] = useState(false);
   const [classSeededPlayers, setClassSeededPlayers] = useState<number[]>([]);
-  const [currentClass, setCurrentClass] = useState<Class>();
+  const [showClassInfo, setShowClassInfo] = useState(false);
+  
 
   // States for classes
-  const [numberInGroup, setNumberInGroup] = useState(4); //TODO FIX DEFAULT VALUE
+  const [numberInGroup, setNumberInGroup] = useState(4);
   const [tournamentType, setTournamentType] = useState("");
   const [threeOrFive, setThreeOrFive] = useState("3");
   const [bo, setBo] = useState("Bo5");
 
-  // define state variables for showing/hiding components
+  // showStates for startscreen
   const [showCreateTournament, setShowCreateTournament] = useState(false);
   const [showStartMenu, setShowStartMenu] = useState(true);
   const [showMyTournaments, setShowMyTournament] = useState(false);
-
   const [showOpenTournaments, setShowOpenTournaments] = useState(false);
-  const [openTournaments, setOpenTournaments] = useState<Tournament[]>([]);
-  //const [showEditTournament, setShowEditTournament] = useState(false);
-
-  const [showPlayersAndGroups, setShowPlayersAndGroups] = useState(false);
-
-  const [showTournamentButtons, setShowTournamentButtons] = useState(false);
-  const [showUserName, setShowUserName] = useState(true);
-
-  //
+  
+// State for overview of tournament
   const [showTournamentOverview, setShowTournamentOverview] = useState(false);
 
-  // for displaying tourament length
+// states for shown class
+  const [showPlayersAndGroups, setShowPlayersAndGroups] = useState(false);
+  const [showTournamentButtons, setShowTournamentButtons] = useState(false);
 
+
+  // states for displaying tourament length
   const [maxWidth, setMaxWidth] = useState(0);
   const [maxOpenWidth, setMaxOpenWidth] = useState(0);
 
-  // const [tournamentStarted, setTournamentStarted] = useState(false);
   const [readyToStart, setReadyToStart] = useState(false);
 
-  // States for showing groups and unreported matches
+  // States for showing groups and unreported matches -> After starting tournament
   const [showGroups, setShowGroups] = useState(true);
   const [showUnreportedMatches, setShowUnreportedMatches] = useState(false);
   const [
@@ -139,8 +140,9 @@ function App() {
     setShowGroupsResultsAndUnreportedMatches,
   ] = useState(false);
 
-  // define state variables for player search
+  // define modal variables
 
+// modal for creating tournament
   const {
     isOpen: isCreateClassModalOpen,
     onOpen: onOpenCreateClassModal,
@@ -153,7 +155,8 @@ function App() {
     onOpen: onOpenScoreModal,
     onClose: onCloseScoreModal,
   } = useDisclosure();
-
+ 
+  // modal for adding players
   const {
     isOpen: isOpenAddPlayersModal,
     onOpen: onOpenAddPlayersModal,
@@ -169,9 +172,7 @@ function App() {
   const [searchName, setSearchName] = useState("");
   const [searchClub, setSearchClub] = useState("");
   const [sentPlayerIds, setSentPlayerIds] = useState<number[]>([]);
-
-  // loading variable
-
+  
   // define set score variables
 
   const [matchId, setMatchId] = useState("");
@@ -205,18 +206,22 @@ function App() {
   // put the right matchId into report match from player matches and unreported matches
   const matchIdRef = useRef<HTMLInputElement | null>(null); // Declare matchIdRef as a RefObject
   const [unreportedMatches, setUnreportedMatches] = useState<Match[]>([]);
+  const inputMatchIdRefA = useRef<HTMLInputElement | null>(null);
 
   // states for showing the right player
   const [showGroupResult, setShowGroupResult] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<Player>();
 
+
+  // I dont know about this state
   const [startBracket, setStartBracket] = useState(false);
 
+  // states for loading tournaments
   const [loading, setLoading] = useState(false);
   const [loadingOpenTournaments, setLoadingOpenTournaments] = useState(false);
 
+  // States for directing highligted menu item
   const initialRef = useRef(null);
-  const finalRef = useRef(null);
   const inputSetRef = useRef(null);
 
   // CLASS VARIABLES
@@ -246,50 +251,10 @@ function App() {
     fetchData();
   }, []);
 
-  /** 
-
   const createTournament = () => {
-    // after creating a tournament, show the start menu
     setShowStartMenu(true);
     setShowCreateTournament(false);
-
-    const newTournament: Tournament = {
-      uid: uid,
-      name: tournamentName,
-      dateFrom: tournamentDateFrom,
-      dateTo: tournamentDateTo,
-      location: tournamentLocation,
-
-      format: tournamentType,
-      numberInGroup: numberInGroup,
-      threeOrFive: threeOrFive,
-      tournamentId: tournamentId,
-      players: [],
-      seededPlayersIds: [],
-      groups: [],
-      started: false,
-      matches: [],
-      readyToStart: false,
-      bo: bo,
-      public: publicOrPrivate,
-    };
-
-    const updatedTournaments = [...myTournaments, newTournament];
-    writeTournament(newTournament); // Write to Firebase
-    setMyTournaments(updatedTournaments);
-    calculateMyTournamentLength(updatedTournaments);
-    setTournamentDateFrom("");
-    setTournamentDateTo("");
-    setTournamentLocation("");
-    //setTournamentPlayers([]);
-
-    //setAllMatchesInTournament([]);
-    setCurrentTournament(newTournament);
-  }; */
-
-  const createTournament_2 = () => {
-    setShowStartMenu(true);
-    setShowCreateTournament(false);
+    console.log("Id we are sending to writeTournamnet",tournamentId);
 
     const newTournament: Tournament = {
       uid: uid,
@@ -336,11 +301,11 @@ function App() {
     };
     const updatedClasses = [...tournamentClasses, newClass];
 
-    const classID = await writeClass(newClass); // Write to Firebase
+    const classID = await writeClass(false, newClass); // Write to Firebase
     console.log(classID, "classID");
     setClassId(classID);
     setTournamentClasses(updatedClasses);
-    //console.log(tournamentClasses, "tournamentClasses");
+    
     setClassPlayers([]);
     setClassName("");
     setNumberInGroup(4);
@@ -381,6 +346,11 @@ function App() {
       setTournamentDateTo("");
       setTournamentLocation("");
       setTournamentName("");
+      setTournamentId(-1);
+      setPublicOrPrivate("Private");
+      setEditTournament(false);
+      
+      setCurrentTournament(undefined);
     } else if (user !== null) {
       setUid(user.uid);
     } else {
@@ -396,7 +366,6 @@ function App() {
     }
   };
   // define group size
-
   function handleNumberChange(valueAsString: string, valueAsNumber: number) {
     setNumberInGroup(valueAsNumber);
     console.log(valueAsString, valueAsNumber);
@@ -430,6 +399,7 @@ function App() {
   };
   // go home resets all state variables
   const handlegoToHome = () => {
+    setTournamentClasses([]);
     setShowMyTournament(false);
     setShowStartMenu(true);
     setShowCreateTournament(false);
@@ -437,19 +407,13 @@ function App() {
     setShowPlayersAndGroups(false);
     setShowTournamentOverview(false);
     setShowGroupsResultsAndUnreportedMatches(false);
-    //setShowEditTournament(false);
-
+    setEditTournament(false);
     setShowTournamentButtons(false);
-
     setShowGroupResult(false);
     setShowGroups(false);
-
     setShowTournamentButtons(false);
-
     setClassSeededPlayers([]);
     setShowOpenTournaments(false);
-
-    //setAllMatchesInTournament([]);
     setTournamentName("");
     setTournamentDateFrom("");
     setTournamentDateTo("");
@@ -457,7 +421,6 @@ function App() {
     setTournamentType("");
     setShowUnreportedMatches(false);
     setShowUserName(true);
-
     setUnreportedMatches([]);
   };
   // go to tournament info
@@ -469,13 +432,15 @@ function App() {
     setShowPlayersAndGroups(false);
     setShowTournamentButtons(false);
     setShowGroups(false);
-    setShowTournamentButtons(false);
     setShowUserName(true);
     setShowGroups(false);
     setShowUnreportedMatches(false);
     setShowGroupResult(false);
     setShowGroupsResultsAndUnreportedMatches(false);
+    setShowTournamentOverview(false);
     loadTournaments();
+    setShowOpenTournaments(false);
+    setEditTournament(false);
   };
   // login with google
   async function handleGoogleLogin() {
@@ -502,47 +467,7 @@ function App() {
     setLoading(false);
   }
 
-  // go to tournament page and load tournament info
-  /**const handleTournamentInfo = (tournament: Tournament) => {
-    // console.log(tournament);
-    setCurrentTournament(tournament);
-    setTournamentPlayers(tournament.players ? tournament.players : []);
-    setTournamentStarted(tournament.started ? tournament.started : false);
-    setShowTournamentOverview(false);
-    // console.log(tournament.seededPlayersIds);
-    setTournamentSeededPlayers(
-      tournament.seededPlayersIds ? tournament.seededPlayersIds : []
-    );
-    setShowTournamentInfo(true);
-    setShowMyTournament(false);
-    setShowStartMenu(false);
-    setShowDrawTournament(true);
-
-    setShowCreateTournament(false);
-    setShowTournamentButtons(true);
-    setShowUserName(false);
-    setUnreportedMatches([]);
-    // console.log("currentTournamet.started", currentTournament?.started);
-    setShowPlayer(true);
-    setSentPlayerIds(
-      tournament.players
-        ? tournament.players
-            .filter((player) => player.id !== undefined)
-            .map((player) => player.id as number)
-        : []
-    );
-  };
-  const filteredPlayers = realPlayers.filter((player) => {
-    const nameMatch = player.name
-      .toLowerCase()
-      .includes(searchName.toLowerCase());
-    const clubMatch = player.club
-      .toLowerCase()
-      .includes(searchClub.toLowerCase());
-
-    return nameMatch && clubMatch;
-  });
-  */
+  // go to tclass info
 
   const handleGoToClassInfo = (myClass: Class) => {
     setShowClassInfo(true);
@@ -581,12 +506,16 @@ function App() {
     setShowTournamentOverview(true);
     //setShowClassInfo(false);
     setShowMyTournament(false);
-    setCurrentTournament(tournament);
-    const tournamentClasses = await loadTournamentClasses(
+    setShowClassInfo(false);
+    setShowTournamentButtons(false);
+    console.log(tournament.tournamentId);
+    const newTournamentClasses = await loadTournamentClasses(
       tournament.tournamentId!
     );
-    setTournamentClasses(tournamentClasses);
-    console.log(tournamentClasses);
+    setCurrentTournament(tournament);
+
+    setTournamentClasses(newTournamentClasses);
+    console.log(newTournamentClasses);
   }
 
   // add player to tournament
@@ -626,7 +555,7 @@ function App() {
         uid: uid,
       };
 
-      writeClass(newClass);
+      writeClass(true, newClass);
       setCurrentClass(newClass);
     }
   }
@@ -684,17 +613,7 @@ function App() {
       });
   }
 
-  // function not called?
-  /* function handleEditTournaments(tournament: Tournament) {
-    setShowMyTournament(false);
-    setShowStartMenu(false);
-    setShowCreateTournament(false);
-    setShowTournamentInfo(false);
-    setShowPlayer(false);
-    //setShowEditTournament(true);
-    setCurrentTournament(tournament);
-  }
-  */
+
 
   // sets states to display the drawn groups
   function handleDrawTournament() {
@@ -726,7 +645,7 @@ function App() {
           matches: [],
         };
         console.log("before error");
-        writeClass(newClass);
+        writeClass(true, newClass);
         console.log("after error");
         setCurrentTournament(newClass);
         drawTournament(newClass);
@@ -734,13 +653,10 @@ function App() {
     } else {
       drawTournament(currentClass);
     }
-    //saveTournament();
-
     setShowMyTournament(false);
     setShowStartMenu(false);
     setShowCreateTournament(false);
     setShowClassInfo(true);
-    //setShowEditTournament(false);
     setShowPlayersAndGroups(true);
   }
 
@@ -1008,7 +924,7 @@ function App() {
         readyToStart: true,
         matches: [],
       });
-      writeClass({
+      writeClass(true, {
         ...myClass,
         groups: addGroups,
         readyToStart: true,
@@ -1145,15 +1061,7 @@ function App() {
 
     return updatedGroups;
   }
-  /*interface Group{
-    name?: number;
-    players?: Player[];
-    matches?: Match[];
-    format?: string;
-    numberInGroup?: string;
-    tournamentId?: number;
-    */
-
+  
   // function put tournament in start state after draw has been done.
   function handleStartClass() {
     setShowGroupsResultsAndUnreportedMatches(true);
@@ -1165,7 +1073,7 @@ function App() {
     setCurrentTournament(currentTournament);
     setCurrentClass(currentClass);
     const matches = assignMatchesInTournament(currentClass);
-    //setClassStarted(true);
+ 
     setShowUnreportedMatches(false);
     setShowGroups(true);
 
@@ -1176,7 +1084,7 @@ function App() {
         readyToStart: false,
         matches: matches,
       });
-      writeClass({
+      writeClass(true, {
         ...currentClass,
         started: true,
         readyToStart: false,
@@ -1448,7 +1356,7 @@ function App() {
         };
 
         console.log(updatedClass);
-        writeClass(updatedClass);
+        writeClass(true, updatedClass);
         setCurrentClass(updatedClass);
 
         clearMatchScore();
@@ -1565,7 +1473,7 @@ function App() {
     if (currentClass !== undefined && currentClass !== null) {
       if (unreportedMatches.length === 0) {
         setStartBracket(true);
-        writeClass({
+        writeClass(true, {
           ...currentClass,
           startBracket: true,
         });
@@ -1578,7 +1486,7 @@ function App() {
     }
   }
 
-  const inputMatchIdRefA = useRef<HTMLInputElement | null>(null);
+  
 
   function handleDeleteTournament(tournament: Tournament) {
     console.log("handleDeleteTournament");
@@ -1591,7 +1499,7 @@ function App() {
           )
         );
       });
-      //handleSetAllValuesToDefault();
+      
     }
   }
 
@@ -1631,7 +1539,27 @@ function App() {
     setMaxOpenWidth(Math.max(...lengths) * 18);
   }
 
-  //C1D0B5 color bg
+ 
+
+  function handleEditTournament(tournament: Tournament) {
+    console.log("handleEditTournament");
+    setCurrentTournament(tournament);
+    setTournamentDateFrom(tournament.dateFrom ? tournament.dateFrom : "");
+    setTournamentDateTo(tournament.dateTo ? tournament.dateTo : "");
+    setTournamentName(tournament.name? tournament.name : "");
+    setTournamentLocation(tournament.location ? tournament.location : "");
+    setTournamentId(tournament.tournamentId ? tournament.tournamentId : -1);
+    setPublicOrPrivate(tournament.public ? tournament.public : "Public");
+    setEditTournament(true);
+    setShowCreateTournament(true);
+    setShowMyTournament(false);
+    
+  }
+
+  function handleJoinTournament(tournament: Tournament) {
+    console.log("handleJoinTournament");
+
+  }
 
   // App start
   return (
@@ -1651,7 +1579,7 @@ function App() {
                   <MenuButton
                     bg="#FFFFF"
                     colorScheme="ghost"
-                    m={4}
+                    m={2}
                     as={Button}
                     aria-label="Options"
                     leftIcon={<HamburgerIcon />}
@@ -1670,7 +1598,7 @@ function App() {
 
                 <Button
                   colorScheme="blue"
-                  margin={4}
+                  margin={2}
                   onClick={async () => await handleGoogleLogin()}
                   ml={2}
                 >
@@ -1688,7 +1616,7 @@ function App() {
               <>
                 <Box mt={2}>
                   <img
-                    src={logo}
+                   // src={logo}
                     alt="SVG Image"
                     style={{ width: "50%", margin: "auto" }}
                   />
@@ -1740,10 +1668,13 @@ function App() {
                       <Box key={`${tournament.tournamentId}-${index}`}>
                         <Center>
                           <Box
-                            onClick={() => handleTournamentOverview(tournament)}
+                            onClick={() => {
+                              handleTournamentOverview(tournament),
+                                setCurrentTournament(tournament);
+                            }}
                             _hover={{ bg: "#A2CDB0", cursor: "pointer" }}
                             rounded="lg"
-                            bg="#DBDFAA"
+                            bg="purple.100"
                             m={1}
                             width={"100%"}
                             minWidth={`${maxWidth}px`}
@@ -1769,7 +1700,8 @@ function App() {
                                 boxSize={24}
                                 _hover={{ cursor: "pointer" }}
                                 aria-label="Edit Tournament"
-                                //onClick={() => handleEditTournaments(tournament)}
+                                onClick={() => handleEditTournament(tournament)
+                                }
                               />
                             </Tooltip>
 
@@ -1813,7 +1745,7 @@ function App() {
                   <Stack>
                     <FormControl>
                       <Center>
-                        <FormLabel>Create Tournament</FormLabel>
+                        <FormLabel>{editTournament === true ? "Edit Tournament " + currentTournament?.name : "Create new Tournament"}</FormLabel>
                       </Center>
 
                       <Box p={2}>
@@ -1823,7 +1755,7 @@ function App() {
                           bg={"white"}
                           value={tournamentName}
                           onChange={handleChange}
-                          placeholder="Tournament Name"
+                          placeholder={currentTournament?.name ? currentTournament?.name : "Name"}
                           size="lg"
                         />
                       </Box>
@@ -1855,7 +1787,7 @@ function App() {
                           bg={"white"}
                           value={tournamentLocation}
                           onChange={handleLocationChange}
-                          placeholder="Tournament Location"
+                          placeholder={currentTournament?.location ? currentTournament?.location : "Location"}
                           size="lg"
                         />
                       </Box>
@@ -1875,10 +1807,19 @@ function App() {
                         <Button
                           bg={"#F5F0BB"}
                           m={4}
-                          onClick={() => createTournament_2()}
+                          onClick={() => createTournament()}
+
+                          disabled={tournamentName === ""}
+                            style={{
+                              visibility:
+                                tournamentName === "" ? "hidden" : "visible",
+                            }}
                         >
                           Done
                         </Button>
+
+
+                       
                       </Center>
                       {/** 
                       <Modal
@@ -2043,22 +1984,12 @@ function App() {
                                 mr={2}
                                 bg="blue.200"
                                 onClick={() => {
-                                  // joinTournament(tournament);
+                                   handleJoinTournament(tournament);
                                 }}
                               >
                                 Info
                               </Button>
-                              <Button
-                                m={2}
-                                size={"md"}
-                                fontSize={"24"}
-                                bg={"green.200"}
-                                onClick={() => {
-                                  // joinTournament(tournament);
-                                }}
-                              >
-                                Join
-                              </Button>
+                              
                             </Flex>
                           </Center>
                         </Stack>
@@ -2075,7 +2006,7 @@ function App() {
                   {currentTournament && (
                     <Center>
                       <Box>
-                        <Heading m={4} fontWeight="bold">
+                        <Heading m={2} fontWeight="bold">
                           {currentTournament.name}
                         </Heading>
                       </Box>
@@ -2093,18 +2024,18 @@ function App() {
                   <FormControl>
                     <Modal
                       initialFocusRef={initialRef}
-                      finalFocusRef={finalRef}
                       isOpen={isCreateClassModalOpen}
                       onClose={onCloseCreateClassModal}
                     >
                       <ModalOverlay />
                       <ModalContent>
-                        <ModalHeader>Create new class</ModalHeader>
+                        <ModalHeader> Create new Class</ModalHeader>
                         <ModalCloseButton />
                         <ModalBody pb={8}>
                           <FormControl isRequired>
                             <FormLabel>Name</FormLabel>
                             <Input
+                              ref={initialRef}
                               placeholder="Classname"
                               value={className}
                               onChange={handleClassNameChange}
@@ -2219,6 +2150,11 @@ function App() {
                               onCloseCreateClassModal();
                             }}
                             colorScheme="blue"
+                            disabled={className === ""}
+                            style={{
+                              visibility:
+                                className === "" ? "hidden" : "visible",
+                            }}
                           >
                             Save and Close
                           </Button>
@@ -2227,30 +2163,42 @@ function App() {
                     </Modal>
                   </FormControl>
 
-                  <Box>
-                    {tournamentClasses.map((myClass: Class, index) => (
-                      <Box
-                        key={`${myClass.classId}-${index}`}
-                        _hover={{ bg: "green.300" }}
-                        bg="pink.100"
-                        m={4}
-                        borderRadius="md"
-                        onClick={() => handleGoToClassInfo(myClass)}
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        cursor="pointer"
-                      >
-                        <Text fontSize={40}>{myClass.name}</Text>
-                      </Box>
-                    ))}
+                  <Box p={4}>
+                    <Flex
+                      display="flex"
+                      flexWrap="wrap"
+                      justifyContent="center"
+                    >
+                      {tournamentClasses.map((myClass: Class, index) => (
+                        <Box
+                          key={`${myClass.classId}-${index}`}
+                          _hover={{ bg: "green.300" }}
+                          bg="green.200"
+                          m={2}
+                          p={4}
+                          borderRadius="md"
+                          onClick={() => handleGoToClassInfo(myClass)}
+                          display="flex"
+                          justifyContent="center"
+                          alignItems="center"
+                          cursor="pointer"
+                        >
+                          <Tooltip
+                            label={myClass.name}
+                            aria-label="edit-tooltip"
+                          >
+                            <Text fontSize={40}>{myClass.name}</Text>
+                          </Tooltip>
+                        </Box>
+                      ))}
+                    </Flex>
                   </Box>
                 </Box>
               </Center>
             )}
             {/** Class info */}
             {showClassInfo && !classStarted && (
-              <Box m={4}>
+              <Box >
                 <Center>
                   <Stack>
                     <Box>
@@ -2262,14 +2210,27 @@ function App() {
                         </Center>
                       )}
                     </Box>
-                    <Button
-                      size={"lg"}
-                      fontSize={"30"}
-                      colorScheme="blue"
-                      onClick={onOpenAddPlayersModal}
-                    >
-                      Add players
-                    </Button>
+                    <Flex>
+                      <Button
+                        size={"lg"}
+                        fontSize={"30"}
+                        colorScheme="purple"
+                        onClick={onOpenAddPlayersModal}
+                        m={2}
+                      >
+                        Add players
+                      </Button>
+                      <Button
+                        size={"lg"}
+                        fontSize={"30"}
+                        colorScheme="blue"
+                        m={2}
+                        onClick={() => handleTournamentOverview(currentTournament!)}
+                        
+                      >
+                        Classes
+                      </Button>
+                    </Flex>
                   </Stack>
 
                   <Modal
@@ -2298,9 +2259,7 @@ function App() {
                             placeholder=""
                             size="sm"
                           />
-                          <Button colorScheme="blue" p={1} ml={1} size="s">
-                            Club
-                          </Button>
+                          
                         </Flex>
                         <Box mt={4}>
                           {filteredPlayers.slice(0, 25).map((player) => {
@@ -2509,7 +2468,7 @@ function App() {
                   </Center>
                   <Flex justifyContent="space-between">
                     <Button
-                      marginLeft="5"
+                      mr="5"
                       fontSize={"30"}
                       size={"lg"}
                       // Color scheme for more colors use bg
@@ -3113,7 +3072,7 @@ function App() {
                     </Modal>
 
                     <Button
-                      marginLeft={"5"}
+                      mr={5}
                       size="lg"
                       fontSize={"30"}
                       bg={"#F7E1AE"}
@@ -3128,6 +3087,7 @@ function App() {
 
                     <Button
                       fontSize={"30"}
+                      mr={5}
                       size={"lg"}
                       onClick={() => {
                         onOpenScoreModal();
@@ -3138,7 +3098,7 @@ function App() {
                     </Button>
 
                     <Button
-                      marginLeft="5"
+                      mr={5}
                       fontSize={"30"}
                       size={"lg"}
                       bg={"blue.300"}
@@ -3169,6 +3129,7 @@ function App() {
                       unreportedMatches === null) && (
                       // red button
                       <Button
+
                         onClick={() => {
                           alert(
                             unreportedMatches.length + `  unreported matches`
@@ -3178,7 +3139,7 @@ function App() {
                         size="lg"
                         fontSize="30"
                         bg={"#E76161"}
-                        marginRight={"5"}
+                        mr={"5"}
                       >
                         Start bracket
                       </Button>
