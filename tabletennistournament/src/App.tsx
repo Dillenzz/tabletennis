@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
-//import logo from "./Free_Sample_By_Wix_adobe_express.svg";
+import logo from "./assets/ft11.svg";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
@@ -1617,15 +1617,15 @@ function App() {
               <>
                 <Box mt={2}>
                   <img
-                   // src={logo}
+                    src={logo}
                     alt="SVG Image"
                     style={{ width: "50%", margin: "auto" }}
                   />
                 </Box>
 
-                <Flex>
+                <Stack>
                   {userLoggedIn && (
-                    <Box>
+                    <Stack>
                       <Button
                         bg="#F5F0BB"
                         onClick={() => handleCreateTournament()}
@@ -1641,7 +1641,7 @@ function App() {
                       >
                         My tournaments
                       </Button>
-                    </Box>
+                    </Stack>
                   )}
 
                   <Box>
@@ -1653,7 +1653,7 @@ function App() {
                       Open tournaments
                     </Button>
                   </Box>
-                </Flex>
+                </Stack>
               </>
             )}
 
