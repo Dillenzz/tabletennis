@@ -1,15 +1,18 @@
 {
   "dependencies": {
-    "@chakra-ui/react": "^2.6.0",
-    "@emotion/react": "^11.10.8",
-    "@emotion/styled": "^11.10.8",
+    "@chakra-ui/icons": "^2.0.19",
+    "@chakra-ui/react": "^2.7.1",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "firebase": "^9.21.0",
     "firebaseui": "^6.0.2",
-    "framer-motion": "^10.12.4",
+    "framer-motion": "^10.12.16",
     "papaparse": "^5.4.1",
+    "react": "^18.2.0",
     "react-icons": "^4.8.0"
   },
   "devDependencies": {
-    "@types/papaparse": "^5.3.7"
+    "@types/papaparse": "^5.3.7",
+    "@types/react": "^18.2.13"
   }
 }
