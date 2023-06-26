@@ -14,27 +14,43 @@ interface Player {
   score?: number;
   class?: string;
   isTopPlayer?: boolean;
-  intraMatchScore?: number
+  intraMatchScore?: number;
   intraSetScore?: string;
   intraPointScore?: string;
   onClick?: () => void;
   sentPlayerIds?: number[];
+  css?: string;
 }
+
 function Player(props: Player) {
   const isSentPlayer = props.sentPlayerIds?.includes(props.id);
-  const backgroundColor = isSentPlayer ? "green.200" : props.isTopPlayer ? "#A0D8B3" : "#F5F0BB";
+  const isGroupPlayer = props.css === "group-player";
+
+  const backgroundColor = isGroupPlayer
+    ? "transparent"
+    : isSentPlayer
+    ? "green.200"
+    : props.isTopPlayer
+    ? "#A0D8B3"
+    : "#F5F0BB";
+
+  const hoverStyle = isGroupPlayer ? {} : { bg: "blue.200", cursor: "pointer" };
+
   return (
     <Box
       onClick={props.onClick}
       width="100%"
       p="1"
       borderRadius="md"
-      _hover={{ bg: "blue.200", cursor: "pointer" }}
+      _hover={hoverStyle}
       bg={backgroundColor}
     >
       {props.score !== undefined && (
         <Flex alignItems="center">
-          <Text fontSize={14} fontWeight={props.isTopPlayer ? "bold" : "normal"}>
+          <Text
+            fontSize={14}
+            fontWeight={props.isTopPlayer ? "bold" : "normal"}
+          >
             {props.name} - {props.club} {props.points} ({props.class})
           </Text>
 
@@ -92,4 +108,5 @@ function Player(props: Player) {
     </Box>
   );
 }
+
 export default Player;

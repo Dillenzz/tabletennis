@@ -14,7 +14,6 @@ import deleteTournament from "./Backend/deleteTournament";
 import {
   getUsernameAndSessionDuration,
   login,
-  
 } from "./Backend/auth_google_provider_create";
 
 import Tournament from "./components/Tournament";
@@ -93,18 +92,21 @@ function App() {
   const [tournamentName, setTournamentName] = useState("");
   const [tournamentId, setTournamentId] = useState(-1);
 
-
   // states for clarity
   const [editTournament, setEditTournament] = useState(false);
   const [showUserName, setShowUserName] = useState(true);
- 
+
+  const [deleteInput, setDeleteInput] = useState("");
+  const [
+    showDeleteTournamentConfirmation,
+    setShowDeleteTournamentConfirmation,
+  ] = useState(false);
 
   const [currentClass, setCurrentClass] = useState<Class>();
   const [classPlayers, setClassPlayers] = useState<Player[]>([]);
   const [classStarted, setClassStarted] = useState(false);
   const [classSeededPlayers, setClassSeededPlayers] = useState<number[]>([]);
   const [showClassInfo, setShowClassInfo] = useState(false);
-  
 
   // States for classes
   const [numberInGroup, setNumberInGroup] = useState(4);
@@ -117,20 +119,20 @@ function App() {
   const [showStartMenu, setShowStartMenu] = useState(true);
   const [showMyTournaments, setShowMyTournament] = useState(false);
   const [showOpenTournaments, setShowOpenTournaments] = useState(false);
-  
-// State for overview of tournament
+
+  // State for overview of tournament
   const [showTournamentOverview, setShowTournamentOverview] = useState(false);
 
-// states for shown class
+  // states for shown class
   const [showPlayersAndGroups, setShowPlayersAndGroups] = useState(false);
   const [showTournamentButtons, setShowTournamentButtons] = useState(false);
-
 
   // states for displaying tourament length
   const [maxWidth, setMaxWidth] = useState(0);
   const [maxOpenWidth, setMaxOpenWidth] = useState(0);
 
-  const [readyToStart, setReadyToStart] = useState(false);
+ 
+  const [playerDeleted, setPlayerDeleted] = useState(false);
 
   // States for showing groups and unreported matches -> After starting tournament
   const [showGroups, setShowGroups] = useState(true);
@@ -142,7 +144,7 @@ function App() {
 
   // define modal variables
 
-// modal for creating tournament
+  // modal for creating tournament
   const {
     isOpen: isCreateClassModalOpen,
     onOpen: onOpenCreateClassModal,
@@ -155,13 +157,26 @@ function App() {
     onOpen: onOpenScoreModal,
     onClose: onCloseScoreModal,
   } = useDisclosure();
- 
+
   // modal for adding players
   const {
     isOpen: isOpenAddPlayersModal,
     onOpen: onOpenAddPlayersModal,
     onClose: onCloseAddPlayersModal,
   } = useDisclosure();
+
+  const {
+    isOpen: isOpenMatchesModal,
+    onOpen: onOpenMatchesModal,
+    onClose: onCloseMatchesModal,
+  } = useDisclosure();
+
+  const {
+    isOpen: isDeleteTournamentModal,
+    onOpen: onOpenDeleteTournamentModal,
+    onClose: onCloseDeleteTournamentModal,
+  } = useDisclosure();
+
 
   // States for loading the right tournaments for Uid
   const [userName, setUserName] = useState("");
@@ -172,7 +187,7 @@ function App() {
   const [searchName, setSearchName] = useState("");
   const [searchClub, setSearchClub] = useState("");
   const [sentPlayerIds, setSentPlayerIds] = useState<number[]>([]);
-  
+
   // define set score variables
 
   const [matchId, setMatchId] = useState("");
@@ -211,7 +226,6 @@ function App() {
   // states for showing the right player
   const [showGroupResult, setShowGroupResult] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<Player>();
-
 
   // I dont know about this state
   const [startBracket, setStartBracket] = useState(false);
@@ -254,7 +268,7 @@ function App() {
   const createTournament = () => {
     setShowStartMenu(true);
     setShowCreateTournament(false);
-    console.log("Id we are sending to writeTournamnet",tournamentId);
+    console.log("Id we are sending to writeTournamnet", tournamentId);
 
     const newTournament: Tournament = {
       uid: uid,
@@ -305,7 +319,7 @@ function App() {
     console.log(classID, "classID");
     setClassId(classID);
     setTournamentClasses(updatedClasses);
-    
+
     setClassPlayers([]);
     setClassName("");
     setNumberInGroup(4);
@@ -349,7 +363,7 @@ function App() {
       setTournamentId(-1);
       setPublicOrPrivate("Private");
       setEditTournament(false);
-      
+
       setCurrentTournament(undefined);
     } else if (user !== null) {
       setUid(user.uid);
@@ -399,6 +413,7 @@ function App() {
   };
   // go home resets all state variables
   const handlegoToHome = () => {
+    setClassStarted(false);
     setTournamentClasses([]);
     setShowMyTournament(false);
     setShowStartMenu(true);
@@ -470,11 +485,17 @@ function App() {
   // go to tclass info
 
   const handleGoToClassInfo = (myClass: Class) => {
+    console.log(myClass);
     setShowClassInfo(true);
 
     setCurrentClass(myClass);
     setClassPlayers(myClass.players ? myClass.players : []);
+
     setClassStarted(myClass.started ? myClass.started : false);
+    setShowGroupsResultsAndUnreportedMatches(
+      myClass.started ? myClass.started : false
+    );
+
     setShowTournamentOverview(false);
     setClassSeededPlayers(
       myClass.seededPlayersIds ? myClass.seededPlayersIds : []
@@ -537,6 +558,7 @@ function App() {
       });
     }
     setSentPlayerIds([...sentPlayerIds, playerId]);
+    
   }
   // save tournament to firebase
   function saveTournament() {
@@ -613,26 +635,24 @@ function App() {
       });
   }
 
-
-
   // sets states to display the drawn groups
   function handleDrawTournament() {
     if (currentClass && currentClass.players && currentClass.numberInGroup) {
       if (currentClass.players?.length === 0) {
         alert("Please add players to the tournament");
-        setReadyToStart(false);
+        
         return;
       } else if (
         currentClass.players?.length < 4 &&
         currentClass.numberInGroup === 4
       ) {
         alert("Please add atleast 4 players to the tournament");
-        setReadyToStart(false);
+        
         return;
       }
     } else {
       alert("Please add players to the tournament");
-      setReadyToStart(false);
+      
       return;
     }
     if (currentClass?.seededPlayersIds === undefined) {
@@ -1061,7 +1081,7 @@ function App() {
 
     return updatedGroups;
   }
-  
+
   // function put tournament in start state after draw has been done.
   function handleStartClass() {
     setShowGroupsResultsAndUnreportedMatches(true);
@@ -1073,7 +1093,7 @@ function App() {
     setCurrentTournament(currentTournament);
     setCurrentClass(currentClass);
     const matches = assignMatchesInTournament(currentClass);
- 
+
     setShowUnreportedMatches(false);
     setShowGroups(true);
 
@@ -1486,8 +1506,6 @@ function App() {
     }
   }
 
-  
-
   function handleDeleteTournament(tournament: Tournament) {
     console.log("handleDeleteTournament");
     if (tournament !== undefined && tournament !== null) {
@@ -1499,7 +1517,6 @@ function App() {
           )
         );
       });
-      
     }
   }
 
@@ -1539,27 +1556,23 @@ function App() {
     setMaxOpenWidth(Math.max(...lengths) * 18);
   }
 
- 
-
   function handleEditTournament(tournament: Tournament) {
     console.log("handleEditTournament");
     setCurrentTournament(tournament);
     setTournamentDateFrom(tournament.dateFrom ? tournament.dateFrom : "");
     setTournamentDateTo(tournament.dateTo ? tournament.dateTo : "");
-    setTournamentName(tournament.name? tournament.name : "");
+    setTournamentName(tournament.name ? tournament.name : "");
     setTournamentLocation(tournament.location ? tournament.location : "");
     setTournamentId(tournament.tournamentId ? tournament.tournamentId : -1);
     setPublicOrPrivate(tournament.public ? tournament.public : "Public");
     setEditTournament(true);
     setShowCreateTournament(true);
     setShowMyTournament(false);
-    
   }
 
   function handleJoinTournament(tournament: Tournament) {
     console.log("handleJoinTournament");
     console.log(tournament);
-
   }
 
   // App start
@@ -1623,37 +1636,37 @@ function App() {
                   />
                 </Box>
 
-                <Stack>
+                <Flex direction={"column"}>
                   {userLoggedIn && (
-                    <Stack>
+                    <Flex direction={"column"}>
                       <Button
+                        m={2}
                         bg="#F5F0BB"
                         onClick={() => handleCreateTournament()}
-                        margin={0.5}
                       >
-                        New Tournament
+                        New tournament
                       </Button>
 
                       <Button
+                        m={2}
                         bg="#F5F0BB"
                         onClick={() => handleShowMyTournaments()}
-                        margin={0.5}
                       >
                         My tournaments
                       </Button>
-                    </Stack>
+                    </Flex>
                   )}
 
                   <Box>
                     <Button
+                      m={2}
                       bg="#F5F0BB"
                       onClick={() => handleShowOpenTournaments()}
-                      margin={0.5}
                     >
                       Open tournaments
                     </Button>
                   </Box>
-                </Stack>
+                </Flex>
               </>
             )}
 
@@ -1696,13 +1709,12 @@ function App() {
                               aria-label="edit-tooltip"
                             >
                               <EditIcon
-                                margin={10}
+                                margin={4}
                                 color="black"
                                 boxSize={24}
                                 _hover={{ cursor: "pointer" }}
                                 aria-label="Edit Tournament"
-                                onClick={() => handleEditTournament(tournament)
-                                }
+                                onClick={() => handleEditTournament(tournament)}
                               />
                             </Tooltip>
 
@@ -1713,16 +1725,15 @@ function App() {
                               <DeleteIcon
                                 color="black"
                                 boxSize={24}
-                                margin={10}
+                                margin={4}
                                 _hover={{ cursor: "pointer" }}
                                 aria-label="Delete Tournament"
                                 onClick={() => {
-                                  const confirmDelete = window.confirm(
-                                    `Are you sure you want to delete the tournament "${tournament.name}"?`
+                                  setCurrentTournament(tournament);
+                                  onOpenDeleteTournamentModal();
+                                  setShowDeleteTournamentConfirmation(
+                                   true
                                   );
-                                  if (confirmDelete) {
-                                    handleDeleteTournament(tournament);
-                                  }
                                 }}
                               />
                             </Tooltip>
@@ -1731,6 +1742,44 @@ function App() {
                       </Box>
                     );
                   })}
+                {showDeleteTournamentConfirmation && currentTournament && (
+                  <Modal
+                    isOpen={isDeleteTournamentModal}
+                    onClose={onCloseDeleteTournamentModal}
+                  >
+                    <ModalOverlay />
+                    <ModalContent>
+                      <ModalHeader>Delete Tournament {currentTournament.name}</ModalHeader>
+                      <ModalCloseButton />
+                      <ModalBody>
+                        <Input
+                          type="text"
+                          value={deleteInput}
+                          onChange={(e) => setDeleteInput(e.target.value)}
+                          placeholder={`Type "${currentTournament.name}" to confirm deletion`}
+                        />
+                      </ModalBody>
+                      <ModalFooter>
+                        <Button
+                          onClick={() => {
+                            if (deleteInput === currentTournament.name) {
+                              handleDeleteTournament(currentTournament);
+                            } else {
+                              alert(
+                                "Tournament name does not match. Deletion aborted."
+                              );
+                            }
+                            setDeleteInput("");
+                            setCurrentTournament(undefined);
+                            onCloseDeleteTournamentModal();
+                          }}
+                        >
+                          Confirm deletion
+                        </Button>
+                      </ModalFooter>
+                    </ModalContent>
+                  </Modal>
+                )}
                 {loading && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
@@ -1746,7 +1795,11 @@ function App() {
                   <Stack>
                     <FormControl>
                       <Center>
-                        <FormLabel>{editTournament === true ? "Edit Tournament " + currentTournament?.name : "Create new Tournament"}</FormLabel>
+                        <FormLabel>
+                          {editTournament === true
+                            ? "Edit Tournament " + currentTournament?.name
+                            : "Create new Tournament"}
+                        </FormLabel>
                       </Center>
 
                       <Box p={2}>
@@ -1756,7 +1809,11 @@ function App() {
                           bg={"white"}
                           value={tournamentName}
                           onChange={handleChange}
-                          placeholder={currentTournament?.name ? currentTournament?.name : "Name"}
+                          placeholder={
+                            currentTournament?.name
+                              ? currentTournament?.name
+                              : "Name"
+                          }
                           size="lg"
                         />
                       </Box>
@@ -1788,7 +1845,11 @@ function App() {
                           bg={"white"}
                           value={tournamentLocation}
                           onChange={handleLocationChange}
-                          placeholder={currentTournament?.location ? currentTournament?.location : "Location"}
+                          placeholder={
+                            currentTournament?.location
+                              ? currentTournament?.location
+                              : "Location"
+                          }
                           size="lg"
                         />
                       </Box>
@@ -1809,18 +1870,14 @@ function App() {
                           bg={"#F5F0BB"}
                           m={4}
                           onClick={() => createTournament()}
-
                           disabled={tournamentName === ""}
-                            style={{
-                              visibility:
-                                tournamentName === "" ? "hidden" : "visible",
-                            }}
+                          style={{
+                            visibility:
+                              tournamentName === "" ? "hidden" : "visible",
+                          }}
                         >
-                          Done
+                          {editTournament === true ? "Apply changes" : "Create"}
                         </Button>
-
-
-                       
                       </Center>
                       {/** 
                       <Modal
@@ -1985,12 +2042,11 @@ function App() {
                                 mr={2}
                                 bg="blue.200"
                                 onClick={() => {
-                                   handleJoinTournament(tournament);
+                                  handleJoinTournament(tournament);
                                 }}
                               >
                                 Info
                               </Button>
-                              
                             </Flex>
                           </Center>
                         </Stack>
@@ -2198,8 +2254,8 @@ function App() {
               </Center>
             )}
             {/** Class info */}
-            {showClassInfo && !classStarted && (
-              <Box >
+            {showClassInfo && classStarted === false && (
+              <Box>
                 <Center>
                   <Stack>
                     <Box>
@@ -2219,15 +2275,16 @@ function App() {
                         onClick={onOpenAddPlayersModal}
                         m={2}
                       >
-                        Add players
+                        Players
                       </Button>
                       <Button
                         size={"lg"}
                         fontSize={"30"}
                         colorScheme="blue"
                         m={2}
-                        onClick={() => handleTournamentOverview(currentTournament!)}
-                        
+                        onClick={() =>
+                          handleTournamentOverview(currentTournament!)
+                        }
                       >
                         Classes
                       </Button>
@@ -2260,7 +2317,6 @@ function App() {
                             placeholder=""
                             size="sm"
                           />
-                          
                         </Flex>
                         <Box mt={4}>
                           {filteredPlayers.slice(0, 25).map((player) => {
@@ -2301,7 +2357,7 @@ function App() {
                 </Center>
               </Box>
             )}
-            {showTournamentButtons && !classStarted && (
+            {showTournamentButtons && classStarted === false && (
               <>
                 <Flex m={2} justifyContent="space-between">
                   <Box mr={5}>
@@ -2335,43 +2391,47 @@ function App() {
                         size="lg"
                         fontSize="30"
                         bg="#B2A4FF"
-                        onClick={() => handleDrawTournament()}
+                        onClick={() => {
+                          handleDrawTournament();
+                          setPlayerDeleted(false);
+                        }}
                       >
                         Draw Class
                       </Button>
                     )}
                   </Box>
                   <Box>
-                    {currentClass && currentClass.readyToStart && (
-                      <Button
-                        size="lg"
-                        fontSize="30"
-                        bg="#C9F4AA"
-                        onClick={() => handleStartClass()}
-                      >
-                        Start Class
-                      </Button>
-                    )}
-                  </Box>
-                  <Spacer />
-                  <Box mr={2}>
                     {currentClass &&
-                      (!currentClass.readyToStart || classStarted) && (
+                      currentClass.readyToStart === true &&
+                      !playerDeleted && (
                         <Button
-                          onClick={() => alert("Please draw tournament first")}
                           size="lg"
                           fontSize="30"
-                          bg="#FEA1A1"
+                          bg="#C9F4AA"
+                          onClick={() => handleStartClass()}
                         >
                           Start Class
                         </Button>
                       )}
                   </Box>
+                  <Spacer />
+                  <Box mr={2}>
+                    {currentClass && playerDeleted === true && (
+                      <Button
+                        onClick={() => alert("Please draw tournament first")}
+                        size="lg"
+                        fontSize="30"
+                        bg="#FEA1A1"
+                      >
+                        Start Class
+                      </Button>
+                    )}
+                  </Box>
                 </Flex>
               </>
             )}
 
-            {showPlayersAndGroups && !classStarted && (
+            {showPlayersAndGroups && classStarted === false && (
               <Flex>
                 <Box m={2}>
                   <Flex overflow="hidden" maxHeight="100%">
@@ -2432,6 +2492,8 @@ function App() {
                                 colorScheme="red"
                                 onClick={() => {
                                   deletePlayerFromTournament(player);
+                                  setPlayerDeleted(true);
+                                  
                                 }}
                                 size={"sm"}
                               />
@@ -2463,7 +2525,6 @@ function App() {
               currentClass.started === true &&
               showGroupsResultsAndUnreportedMatches && (
                 <Box>
-                  {/*console.log("currentClass", currentClass)*/}
                   <Center>
                     <Heading margin={5}>{currentClass?.name || ""}</Heading>
                   </Center>
@@ -3130,7 +3191,6 @@ function App() {
                       unreportedMatches === null) && (
                       // red button
                       <Button
-
                         onClick={() => {
                           alert(
                             unreportedMatches.length + `  unreported matches`
@@ -3212,14 +3272,14 @@ function App() {
                                     ? "80%"
                                     : "60%"
                                 }
-                                onClick={onOpenScoreModal}
+                                onClick={onOpenMatchesModal}
                                 key={group.name}
                               >
                                 <Modal
                                   finalFocusRef={inputSetRef}
                                   isCentered
                                   onClose={onCloseScoreModal}
-                                  isOpen={isOpenScoreModal}
+                                  isOpen={isOpenMatchesModal}
                                   motionPreset="slideInBottom"
                                   blockScrollOnMount={false}
                                 >
@@ -3231,7 +3291,7 @@ function App() {
                                       </ModalHeader>
                                     )}
                                     <ModalCloseButton />
-                                    <ModalBody padding={5}>
+                                    <ModalBody>
                                       <Box>
                                         {currentPlayer &&
                                           currentClass?.matches && (
@@ -3277,7 +3337,7 @@ function App() {
                                       <Button
                                         colorScheme="blue"
                                         mr={3}
-                                        onClick={onCloseScoreModal}
+                                        onClick={onCloseMatchesModal}
                                       >
                                         Close
                                       </Button>
@@ -3313,7 +3373,7 @@ function App() {
                 {currentClass?.groups?.map((group) => {
                   console.log(group);
                   return (
-                    <Box margin={5} width={"40%"} key={group.name}>
+                    <Box margin={5} width={"100%"} key={group.name}>
                       {" "}
                       {/* Add a key prop to the enclosing Box component */}
                       <GroupResult
@@ -3324,11 +3384,6 @@ function App() {
                     </Box>
                   );
                 })}
-              </Box>
-            )}
-            {startBracket && readyToStart && (
-              <Box>
-                <Text>HEJ</Text>
               </Box>
             )}
           </Flex>
