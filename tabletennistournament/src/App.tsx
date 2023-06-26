@@ -10,6 +10,7 @@ import { writeClass } from "./Backend/updateFirebase2";
 
 import { writeTournament2 } from "./Backend/updateFirebase2";
 import deleteTournament from "./Backend/deleteTournament";
+import deleteClassesByTournamentId from "./Backend/deleteClassesByTournamentId";
 
 import {
   getUsernameAndSessionDuration,
@@ -57,10 +58,10 @@ import {
   Radio,
   HStack,
   FormHelperText,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
+  //Menu,
+  //MenuButton,
+  //MenuList,
+  //MenuItem,
   IconButton,
   Spacer,
   Popover,
@@ -73,8 +74,9 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 
-import { HamburgerIcon, DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import {DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
+
 
 function App() {
   // Call the function on startup
@@ -1517,6 +1519,13 @@ function App() {
     }
   }
 
+  function handleDeleteClasses(tournament: Tournament) {
+    deleteClassesByTournamentId(tournament.tournamentId!)
+    console.log("handleDeleteClasses");
+  }
+
+
+
   function handleShowOpenTournaments() {
     setShowOpenTournaments(true);
     setShowMyTournament(false);
@@ -1586,27 +1595,13 @@ function App() {
           <Flex direction="column" align="center">
             <Center>
               <Box>
-                <Menu>
-                  <MenuButton
-                    bg="#FFFFF"
-                    colorScheme="ghost"
-                    m={2}
-                    as={Button}
-                    aria-label="Options"
-                    leftIcon={<HamburgerIcon />}
-                    variant="outline"
-                  >
-                    Menu
-                  </MenuButton>
-
-                  <MenuList>
-                    <MenuItem onClick={() => handlegoToHome()}>Home</MenuItem>
-                    <MenuItem onClick={() => handleGoToTournaments()}>
-                      My Tournaments
-                    </MenuItem>
-                  </MenuList>
-                </Menu>
-
+                <Button
+                  colorScheme="green"
+                  margin={2}
+                  onClick={() => handlegoToHome()}
+                >
+                  Home
+                </Button>
                 <Button
                   colorScheme="blue"
                   margin={2}
@@ -1744,7 +1739,7 @@ function App() {
                   >
                     <ModalOverlay />
                     <ModalContent>
-                      <ModalHeader>
+                      <ModalHeader textColor="red.300">
                         Delete Tournament {currentTournament.name}
                       </ModalHeader>
                       <ModalCloseButton />
@@ -1758,9 +1753,11 @@ function App() {
                       </ModalBody>
                       <ModalFooter>
                         <Button
+                        bg="red.300"
                           onClick={() => {
                             if (deleteInput === currentTournament.name) {
                               handleDeleteTournament(currentTournament);
+                              handleDeleteClasses(currentTournament);
                             } else {
                               alert(
                                 "Tournament name does not match. Deletion aborted."
@@ -2251,15 +2248,15 @@ function App() {
               </Center>
             )}
             {/** Class info */}
-            {showClassInfo && classStarted === false && (
+            {showClassInfo && classStarted === false && currentClass && (
               <Box>
                 <Center>
                   <Stack>
                     <Box>
                       {currentTournament && (
                         <Center>
-                          <Heading fontWeight={"bold"}>
-                            {currentTournament.name}
+                          <Heading size="md" fontWeight={"bold"}>
+                            {currentTournament.name} - {currentClass.name}
                           </Heading>
                         </Center>
                       )}
