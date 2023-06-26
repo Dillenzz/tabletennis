@@ -74,9 +74,8 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 
-import {DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
-
 
 function App() {
   // Call the function on startup
@@ -93,6 +92,7 @@ function App() {
   const [publicOrPrivate, setPublicOrPrivate] = useState("Private");
   const [tournamentName, setTournamentName] = useState("");
   const [tournamentId, setTournamentId] = useState(-1);
+  const [tournamentClub, setTournamentClub] = useState("");
 
   // states for clarity
   const [editTournament, setEditTournament] = useState(false);
@@ -239,7 +239,6 @@ function App() {
   const inputSetRef = useRef(null);
 
   // CLASS VARIABLES
-
   // const [myClasses, setMyClasses] = useState<Class[]>([]);
   const [tournamentClasses, setTournamentClasses] = useState<Class[]>([]);
   const [classId, setClassId] = useState(-1);
@@ -278,6 +277,7 @@ function App() {
       location: tournamentLocation,
       public: publicOrPrivate,
       tournamentId: tournamentId,
+      club: tournamentClub,
     };
 
     const updatedTournaments = [...myTournaments, newTournament];
@@ -288,6 +288,7 @@ function App() {
     setTournamentDateFrom("");
     setTournamentDateTo("");
     setTournamentLocation("");
+    setTournamentClub("");
     setTournamentName("");
   };
 
@@ -349,6 +350,10 @@ function App() {
     setTournamentLocation(event.target.value);
   // changes view to tournament info
 
+  const handleClubChange = (event: ChangeEvent<HTMLInputElement>) =>
+    setTournamentClub(event.target.value);
+
+
   const handleCreateTournament = async () => {
     const user = await getUsernameAndSessionDuration();
     if (user !== null && uid !== "") {
@@ -359,6 +364,7 @@ function App() {
       setTournamentDateFrom("");
       setTournamentDateTo("");
       setTournamentLocation("");
+      setTournamentClub("");
       setTournamentName("");
       setTournamentId(-1);
       setPublicOrPrivate("Private");
@@ -433,6 +439,7 @@ function App() {
     setTournamentDateFrom("");
     setTournamentDateTo("");
     setTournamentLocation("");
+    setTournamentClub("");
     setTournamentType("");
     setShowUnreportedMatches(false);
     setShowUserName(true);
@@ -1520,11 +1527,9 @@ function App() {
   }
 
   function handleDeleteClasses(tournament: Tournament) {
-    deleteClassesByTournamentId(tournament.tournamentId!)
+    deleteClassesByTournamentId(tournament.tournamentId!);
     console.log("handleDeleteClasses");
   }
-
-
 
   function handleShowOpenTournaments() {
     setShowOpenTournaments(true);
@@ -1569,6 +1574,7 @@ function App() {
     setTournamentDateTo(tournament.dateTo ? tournament.dateTo : "");
     setTournamentName(tournament.name ? tournament.name : "");
     setTournamentLocation(tournament.location ? tournament.location : "");
+    setTournamentClub(tournament.club ? tournament.club : "");
     setTournamentId(tournament.tournamentId ? tournament.tournamentId : -1);
     setPublicOrPrivate(tournament.public ? tournament.public : "Public");
     setEditTournament(true);
@@ -1633,7 +1639,7 @@ function App() {
                     <Flex direction={"column"}>
                       <Button
                         m={2}
-                        bg="#F5F0BB"
+                        bg="orange.200"
                         onClick={() => handleCreateTournament()}
                       >
                         New tournament
@@ -1641,10 +1647,16 @@ function App() {
 
                       <Button
                         m={2}
-                        bg="#F5F0BB"
+                        bg="orange.200"
                         onClick={() => handleShowMyTournaments()}
                       >
                         My tournaments
+                      </Button>
+
+                      <Button m={2} bg="purple.300"
+                      onClick={() => alert("This feature is not yet implemented")}
+                      >
+                        Profile
                       </Button>
                     </Flex>
                   )}
@@ -1652,7 +1664,7 @@ function App() {
                   <Box>
                     <Button
                       m={2}
-                      bg="#F5F0BB"
+                      bg="blue.200"
                       onClick={() => handleShowOpenTournaments()}
                     >
                       Open tournaments
@@ -1691,6 +1703,7 @@ function App() {
                                 dateFrom={tournament.dateFrom}
                                 dateTo={tournament.dateTo}
                                 location={tournament.location}
+                                club={tournament.club}
                               />
                             </Center>
                           </Box>
@@ -1753,7 +1766,7 @@ function App() {
                       </ModalBody>
                       <ModalFooter>
                         <Button
-                        bg="red.300"
+                          bg="red.300"
                           onClick={() => {
                             if (deleteInput === currentTournament.name) {
                               handleDeleteTournament(currentTournament);
@@ -1815,9 +1828,9 @@ function App() {
                         <Input
                           bg={"white"}
                           value={tournamentDateFrom}
-                          placeholder="Select Date and Time"
+                          placeholder="Select Date"
                           size="lg"
-                          type="datetime-local"
+                          type="date"
                           onChange={(e) =>
                             setTournamentDateFrom(e.target.value)
                           }
@@ -1827,9 +1840,9 @@ function App() {
                         <Input
                           bg={"white"}
                           value={tournamentDateTo}
-                          placeholder="Select Date and Time"
+                          placeholder="Select Date"
                           size="lg"
-                          type="datetime-local"
+                          type="date"
                           onChange={(e) => setTournamentDateTo(e.target.value)}
                         ></Input>
                       </Box>
@@ -1846,6 +1859,17 @@ function App() {
                           }
                           size="lg"
                         />
+                      </Box>
+                      <Box p={2}>
+                        
+                        <Input borderRadius="md"
+                        bg={"white"}
+                        value={tournamentClub}
+                        onChange={handleClubChange}
+                        placeholder={"Club name"}
+                        
+                        size="lg"
+                         />
                       </Box>
                       <Center>
                         <RadioGroup

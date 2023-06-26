@@ -1,7 +1,5 @@
-import { Box, Heading, Text, Center, Spacer } from "@chakra-ui/react";
-
+import { Box, Heading, Text, Flex, Center } from "@chakra-ui/react";
 import Class from "./Class";
-
 
 interface Tournament {
   uid?: string;
@@ -12,33 +10,42 @@ interface Tournament {
   tournamentId?: number;
   classes?: Class[];
   public?: string;
+  club?: string;
 }
 
 function Tournament(props: Tournament) {
   return (
-    <Box
-    >
+    <Box>
       <Box>
         <Center>
-          <Heading margin={"1em"} as="h2" mb="2">
+          <Heading as="h2" m={2}>
             {props.name}
           </Heading>
         </Center>
       </Box>
-
-      <Box justifyContent={"left"}>
-        <Center>
-          <Text fontWeight={"bold"} fontSize={"20"}>
+      <Center>
+      <Flex direction="column">
+        {props.location && (
+          <Text  fontSize="14" ml={2}>
             Location: {props.location}
           </Text>
+        )}
 
-          <Spacer></Spacer>
-          <Text fontSize={"20"}>
-            Date: {props.dateFrom} - {props.dateTo}
+        {props.dateFrom && props.dateTo && (
+          <Text fontSize="14" ml={2}>
+            Date: {props.dateFrom} -- {props.dateTo}
           </Text>
-        </Center>
-      </Box>
+        )}
+
+        {props.club && (
+          <Text fontSize="14" ml={2}>
+            Club: {props.club}
+          </Text>
+        )}
+      </Flex>
+      </Center>
     </Box>
   );
 }
+
 export default Tournament;
