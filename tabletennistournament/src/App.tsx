@@ -243,7 +243,7 @@ function App() {
   // const [myClasses, setMyClasses] = useState<Class[]>([]);
   const [tournamentClasses, setTournamentClasses] = useState<Class[]>([]);
   const [classId, setClassId] = useState(-1);
-  const [publicOrPrivateClass, setPublicOrPrivateClass] = useState("public");
+  const [publicOrPrivateClass, setPublicOrPrivateClass] = useState("Public");
   const [className, setClassName] = useState("");
 
   // save or update the tournament to Firebase
