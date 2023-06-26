@@ -1489,6 +1489,7 @@ function App() {
     if (currentClass !== undefined && currentClass !== null) {
       if (unreportedMatches.length === 0) {
         setStartBracket(true);
+        console.log(startBracket);
         writeClass(true, {
           ...currentClass,
           startBracket: true,
