@@ -131,7 +131,6 @@ function App() {
   const [maxWidth, setMaxWidth] = useState(0);
   const [maxOpenWidth, setMaxOpenWidth] = useState(0);
 
- 
   const [playerDeleted, setPlayerDeleted] = useState(false);
 
   // States for showing groups and unreported matches -> After starting tournament
@@ -176,7 +175,6 @@ function App() {
     onOpen: onOpenDeleteTournamentModal,
     onClose: onCloseDeleteTournamentModal,
   } = useDisclosure();
-
 
   // States for loading the right tournaments for Uid
   const [userName, setUserName] = useState("");
@@ -558,7 +556,6 @@ function App() {
       });
     }
     setSentPlayerIds([...sentPlayerIds, playerId]);
-    
   }
   // save tournament to firebase
   function saveTournament() {
@@ -640,19 +637,16 @@ function App() {
     if (currentClass && currentClass.players && currentClass.numberInGroup) {
       if (currentClass.players?.length === 0) {
         alert("Please add players to the tournament");
-        
+
         return;
-      } else if (
-        currentClass.players?.length < 4 &&
-        currentClass.numberInGroup === 4
-      ) {
-        alert("Please add atleast 4 players to the tournament");
-        
+      } else if (currentClass.players?.length < 2) {
+        alert("Please add atleast 2 players to the tournament");
+        console.log(currentClass);
         return;
       }
     } else {
       alert("Please add players to the tournament");
-      
+
       return;
     }
     if (currentClass?.seededPlayersIds === undefined) {
@@ -1154,7 +1148,9 @@ function App() {
 
       let pairings: number[][] = [];
 
-      if (numberOfPlayers === 3) {
+      if (numberOfPlayers === 2) {
+        pairings = [[0, 1]];
+      } else if (numberOfPlayers === 3) {
         pairings = [
           [0, 1],
           [0, 2],
@@ -1731,9 +1727,7 @@ function App() {
                                 onClick={() => {
                                   setCurrentTournament(tournament);
                                   onOpenDeleteTournamentModal();
-                                  setShowDeleteTournamentConfirmation(
-                                   true
-                                  );
+                                  setShowDeleteTournamentConfirmation(true);
                                 }}
                               />
                             </Tooltip>
@@ -1749,7 +1743,9 @@ function App() {
                   >
                     <ModalOverlay />
                     <ModalContent>
-                      <ModalHeader>Delete Tournament {currentTournament.name}</ModalHeader>
+                      <ModalHeader>
+                        Delete Tournament {currentTournament.name}
+                      </ModalHeader>
                       <ModalCloseButton />
                       <ModalBody>
                         <Input
@@ -2493,7 +2489,6 @@ function App() {
                                 onClick={() => {
                                   deletePlayerFromTournament(player);
                                   setPlayerDeleted(true);
-                                  
                                 }}
                                 size={"sm"}
                               />
