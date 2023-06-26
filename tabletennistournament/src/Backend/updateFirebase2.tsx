@@ -57,6 +57,7 @@ async function updateTournament(
     location: tournament.location,
     uid: tournament.uid,
     public: tournament.public,
+    club: tournament.club,
     // other properties to update
   });
 }
@@ -74,6 +75,7 @@ async function createTournament(
     location: tournament.location,
     uid: tournament.uid,
     public: tournament.public,
+    club: tournament.club,
     // other properties to create
   });
 }
