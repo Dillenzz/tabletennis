@@ -353,7 +353,6 @@ function App() {
   const handleClubChange = (event: ChangeEvent<HTMLInputElement>) =>
     setTournamentClub(event.target.value);
 
-
   const handleCreateTournament = async () => {
     const user = await getUsernameAndSessionDuration();
     if (user !== null && uid !== "") {
@@ -1653,8 +1652,12 @@ function App() {
                         My tournaments
                       </Button>
 
-                      <Button m={2} bg="purple.300"
-                      onClick={() => alert("This feature is not yet implemented")}
+                      <Button
+                        m={2}
+                        bg="purple.300"
+                        onClick={() =>
+                          alert("This feature is not yet implemented")
+                        }
                       >
                         Profile
                       </Button>
@@ -1861,15 +1864,14 @@ function App() {
                         />
                       </Box>
                       <Box p={2}>
-                        
-                        <Input borderRadius="md"
-                        bg={"white"}
-                        value={tournamentClub}
-                        onChange={handleClubChange}
-                        placeholder={"Club name"}
-                        
-                        size="lg"
-                         />
+                        <Input
+                          borderRadius="md"
+                          bg={"white"}
+                          value={tournamentClub}
+                          onChange={handleClubChange}
+                          placeholder={"Club name"}
+                          size="lg"
+                        />
                       </Box>
                       <Center>
                         <RadioGroup
@@ -2046,21 +2048,39 @@ function App() {
                     >
                       <Center>
                         <Stack>
-                          <Box>
+                          <Flex direction="column">
                             <Center>
-                              <Heading>{tournament.name}</Heading>
+                              <Heading size="lg">{tournament.name}</Heading>
                             </Center>
-                          </Box>
+                            <Center>
+                              <Text>{tournament.location}</Text>
+                            </Center>
+                            <Center>
+                              <Box>
+                                <Text fontSize="sm">
+                                  {tournament.dateFrom} - {tournament.dateTo}
+                                </Text>
+                              </Box>
+                            </Center>
+                            <Center>
+                              <Box>
+                                <Text fontSize="sm">
+                                  {tournament.club}
+                                </Text> 
+                              </Box>
+                            </Center>
+                          </Flex>
                           <Center>
                             <Flex>
                               <Button
-                                m={2}
+                                m={1}
                                 size={"md"}
-                                fontSize={"24"}
+                                fontSize={"20"}
                                 mr={2}
                                 bg="blue.200"
                                 onClick={() => {
                                   handleJoinTournament(tournament);
+                                  alert("Not yet implemented");
                                 }}
                               >
                                 Info
