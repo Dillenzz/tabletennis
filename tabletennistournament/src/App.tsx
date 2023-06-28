@@ -2084,13 +2084,7 @@ function App() {
 
             {showOpenTournaments && (
               <Box maxWidth="100vw">
-                {openTournaments && (
-                  <Box m={4}>
-                    <Center>
-                      <Heading fontWeight={"bold"}>Open Tournaments</Heading>
-                    </Center>
-                  </Box>
-                )}
+                
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
