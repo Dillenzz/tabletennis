@@ -25,7 +25,7 @@ interface Player {
 function Player(props: Player) {
   const isSentPlayer = props.sentPlayerIds?.includes(props.id);
   const isGroupPlayer = props.css === "group-player";
-
+  
   const backgroundColor = isGroupPlayer
     ? "transparent"
     : isSentPlayer
@@ -102,9 +102,12 @@ function Player(props: Player) {
       )}
       {props.score === undefined && (
         <Text>
-          {props.name} - {props.club} {props.points} ({props.class})
+          {props.name} - {props.club} - {props.points} ({props.class})
         </Text>
+
+        
       )}
+      
     </Box>
   );
 }

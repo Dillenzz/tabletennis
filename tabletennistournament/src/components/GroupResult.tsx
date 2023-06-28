@@ -382,8 +382,15 @@ function GroupResult(props: Group) {
       }
 
       sameScore.push(sameScorePlayers);
+      
     }
+   
   }
+  if (sameScore.length < 2){
+    sameScore.push([])
+    
+  }
+  console.log(sameScore)
 
   if (matches && matches.length > 0) {
     if (checkIntraMatches(sameScore, matches, props.players!).length > 1) {
@@ -478,7 +485,8 @@ function GroupResult(props: Group) {
         <Box>
           {sortedPlayerPosition.map((player) => (
             <Player
-              onClick={() => console.log("clicked")}
+              onClick={() => console.log(player.player.intraMatchScore, player.player.intraSetScore,player.player)}
+              
               key={player.player.id}
               id={player.player.id}
               name={player.player.name}

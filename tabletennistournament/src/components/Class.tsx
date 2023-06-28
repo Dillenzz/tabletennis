@@ -13,7 +13,7 @@ interface Class {
   format?: string;
   numberInGroup?: number;
   seeds?: number;
-  seededPlayersIds?: number[];
+  seededPlayersIds?: number[] | undefined;
   threeOrFive?: string;
   groups?: Group[];
   started?: boolean;

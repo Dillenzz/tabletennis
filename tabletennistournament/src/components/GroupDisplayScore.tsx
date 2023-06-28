@@ -19,7 +19,7 @@ function GroupDisplayScore(props: GroupDisplayScore) {
   const { groupName, players, seededPlayersIds } = props;
 
   return (
-    <Box  width="100%" height=""   bg="#F5F0BB" rounded="lg">
+    <Box  width="100%"   bg="#F5F0BB" rounded="lg">
       <Center>
         <Text fontSize={20} style={{ fontWeight: "bold" }}>Group {groupName}</Text>
       </Center>
@@ -53,9 +53,7 @@ function GroupDisplayScore(props: GroupDisplayScore) {
           })}
         </Box>
       )}
-       <Center>
-      <Text style={{ fontWeight: "bold" }}>Group {groupName}</Text>
-      </Center>
+       
     </Box>
   );
 }

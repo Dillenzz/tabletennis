@@ -18,7 +18,7 @@ function Tournament(props: Tournament) {
     <Box>
       <Box>
         <Center>
-          <Heading as="h2" m={2}>
+          <Heading size="lg" m={2}>
             {props.name}
           </Heading>
         </Center>
@@ -33,7 +33,7 @@ function Tournament(props: Tournament) {
 
         {props.dateFrom && props.dateTo && (
           <Text fontSize="14" ml={2}>
-            Date: {props.dateFrom} -- {props.dateTo}
+            Date: {props.dateFrom} / {props.dateTo}
           </Text>
         )}
 
