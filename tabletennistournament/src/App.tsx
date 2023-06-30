@@ -2890,7 +2890,7 @@ function App() {
               )}
             </Flex>
             {/** TODO */}
-            <Flex direction="column">
+            <Flex maxWidth="100vw" direction="column">
               {currentClass &&
                 currentClass.started === true &&
                 showGroupsResultsAndUnreportedMatches && (
@@ -3659,6 +3659,7 @@ function App() {
                           placeholder="Search for MatchID or Name"
                           width={"40%"}
                           size="md"
+                          m="2"
                         ></Input>
                       </Center>
                     )}
@@ -3679,7 +3680,7 @@ function App() {
                                 setCurrentMatch(match);
                               }}
                               width={"40%"}
-                              minWidth={"200px"}
+                              minWidth={"300px"}
                               margin={"3px"}
                             >
                               <Match
@@ -3697,10 +3698,11 @@ function App() {
               }
 
               {showGroups && (
-                <Box maxWidth = "100vw">
-                  <Flex maxWidth="100vw">
+                
+                <Flex flexWrap="wrap" justifyContent="center" maxWidth="100vw">
                     {currentClass?.groups!.map((group) => (
                       <Box
+                        maxWidth="100vw"
                         margin={"2"}
                         onClick={onOpenMatchesModal}
                         width={"40%"}
@@ -3780,12 +3782,14 @@ function App() {
                       </Box>
                     ))}
                   </Flex>
-                </Box>
+                
               )}
 
               {showGroupResult && (
-                <Box maxWidth="100vw">
-                  <Flex maxWidth="100vw">
+                <Box flexWrap="wrap"
+                justifyContent="center" maxWidth="100vw">
+                  <Flex flexWrap="wrap"
+                      justifyContent="center" maxWidth="100vw">
                     {currentClass?.groups?.map((group) => (
                       <Box
                         margin={2}

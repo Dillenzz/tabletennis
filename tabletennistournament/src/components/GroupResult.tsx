@@ -475,7 +475,7 @@ function GroupResult(props: Group) {
   const topPlayers = sortedPlayerScore.slice(0, 2);
 
   return (
-    <Box width="100%" bg="#F5F0BB" rounded="md">
+    <Box  width="100%" bg="#F5F0BB" rounded="md">
       <Center>
         <Text fontSize={20} style={{ fontWeight: "bold" }}>
           Group {name} 
