@@ -3679,6 +3679,7 @@ function App() {
                                 setCurrentMatch(match);
                               }}
                               width={"40%"}
+                              minWidth={"200px"}
                               margin={"3px"}
                             >
                               <Match
@@ -3696,7 +3697,7 @@ function App() {
               }
 
               {showGroups && (
-                <Box>
+                <Box maxWidth = "100vw">
                   <Flex maxWidth="100vw">
                     {currentClass?.groups!.map((group) => (
                       <Box
@@ -3783,7 +3784,7 @@ function App() {
               )}
 
               {showGroupResult && (
-                <Box>
+                <Box maxWidth="100vw">
                   <Flex maxWidth="100vw">
                     {currentClass?.groups?.map((group) => (
                       <Box
