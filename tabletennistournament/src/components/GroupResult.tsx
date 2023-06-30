@@ -504,7 +504,7 @@ function GroupResult(props: Group) {
       {sortedPlayerScore.length === 0 && (
         <Box>
           <Center>
-            <Text fontSize={20}>No reported matches for this group</Text>
+            <Text fontSize={14}>No matches reported</Text>
           </Center>
         </Box>
       )}

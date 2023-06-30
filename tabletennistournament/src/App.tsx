@@ -63,7 +63,6 @@ import {
   //MenuList,
   //MenuItem,
   IconButton,
-  Spacer,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -363,7 +362,9 @@ function App() {
     setSearchClub(event.target.value);
   };
 
-  const handleUnreportedMatchSearch = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleUnreportedMatchSearch = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
     setMatchSearch(event.target.value);
   };
   // define tournament type
@@ -570,20 +571,18 @@ function App() {
   });
 
   const filteredMatches = unreportedMatches.filter((match) => {
-    const namePlayer1 = match.player1!.name!
-      .toLowerCase()
+    const namePlayer1 = match
+      .player1!.name!.toLowerCase()
       .includes(matchSearch.toLowerCase());
-  
-    const namePlayer2 = match.player2!.name!
-      .toLowerCase()
+
+    const namePlayer2 = match
+      .player2!.name!.toLowerCase()
       .includes(matchSearch.toLowerCase());
 
     const matchId = match.matchId!.toString().includes(matchSearch);
-  
-    
+
     return namePlayer1 || namePlayer2 || matchId;
   });
-  
 
   async function handleTournamentOverview(tournament: Tournament) {
     setShowClassesButton(true);
@@ -1525,10 +1524,7 @@ function App() {
     }
   }
 
- 
-
   // Filter the unreportedMatches based on searchQuery
-  
 
   function resetStates() {
     setClassStarted(false);
@@ -1616,7 +1612,7 @@ function App() {
     }
   }
   // function that checks unreported matches in every group
-   function handleCheckGroupStatus() {
+  function handleCheckGroupStatus() {
     const matchIds: Match[] = []; // Array to store the matchIds
 
     if (currentClass) {
@@ -2438,31 +2434,28 @@ function App() {
               </Center>
             )}
             {/** Class info */}
-            {showClassInfo && classStarted === false && currentClass && (
-              <Flex>
+            <Flex direction="column" maxWidth="100vw">
+              {showClassInfo && classStarted === false && currentClass && (
                 <Center>
-                  <Stack>
-                    <Box>
-                      {currentTournament && (
-                        <Center>
-                          <Heading size="md" fontWeight={"bold"}>
-                            {currentTournament.name} - {currentClass.name}
-                          </Heading>
-                        </Center>
-                      )}
-                    </Box>
-                    <Flex>
-                      <Button
-                        size={"lg"}
-                        fontSize={"30"}
-                        colorScheme="purple"
-                        onClick={onOpenAddPlayersModal}
-                        m={2}
-                      >
-                        Add Players
-                      </Button>
-                    </Flex>
-                  </Stack>
+                  <Box>
+                    {currentTournament && (
+                      <Center>
+                        <Heading size="md" fontWeight={"bold"}>
+                          {currentTournament.name} - {currentClass.name}
+                        </Heading>
+                      </Center>
+                    )}
+
+                    <Button
+                      size={"lg"}
+                      fontSize={"30"}
+                      colorScheme="purple"
+                      onClick={onOpenAddPlayersModal}
+                      m={2}
+                    >
+                      Add Players
+                    </Button>
+                  </Box>
 
                   <Modal
                     isOpen={isOpenAddPlayersModal}
@@ -2563,93 +2556,85 @@ function App() {
                     </ModalContent>
                   </Modal>
                 </Center>
-              </Flex>
-            )}
-            {showTournamentButtons && classStarted === false && (
-              <>
-                <Flex m={2} justifyContent="space-between">
-                  <Center>
-                    <Box mr={5}>
-                      <Button
-                        size="lg"
-                        fontSize="30"
-                        bg="green.200"
-                        onClick={() => saveTournament()}
-                      >
-                        Save Class
-                      </Button>
-                    </Box>
-                    <Box mr={5}>
-                      <Button
-                        size="lg"
-                        fontSize="30"
-                        bg="orange.200"
-                        onClick={() =>
-                          handleSetClassSeededPlayers(
-                            currentClass?.players || [],
-                            true
-                          )
-                        }
-                      >
-                        Seed players
-                      </Button>
-                    </Box>
-                    <Box mr={5}>
-                      {currentTournament && (
-                        <Button
-                          size="lg"
-                          fontSize="30"
-                          bg="#B2A4FF"
-                          onClick={() => {
-                            handleDrawTournament();
-                            setPlayerDeleted(false);
-                          }}
-                        >
-                          Draw Class
-                        </Button>
-                      )}
-                    </Box>
-                    <Box>
-                      {currentClass &&
-                        currentClass.readyToStart === true &&
-                        !playerDeleted && (
-                          <Button
-                            size="lg"
-                            fontSize="30"
-                            bg="#C9F4AA"
-                            onClick={() => handleStartClass()}
-                          >
-                            Start Class
-                          </Button>
-                        )}
-                    </Box>
-                    <Spacer />
-                    <Box mr={2}>
-                      {currentClass && playerDeleted === true && (
-                        <Button
-                          onClick={() => alert("Please draw tournament first")}
-                          size="lg"
-                          fontSize="30"
-                          bg="#FEA1A1"
-                        >
-                          Start Class
-                        </Button>
-                      )}
-                    </Box>
-                  </Center>
-                </Flex>
-              </>
-            )}
+              )}
 
-            {showPlayersAndGroups && classStarted === false && (
-              <Flex>
-                <Box m={2}>
-                  <Flex overflow="hidden" maxHeight="100%">
-                    <Box flex="1" p={1}>
+              {showTournamentButtons && classStarted === false && (
+                <Flex flexWrap="wrap" justifyContent="center" maxWidth="100vw">
+                  <Button
+                    size="lg"
+                    m={2}
+                    fontSize="30"
+                    bg="green.200"
+                    onClick={() => saveTournament()}
+                  >
+                    Save Class
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    m={2}
+                    fontSize="30"
+                    bg="orange.200"
+                    onClick={() =>
+                      handleSetClassSeededPlayers(
+                        currentClass?.players || [],
+                        true
+                      )
+                    }
+                  >
+                    Seed players
+                  </Button>
+
+                  {currentTournament && (
+                    <Button
+                      m={2}
+                      size="lg"
+                      fontSize="30"
+                      bg="#B2A4FF"
+                      onClick={() => {
+                        handleDrawTournament();
+                        setPlayerDeleted(false);
+                      }}
+                    >
+                      Draw Class
+                    </Button>
+                  )}
+
+                  {currentClass &&
+                    currentClass.readyToStart === true &&
+                    !playerDeleted && (
+                      <Button
+                        size="lg"
+                        fontSize="30"
+                        m="2"
+                        bg="#C9F4AA"
+                        onClick={() => handleStartClass()}
+                      >
+                        Start Class
+                      </Button>
+                    )}
+                  {currentClass && playerDeleted === true && (
+                    <Button
+                      onClick={() => alert("Please draw tournament first")}
+                      size="lg"
+                      fontSize="30"
+                      bg="#FEA1A1"
+                      m="2"
+                    >
+                      Start Class
+                    </Button>
+                  )}
+                </Flex>
+              )}
+
+              {showPlayersAndGroups && classStarted === false && (
+                <Flex maxWidth="100vw">
+                  <Box>
+                    <Box>
                       {currentClass?.groups
                         ?.slice(0, Math.ceil(currentClass.groups.length / 2))
                         .map((group) => (
-                          <Box p={1} key={group.name}>
+                          <Box m="2" p={1} key={group.name}>
                             <Group
                               seededPlayersIds={currentClass.seededPlayersIds}
                               name={group.name}
@@ -2658,11 +2643,11 @@ function App() {
                           </Box>
                         ))}
                     </Box>
-                    <Box p={1}>
+                    <Box>
                       {currentClass?.groups
                         ?.slice(Math.ceil(currentClass.groups.length / 2))
                         .map((group) => (
-                          <Box p={1} key={group.name}>
+                          <Box m="2" p={1} key={group.name}>
                             <Group
                               seededPlayersIds={currentClass.seededPlayersIds}
                               name={group.name}
@@ -2671,223 +2656,215 @@ function App() {
                           </Box>
                         ))}
                     </Box>
-                  </Flex>
-                </Box>
+                  </Box>
 
-                <Box m={2} flex="1" maxHeight="100%">
-                  {currentClass &&
-                    currentClass.players &&
-                    currentClass.players
-                      .sort((a, b) => {
-                        if (!a.points || !b.points) {
-                          return 0;
-                        }
-                        return b.points - a.points;
-                      })
-                      .map((player) => {
-                        const isSeeded =
-                          classSeededPlayers?.includes(player.id) ||
-                          currentClass.seededPlayersIds?.includes(player.id);
+                  <Box m="2">
+                    {currentClass &&
+                      currentClass.players &&
+                      currentClass.players
+                        .sort((a, b) => {
+                          if (!a.points || !b.points) {
+                            return 0;
+                          }
+                          return b.points - a.points;
+                        })
+                        .map((player) => {
+                          const isSeeded =
+                            classSeededPlayers?.includes(player.id) ||
+                            currentClass.seededPlayersIds?.includes(player.id);
 
-                        return (
-                          <Box
-                            p={[0, 0.5]}
-                            key={player.id}
-                            style={{ flex: "0 0 auto" }}
-                          >
-                            <Flex>
-                              <IconButton
-                                aria-label="Open chat"
-                                icon={<DeleteIcon />}
-                                colorScheme="red"
-                                onClick={() => {
-                                  deletePlayerFromTournament(player);
-                                  setPlayerDeleted(true);
-                                }}
-                                size={"sm"}
-                              />
-                              {isSeeded ? (
-                                <SeededPlayer
-                                  name={player.name}
-                                  club={player.club}
-                                  points={player.points}
-                                  class={player.class}
+                          return (
+                            <Box p={[0, 0.5]} key={player.id}>
+                              <Flex>
+                                <IconButton
+                                  aria-label="Open chat"
+                                  icon={<DeleteIcon />}
+                                  colorScheme="red"
+                                  onClick={() => {
+                                    deletePlayerFromTournament(player);
+                                    setPlayerDeleted(true);
+                                  }}
+                                  size={"sm"}
                                 />
-                              ) : (
-                                <Player
-                                  id={player.id}
-                                  name={player.name}
-                                  club={player.club}
-                                  points={player.points}
-                                  class={player.class}
-                                />
-                              )}
-                            </Flex>
-                          </Box>
-                        );
-                      })}
-                </Box>
-              </Flex>
-            )}
-
-            {currentClass &&
-              currentClass.started === true &&
-              showGroupsResultsAndUnreportedMatches && (
-                <Flex direction="column">
-                  <Center>
-                    <Heading margin={5}>{currentClass?.name || ""}</Heading>
-                  </Center>
-                  <Flex>
-                    <Button
-                      m="2"
-                      fontSize={"30"}
-                      size={"lg"}
-                      // Color scheme for more colors use bg
-                      bg={"#F7E1AE"}
-                      onClick={() => {
-                        setShowGroups(true);
-                        setShowGroupResult(false);
-                        setShowUnreportedMatches(false);
-                        set;
-                      }}
-                    >
-                      Groups
-                    </Button>
-
-                    <Modal
-                      isOpen={isOpenScoreModal}
-                      onClose={onCloseScoreModal}
-                    >
-                      <ModalOverlay />
-                      <ModalContent bg={"blue.200"}>
-                        <ModalHeader fontSize="24">
-                          <Center>
-                            <Text> Report match score</Text>
-                          </Center>
-                        </ModalHeader>
-                        <ModalCloseButton />
-                        <ModalBody>
-                          <Center>
-                            <Flex direction="column" alignItems="center">
-                              <Flex alignItems="center">
-                                <Center>
-                                  <Input
-                                    ref={inputMatchIdRefA}
-                                    bg="white"
-                                    maxLength={5}
-                                    fontWeight="bold"
-                                    id="matchid"
-                                    size="sm"
-                                    width="40%"
-                                    borderRadius="4"
-                                    placeholder="Match ID"
-                                    value={matchId}
-                                    onChange={(e) => setMatchId(e.target.value)}
+                                {isSeeded ? (
+                                  <SeededPlayer
+                                    name={player.name}
+                                    club={player.club}
+                                    points={player.points}
+                                    class={player.class}
                                   />
-                                </Center>
+                                ) : (
+                                  <Player
+                                    id={player.id}
+                                    name={player.name}
+                                    club={player.club}
+                                    points={player.points}
+                                    class={player.class}
+                                  />
+                                )}
                               </Flex>
-                              <Button
-                                bg="green.300"
-                                textColor="white"
-                                m="2"
-                                onClick={() => {
-                                  console.log(matchId);
-                                  console.log(matchIdError);
-                                  loadReportPlayers(parseInt(matchId));
-                                }}
-                              >
-                                Load match
-                              </Button>
-                            </Flex>
-                          </Center>
+                            </Box>
+                          );
+                        })}
+                  </Box>
+                </Flex>
+              )}
+            </Flex>
+ {/** TODO */}
+            <Flex direction="column">
+              {currentClass &&
+                currentClass.started === true &&
+                showGroupsResultsAndUnreportedMatches && (
+                  <Center>
+                    <Box>
+                      <Heading margin={5}>{currentClass?.name || ""}</Heading>
+                    </Box>
+                  </Center>
+                )}
 
-                          <Center>
-                            <Box>
-                              {currentMatch && (
-                                <Flex>
-                                  {matchIdError === -1 ? (
-                                    <>
-                                      <Flex>
-                                        <Center>
-                                          <Text
-                                            fontFamily={"bold"}
-                                            fontSize="14"
-                                          >
-                                            Invalid MatchID
-                                          </Text>
-                                        </Center>
-                                      </Flex>
-                                      {setCurrentMatch(undefined)}
-                                    </>
-                                  ) : matchIdError === -2 ? (
-                                    <Center>
+              {currentClass &&
+                currentClass.started === true &&
+                showGroupsResultsAndUnreportedMatches && (
+                  <Center>
+                    <Flex  flexWrap="wrap" justifyContent="center" maxWidth="100vw">
+                      <Button
+                        m="2"
+                        fontSize={"30"}
+                        size={"lg"}
+                        // Color scheme for more colors use bg
+                        bg={"#F7E1AE"}
+                        onClick={() => {
+                          setShowGroups(true);
+                          setShowGroupResult(false);
+                          setShowUnreportedMatches(false);
+                          set;
+                        }}
+                      >
+                        Groups
+                      </Button>
+
+                      <Modal
+                        isOpen={isOpenScoreModal}
+                        onClose={onCloseScoreModal}
+                      >
+                        <ModalOverlay />
+                        <ModalContent bg={"blue.200"}>
+                          <ModalHeader fontSize="24">
+                            <Center>
+                              <Text> Report match score</Text>
+                            </Center>
+                          </ModalHeader>
+                          <ModalCloseButton />
+                          <ModalBody>
+                            <Center>
+                              <Flex direction="column" alignItems="center">
+                                <Flex alignItems="center">
+                                  <Center>
+                                    <Input
+                                      ref={inputMatchIdRefA}
+                                      bg="white"
+                                      maxLength={5}
+                                      fontWeight="bold"
+                                      id="matchid"
+                                      size="sm"
+                                      width="40%"
+                                      borderRadius="4"
+                                      placeholder="Match ID"
+                                      value={matchId}
+                                      onChange={(e) =>
+                                        setMatchId(e.target.value)
+                                      }
+                                    />
+                                  </Center>
+                                </Flex>
+                                <Button
+                                  bg="green.300"
+                                  textColor="white"
+                                  m="2"
+                                  onClick={() => {
+                                    console.log(matchId);
+                                    console.log(matchIdError);
+                                    loadReportPlayers(parseInt(matchId));
+                                  }}
+                                >
+                                  Load match
+                                </Button>
+                              </Flex>
+                            </Center>
+
+                            <Center>
+                              <Box>
+                                {currentMatch && (
+                                  <Flex>
+                                    {matchIdError === -1 ? (
                                       <>
-                                        <Center>
-                                          <Box>
-                                            <Stack align="center">
-                                              <Text
-                                                textColor={"red"}
-                                                fontWeight="bold"
-                                                fontSize="17"
-                                                textAlign="center"
-                                              >
-                                                Match already reported
-                                              </Text>
-                                              <Text textAlign="center">
-                                                Report again?
-                                              </Text>
-                                              <Box>
-                                                <Button
-                                                  margin={2}
-                                                  bg={"#A0D8B3"}
-                                                  onClick={() =>
-                                                    setMatchIdError(0)
-                                                  }
-                                                >
-                                                  Yes
-                                                </Button>
-                                                <Button
-                                                  margin={2}
-                                                  bg={"#E76161"}
-                                                  onClick={() => {
-                                                    setCurrentMatch(undefined);
-                                                    setMatchIdError(0);
-                                                  }}
-                                                >
-                                                  No
-                                                </Button>
-                                              </Box>
-                                            </Stack>
-                                          </Box>
-                                        </Center>
+                                        <Flex>
+                                          <Center>
+                                            <Text
+                                              fontFamily={"bold"}
+                                              fontSize="14"
+                                            >
+                                              Invalid MatchID
+                                            </Text>
+                                          </Center>
+                                        </Flex>
+                                        {setCurrentMatch(undefined)}
                                       </>
-                                    </Center>
-                                  ) : (
-                                    <>
-                                      <Flex
-                                        direction="column"
-                                        alignItems="center"
-                                      >
-                                        <Flex alignItems="center">
-                                          {" "}
-                                          {/* Add alignItems="center" to center the names */}
-                                          <Box flex="1">
+                                    ) : matchIdError === -2 ? (
+                                      <Center>
+                                        <>
+                                          <Center>
                                             <Box>
-                                              <Text
-                                                fontWeight="bold"
-                                                fontSize="14"
-                                                overflowWrap="break-word"
-                                                textAlign="center"
-                                              >
-                                                {currentMatch.player1?.name}
-                                              </Text>
+                                              <Stack align="center">
+                                                <Text
+                                                  textColor={"red"}
+                                                  fontWeight="bold"
+                                                  fontSize="17"
+                                                  textAlign="center"
+                                                >
+                                                  Match already reported
+                                                </Text>
+                                                <Text textAlign="center">
+                                                  Report again?
+                                                </Text>
+                                                <Box>
+                                                  <Button
+                                                    margin={2}
+                                                    bg={"#A0D8B3"}
+                                                    onClick={() =>
+                                                      setMatchIdError(0)
+                                                    }
+                                                  >
+                                                    Yes
+                                                  </Button>
+                                                  <Button
+                                                    margin={2}
+                                                    bg={"#E76161"}
+                                                    onClick={() => {
+                                                      setCurrentMatch(
+                                                        undefined
+                                                      );
+                                                      setMatchIdError(0);
+                                                    }}
+                                                  >
+                                                    No
+                                                  </Button>
+                                                </Box>
+                                              </Stack>
                                             </Box>
-                                          </Box>
-                                          <Text m={2} fontSize="12">
-                                            Match {currentMatch.matchId}
-                                          </Text>
-                                          <Box flex="1">
-                                            <Center>
+                                          </Center>
+                                        </>
+                                      </Center>
+                                    ) : (
+                                      <>
+                                        <Flex
+                                          direction="column"
+                                          alignItems="center"
+                                        >
+                                          <Flex alignItems="center">
+                                            {" "}
+                                            {/* Add alignItems="center" to center the names */}
+                                            <Box flex="1">
                                               <Box>
                                                 <Text
                                                   fontWeight="bold"
@@ -2895,540 +2872,591 @@ function App() {
                                                   overflowWrap="break-word"
                                                   textAlign="center"
                                                 >
-                                                  {currentMatch.player2?.name}
+                                                  {currentMatch.player1?.name}
                                                 </Text>
                                               </Box>
-                                            </Center>
-                                          </Box>
+                                            </Box>
+                                            <Text m={2} fontSize="12">
+                                              Match {currentMatch.matchId}
+                                            </Text>
+                                            <Box flex="1">
+                                              <Center>
+                                                <Box>
+                                                  <Text
+                                                    fontWeight="bold"
+                                                    fontSize="14"
+                                                    overflowWrap="break-word"
+                                                    textAlign="center"
+                                                  >
+                                                    {currentMatch.player2?.name}
+                                                  </Text>
+                                                </Box>
+                                              </Center>
+                                            </Box>
+                                          </Flex>
                                         </Flex>
-                                      </Flex>
-                                    </>
-                                  )}
-                                </Flex>
-                              )}
-                              {matchIdError === -1 && !currentMatch && (
-                                <Center>
-                                  <Text fontSize="20">Invalid MatchID</Text>
-                                </Center>
-                              )}
-                            </Box>
-                          </Center>
-
-                          {(bo === "Bo3" || bo === "Bo5" || bo === "Bo7") && (
-                            <Flex direction="column">
-                              <Box>
-                                <Flex>
+                                      </>
+                                    )}
+                                  </Flex>
+                                )}
+                                {matchIdError === -1 && !currentMatch && (
                                   <Center>
-                                    <Input
-                                      m={1}
-                                      ref={inputSetRef}
-                                      value={set1Player1}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet1Player1(parseInt(inputValue));
-                                        } else {
-                                          setSet1Player1(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      bg="white"
-                                      id="set1player1"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                      fontWeight={"bold"}
-                                    />
-                                    <Text fontSize={"30"} m={1}>
-                                      {" "}
-                                      -{" "}
-                                    </Text>
-                                    <Input
-                                      m={1}
-                                      value={set1Player2}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet1Player2(parseInt(inputValue));
-                                        } else {
-                                          setSet1Player2(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set1player2"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
+                                    <Text fontSize="20">Invalid MatchID</Text>
                                   </Center>
-                                </Flex>
+                                )}
                               </Box>
-                              <Box>
-                                <Flex>
-                                  <Center>
-                                    <Input
-                                      m={1}
-                                      value={set2Player1}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet2Player1(parseInt(inputValue));
-                                        } else {
-                                          setSet2Player1(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set2player1"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                    <Text fontSize={"30"} m={1}>
-                                      {" "}
-                                      -{" "}
-                                    </Text>
-                                    <Input
-                                      m={1}
-                                      minLength={1}
-                                      value={set2Player2}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet2Player2(parseInt(inputValue));
-                                        } else {
-                                          setSet2Player2(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set2player2"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                  </Center>
-                                </Flex>
-                              </Box>
-                              <Box>
-                                <Flex>
-                                  <Center>
-                                    <Input
-                                      m={1}
-                                      value={set3Player1}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet3Player1(parseInt(inputValue));
-                                        } else {
-                                          setSet3Player1(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set3player1"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                    <Text fontSize={"30"} m={1}>
-                                      {" "}
-                                      -{" "}
-                                    </Text>
-                                    <Input
-                                      m={1}
-                                      value={set3Player2}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet3Player2(parseInt(inputValue));
-                                        } else {
-                                          setSet3Player2(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set3player2"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                  </Center>
-                                </Flex>
-                              </Box>
-                            </Flex>
-                          )}
+                            </Center>
 
-                          {(bo === "Bo5" || bo === "Bo7") && (
-                            <Flex direction="column">
-                              <Box>
-                                <Flex>
-                                  <Center>
-                                    <Input
-                                      m={1}
-                                      value={set4Player1}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet4Player1(parseInt(inputValue));
-                                        } else {
-                                          setSet4Player1(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set4player1"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                    <Text fontSize={"30"} m={1}>
-                                      {" "}
-                                      -{" "}
-                                    </Text>
-                                    <Input
-                                      m={1}
-                                      value={set4Player2}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet4Player2(parseInt(inputValue));
-                                        } else {
-                                          setSet4Player2(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set4player2"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                  </Center>
-                                </Flex>
-                              </Box>
-                              <Box>
-                                <Flex>
-                                  <Center>
-                                    <Input
-                                      m={1}
-                                      value={set5Player1}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet5Player1(parseInt(inputValue));
-                                        } else {
-                                          setSet5Player1(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set5player1"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                    <Text fontSize={"30"} m={1}>
-                                      {" "}
-                                      -{" "}
-                                    </Text>
-                                    <Input
-                                      m={1}
-                                      value={set5Player2}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet5Player2(parseInt(inputValue));
-                                        } else {
-                                          setSet5Player2(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set5player2"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                  </Center>
-                                </Flex>
-                              </Box>
-                            </Flex>
-                          )}
+                            {(bo === "Bo3" || bo === "Bo5" || bo === "Bo7") && (
+                              <Flex direction="column">
+                                <Box>
+                                  <Flex>
+                                    <Center>
+                                      <Input
+                                        m={1}
+                                        ref={inputSetRef}
+                                        value={set1Player1}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet1Player1(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet1Player1(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        bg="white"
+                                        id="set1player1"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                        fontWeight={"bold"}
+                                      />
+                                      <Text fontSize={"30"} m={1}>
+                                        {" "}
+                                        -{" "}
+                                      </Text>
+                                      <Input
+                                        m={1}
+                                        value={set1Player2}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet1Player2(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet1Player2(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set1player2"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                    </Center>
+                                  </Flex>
+                                </Box>
+                                <Box>
+                                  <Flex>
+                                    <Center>
+                                      <Input
+                                        m={1}
+                                        value={set2Player1}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet2Player1(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet2Player1(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set2player1"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                      <Text fontSize={"30"} m={1}>
+                                        {" "}
+                                        -{" "}
+                                      </Text>
+                                      <Input
+                                        m={1}
+                                        minLength={1}
+                                        value={set2Player2}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet2Player2(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet2Player2(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set2player2"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                    </Center>
+                                  </Flex>
+                                </Box>
+                                <Box>
+                                  <Flex>
+                                    <Center>
+                                      <Input
+                                        m={1}
+                                        value={set3Player1}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet3Player1(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet3Player1(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set3player1"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                      <Text fontSize={"30"} m={1}>
+                                        {" "}
+                                        -{" "}
+                                      </Text>
+                                      <Input
+                                        m={1}
+                                        value={set3Player2}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet3Player2(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet3Player2(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set3player2"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                    </Center>
+                                  </Flex>
+                                </Box>
+                              </Flex>
+                            )}
 
-                          {bo === "Bo7" && (
-                            <Flex direction="column">
-                              <Box>
-                                <Flex>
-                                  <Center>
-                                    <Input
-                                      m={1}
-                                      value={set6Player1}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet6Player1(parseInt(inputValue));
-                                        } else {
-                                          setSet6Player1(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set6player1"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
+                            {(bo === "Bo5" || bo === "Bo7") && (
+                              <Flex direction="column">
+                                <Box>
+                                  <Flex>
+                                    <Center>
+                                      <Input
+                                        m={1}
+                                        value={set4Player1}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet4Player1(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet4Player1(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set4player1"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                      <Text fontSize={"30"} m={1}>
+                                        {" "}
+                                        -{" "}
+                                      </Text>
+                                      <Input
+                                        m={1}
+                                        value={set4Player2}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet4Player2(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet4Player2(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set4player2"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                    </Center>
+                                  </Flex>
+                                </Box>
+                                <Box>
+                                  <Flex>
+                                    <Center>
+                                      <Input
+                                        m={1}
+                                        value={set5Player1}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet5Player1(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet5Player1(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set5player1"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                      <Text fontSize={"30"} m={1}>
+                                        {" "}
+                                        -{" "}
+                                      </Text>
+                                      <Input
+                                        m={1}
+                                        value={set5Player2}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet5Player2(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet5Player2(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set5player2"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                    </Center>
+                                  </Flex>
+                                </Box>
+                              </Flex>
+                            )}
 
-                                    <Text fontSize={"30"} m={1}>
-                                      {" "}
-                                      -{" "}
-                                    </Text>
+                            {bo === "Bo7" && (
+                              <Flex direction="column">
+                                <Box>
+                                  <Flex>
+                                    <Center>
+                                      <Input
+                                        m={1}
+                                        value={set6Player1}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet6Player1(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet6Player1(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set6player1"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
 
-                                    <Input
-                                      m={1}
-                                      value={set6Player2}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet6Player2(parseInt(inputValue));
-                                        } else {
-                                          setSet6Player2(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set6player2"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                  </Center>
-                                </Flex>
-                              </Box>
-                              <Box>
-                                <Flex>
-                                  <Center>
-                                    <Input
-                                      m={1}
-                                      value={set7Player1}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet7Player1(parseInt(inputValue));
-                                        } else {
-                                          setSet7Player1(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set7player1"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
+                                      <Text fontSize={"30"} m={1}>
+                                        {" "}
+                                        -{" "}
+                                      </Text>
 
-                                    <Text fontSize={"30"} m={1}>
-                                      {" "}
-                                      -{" "}
-                                    </Text>
+                                      <Input
+                                        m={1}
+                                        value={set6Player2}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet6Player2(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet6Player2(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set6player2"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                    </Center>
+                                  </Flex>
+                                </Box>
+                                <Box>
+                                  <Flex>
+                                    <Center>
+                                      <Input
+                                        m={1}
+                                        value={set7Player1}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet7Player1(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet7Player1(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set7player1"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
 
-                                    <Input
-                                      m={1}
-                                      value={set7Player2}
-                                      onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (!isNaN(parseInt(inputValue))) {
-                                          setSet7Player2(parseInt(inputValue));
-                                        } else {
-                                          setSet7Player2(0);
-                                        }
-                                      }}
-                                      maxLength={2}
-                                      fontWeight={"bold"}
-                                      bg={"white"}
-                                      id="set7player2"
-                                      maxWidth={"15%"}
-                                      borderRadius={4}
-                                      size="sm"
-                                    />
-                                  </Center>
-                                </Flex>
-                              </Box>
-                            </Flex>
-                          )}
-                          <Flex justifyContent="center">
-                            {" "}
-                            {/* Add justifyContent="center" to horizontally center the content */}
-                            <Center>
+                                      <Text fontSize={"30"} m={1}>
+                                        {" "}
+                                        -{" "}
+                                      </Text>
+
+                                      <Input
+                                        m={1}
+                                        value={set7Player2}
+                                        onChange={(e) => {
+                                          const inputValue = e.target.value;
+                                          if (!isNaN(parseInt(inputValue))) {
+                                            setSet7Player2(
+                                              parseInt(inputValue)
+                                            );
+                                          } else {
+                                            setSet7Player2(0);
+                                          }
+                                        }}
+                                        maxLength={2}
+                                        fontWeight={"bold"}
+                                        bg={"white"}
+                                        id="set7player2"
+                                        maxWidth={"15%"}
+                                        borderRadius={4}
+                                        size="sm"
+                                      />
+                                    </Center>
+                                  </Flex>
+                                </Box>
+                              </Flex>
+                            )}
+                            <Flex justifyContent="center">
                               {" "}
-                              {/* Move the Center component here */}
-                              <Popover>
-                                <PopoverTrigger>
-                                  <Button
-                                    bg={"orange.200"}
-                                    textColor="whiteAlpha.900"
-                                    margin={"4"}
-                                    onClick={() =>
-                                      handleCheckWinner(currentClass.bo!)
-                                    }
-                                  >
-                                    Check Winner
-                                  </Button>
-                                </PopoverTrigger>
-                                {checkWinner === -1 && (
-                                  <PopoverContent>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <PopoverBody>{errorMessage}</PopoverBody>
-                                  </PopoverContent>
-                                )}
-                                {checkWinner === 1 && (
-                                  <PopoverContent bg={"#F5F0BB"}>
-                                    <PopoverArrow />
-                                    <PopoverCloseButton />
-                                    <PopoverBody
-                                      fontSize={20}
-                                      fontWeight={"bold"}
-                                    >
-                                      {winner?.name} wins
-                                      <Center>
-                                        <Text>
-                                          {wonSetsPlayer1} - {wonSetsPlayer2}
-                                        </Text>
-                                      </Center>
-                                    </PopoverBody>
+                              {/* Add justifyContent="center" to horizontally center the content */}
+                              <Center>
+                                {" "}
+                                {/* Move the Center component here */}
+                                <Popover>
+                                  <PopoverTrigger>
                                     <Button
-                                      margin={"2"}
-                                      onClick={() => {
-                                        handleMatchScore();
-                                        const updatedMatches =
-                                          unreportedMatches.filter(
-                                            (match) =>
-                                              String(match.matchId!) !== matchId
-                                          );
-                                        setUnreportedMatches(updatedMatches);
-                                      }}
-                                      bg={"#A0D8B3"}
+                                      bg={"orange.200"}
+                                      textColor="whiteAlpha.900"
+                                      margin={"4"}
+                                      onClick={() =>
+                                        handleCheckWinner(currentClass.bo!)
+                                      }
                                     >
-                                      Correct
+                                      Check Winner
                                     </Button>
-                                  </PopoverContent>
-                                )}
-                              </Popover>
-                              <Button
-                                onClick={() => {
-                                  if (checkWinner !== 1 && matchId !== "") {
-                                    const result = window.confirm(
-                                      "Please check the winner before closing the modal. Are you sure you want to proceed?"
-                                    );
-                                    if (result === true) {
+                                  </PopoverTrigger>
+                                  {checkWinner === -1 && (
+                                    <PopoverContent>
+                                      <PopoverArrow />
+                                      <PopoverCloseButton />
+                                      <PopoverBody>{errorMessage}</PopoverBody>
+                                    </PopoverContent>
+                                  )}
+                                  {checkWinner === 1 && (
+                                    <PopoverContent bg={"#F5F0BB"}>
+                                      <PopoverArrow />
+                                      <PopoverCloseButton />
+                                      <PopoverBody
+                                        fontSize={20}
+                                        fontWeight={"bold"}
+                                      >
+                                        {winner?.name} wins
+                                        <Center>
+                                          <Text>
+                                            {wonSetsPlayer1} - {wonSetsPlayer2}
+                                          </Text>
+                                        </Center>
+                                      </PopoverBody>
+                                      <Button
+                                        margin={"2"}
+                                        onClick={() => {
+                                          handleMatchScore();
+                                          const updatedMatches =
+                                            unreportedMatches.filter(
+                                              (match) =>
+                                                String(match.matchId!) !==
+                                                matchId
+                                            );
+                                          setUnreportedMatches(updatedMatches);
+                                        }}
+                                        bg={"#A0D8B3"}
+                                      >
+                                        Correct
+                                      </Button>
+                                    </PopoverContent>
+                                  )}
+                                </Popover>
+                                <Button
+                                  onClick={() => {
+                                    if (checkWinner !== 1 && matchId !== "") {
+                                      const result = window.confirm(
+                                        "Please check the winner before closing the modal. Are you sure you want to proceed?"
+                                      );
+                                      if (result === true) {
+                                        onCloseScoreModal();
+                                      }
+                                    } else {
                                       onCloseScoreModal();
                                     }
-                                  } else {
-                                    onCloseScoreModal();
-                                  }
-                                }}
-                                bg="green.300"
-                                textColor="white"
-                              >
-                                Done
-                              </Button>
-                            </Center>
-                          </Flex>
-                        </ModalBody>
-                      </ModalContent>
-                    </Modal>
+                                  }}
+                                  bg="green.300"
+                                  textColor="white"
+                                >
+                                  Done
+                                </Button>
+                              </Center>
+                            </Flex>
+                          </ModalBody>
+                        </ModalContent>
+                      </Modal>
 
-                    <Button
-                      m={2}
-                      size="lg"
-                      fontSize={"30"}
-                      bg={"#F7E1AE"}
-                      onClick={() => {
-                        setShowGroupResult(true);
-                        setShowUnreportedMatches(false);
-                        setShowGroups(false);
-                      }}
-                    >
-                      Results
-                    </Button>
-
-                    <Button
-                      fontSize={"30"}
-                      m={2}
-                      size={"lg"}
-                      onClick={() => {
-                        onOpenScoreModal();
-                      }}
-                      bg={"green.300"}
-                    >
-                      Report result
-                    </Button>
-
-                    <Button
-                      m={2}
-                      fontSize={"30"}
-                      size={"lg"}
-                      bg={"orange.300"}
-                      onClick={() => {
-                        handleCheckGroupStatus();
-                        console.log(unreportedMatches)
-                        
-                        setShowGroupResult(false);
-                        setShowGroups(false);
-                      }}
-                    >
-                      Status
-                    </Button>
-                    {unreportedMatches.length === 0 && (
                       <Button
-                        onClick={() => {
-                          handleCheckIfStartBracket();
-                        }}
-                        // justifyContent={"flex-end"}
+                        m={2}
                         size="lg"
-                        fontSize="30"
+                        fontSize={"30"}
+                        bg={"#F7E1AE"}
+                        onClick={() => {
+                          setShowGroupResult(true);
+                          setShowUnreportedMatches(false);
+                          setShowGroups(false);
+                        }}
+                      >
+                        Results
+                      </Button>
+
+                      <Button
+                        fontSize={"30"}
+                        m={2}
+                        size={"lg"}
+                        onClick={() => {
+                          onOpenScoreModal();
+                        }}
                         bg={"green.300"}
-                        m="2"
                       >
-                        Start bracket
+                        Report result
                       </Button>
-                    )}
 
-                    {(unreportedMatches.length !== 0 ||
-                      unreportedMatches === null) && (
-                      // red button
                       <Button
+                        m={2}
+                        fontSize={"30"}
+                        size={"lg"}
+                        bg={"orange.300"}
                         onClick={() => {
-                          alert(
-                            unreportedMatches.length + `  unreported matches`
-                          );
+                          handleCheckGroupStatus();
+                          console.log(unreportedMatches);
+
+                          setShowGroupResult(false);
+                          setShowGroups(false);
                         }}
-                        // justifyContent={"flex-end"}
-                        size="lg"
-                        fontSize="30"
-                        bg={"#E76161"}
-                        m="2"
                       >
-                        Start bracket
+                        Status
                       </Button>
-                    )}
-                  </Flex>
-                  <Flex direction="column">
+                      
+                      {unreportedMatches.length === 0 && (
+                        <Button
+                          onClick={() => {
+                            handleCheckIfStartBracket();
+                          }}
+                          // justifyContent={"flex-end"}
+                          size="lg"
+                          fontSize="30"
+                          bg={"green.300"}
+                          m="2"
+                        >
+                          Start bracket
+                        </Button>
+                      )}
+
+                      {(unreportedMatches.length !== 0 ||
+                        unreportedMatches === null) && (
+                        // red button
+                        <Button
+                          onClick={() => {
+                            alert(
+                              unreportedMatches.length + `  unreported matches`
+                            );
+                          }}
+                          // justifyContent={"flex-end"}
+                          size="lg"
+                          fontSize="30"
+                          bg={"#E76161"}
+                          m="2"
+                        >
+                          Start bracket
+                        </Button>
+                      )}
+                    </Flex>
+
+                    
+                  </Center>
+                )}
+
+                {<Flex direction="column">
                     {showUnreportedMatches &&
                       unreportedMatches.length !== 0 && (
                         <Center>
@@ -3444,21 +3472,20 @@ function App() {
                     <Box p={3}>
                       {showUnreportedMatches && (
                         <Center>
-                        
-                        <Input
-                        value={matchSearch}
-                        onChange={handleUnreportedMatchSearch}
-                        fontWeight={"bold"}
-                        
-                        placeholder="Search for MatchID or Name" width={"40%"} size="md" ></Input>
-                          
+                          <Input
+                            value={matchSearch}
+                            onChange={handleUnreportedMatchSearch}
+                            fontWeight={"bold"}
+                            placeholder="Search for MatchID or Name"
+                            width={"40%"}
+                            size="md"
+                          ></Input>
                         </Center>
                       )}
                       {showUnreportedMatches &&
-                       filteredMatches.map((match) => {
-                        
+                        filteredMatches.map((match) => {
                           if (!match.matchId) {
-                            console.log("hllo")
+                            console.log("hllo");
                             return null; // Skip the iteration if there is no matchId
                           }
 
@@ -3484,117 +3511,113 @@ function App() {
                             </Center>
                           );
                         })}
+                        
                     </Box>
-                  </Flex>
-
-                  {showGroups && (
-                    <Box>
-                      <Flex display="flex" flexWrap="wrap">
-                        {currentClass?.groups!.map((group) => (
-                          <Box
-                            margin={"5"}
-                            onClick={onOpenMatchesModal}
-                            width={"40%"}
-                            key={group.name}
-                          >
-                            <Modal
-                              finalFocusRef={inputSetRef}
-                              isCentered
-                              onClose={onCloseMatchesModal}
-                              isOpen={isOpenMatchesModal}
-                              motionPreset="slideInBottom"
-                              blockScrollOnMount={false}
-                            >
-                              <ModalOverlay opacity={0.6} bg={"#"} />
-                              <ModalContent>
-                                {currentPlayer && currentPlayer.name && (
-                                  <ModalHeader>
-                                    Matches for {currentPlayer.name}
-                                  </ModalHeader>
+                    </Flex>}
+                
+              {showGroups && (
+                <Box>
+                  <Flex maxWidth="100vw">
+                    {currentClass?.groups!.map((group) => (
+                      <Box
+                        margin={"2"}
+                        onClick={onOpenMatchesModal}
+                        width={"40%"}
+                        minWidth={"300px"}
+                        key={group.name}
+                      >
+                        <Modal
+                          finalFocusRef={inputSetRef}
+                          isCentered
+                          onClose={onCloseMatchesModal}
+                          isOpen={isOpenMatchesModal}
+                          motionPreset="slideInBottom"
+                          blockScrollOnMount={false}
+                        >
+                          <ModalOverlay opacity={0.6} bg={"#"} />
+                          <ModalContent>
+                            {currentPlayer && currentPlayer.name && (
+                              <ModalHeader>
+                                Matches for {currentPlayer.name}
+                              </ModalHeader>
+                            )}
+                            <ModalCloseButton />
+                            <ModalBody>
+                              <Box>
+                                {currentPlayer && currentClass?.matches && (
+                                  <>
+                                    {currentClass.matches
+                                      .filter(
+                                        (match) =>
+                                          match.player1?.id ===
+                                            currentPlayer.id ||
+                                          match.player2?.id === currentPlayer.id
+                                      )
+                                      .map((match) => {
+                                        // Add this console.log statement
+                                        return (
+                                          <Box
+                                            m={2}
+                                            key={match.matchId}
+                                            onClick={() => {
+                                              setMatchId(String(match.matchId));
+                                              loadReportPlayers(match.matchId!);
+                                              setCurrentMatch(match);
+                                              onOpenScoreModal();
+                                            }}
+                                          >
+                                            <DisplayMatchScore
+                                              key={match.matchId}
+                                              match={match}
+                                            />
+                                          </Box>
+                                        );
+                                      })}
+                                  </>
                                 )}
-                                <ModalCloseButton />
-                                <ModalBody>
-                                  <Box>
-                                    {currentPlayer && currentClass?.matches && (
-                                      <>
-                                        {currentClass.matches
-                                          .filter(
-                                            (match) =>
-                                              match.player1?.id ===
-                                                currentPlayer.id ||
-                                              match.player2?.id ===
-                                                currentPlayer.id
-                                          )
-                                          .map((match) => {
-                                            // Add this console.log statement
-                                            return (
-                                              <Box
-                                                m={2}
-                                                key={match.matchId}
-                                                onClick={() => {
-                                                  setMatchId(
-                                                    String(match.matchId)
-                                                  );
-                                                  loadReportPlayers(
-                                                    match.matchId!
-                                                  );
-                                                  setCurrentMatch(match);
-                                                  onOpenScoreModal();
-                                                }}
-                                              >
-                                                <DisplayMatchScore
-                                                  key={match.matchId}
-                                                  match={match}
-                                                />
-                                              </Box>
-                                            );
-                                          })}
-                                      </>
-                                    )}
-                                  </Box>
-                                </ModalBody>
+                              </Box>
+                            </ModalBody>
 
-                                <ModalFooter>
-                                  <Button
-                                    colorScheme="blue"
-                                    mr={3}
-                                    onClick={onCloseMatchesModal}
-                                  >
-                                    Close
-                                  </Button>
-                                </ModalFooter>
-                              </ModalContent>
-                            </Modal>
+                            <ModalFooter>
+                              <Button
+                                colorScheme="blue"
+                                mr={3}
+                                onClick={onCloseMatchesModal}
+                              >
+                                Close
+                              </Button>
+                            </ModalFooter>
+                          </ModalContent>
+                        </Modal>
 
-                            <GroupDisplayScore
-                              onPlayerClick={handleLookUpPlayerScore}
-                              seededPlayersIds={currentClass.seededPlayersIds}
-                              groupName={group.name}
-                              players={group.players}
-                            />
-                          </Box>
-                        ))}
-                      </Flex>
-                    </Box>
-                  )}
-
-                  {showGroupResult && (
-                    <Box>
-                      <Flex display="flex" flexWrap="wrap">
-                        {currentClass?.groups?.map((group) => (
-                          <Box margin={5} width={"40%"} key={group.name}>
-                            <GroupResult
-                              name={group.name}
-                              players={group.players}
-                              matches={group.matches}
-                            />
-                          </Box>
-                        ))}
-                      </Flex>
-                    </Box>
-                  )}
-                </Flex>
+                        <GroupDisplayScore
+                          onPlayerClick={handleLookUpPlayerScore}
+                          seededPlayersIds={currentClass.seededPlayersIds}
+                          groupName={group.name}
+                          players={group.players}
+                        />
+                      </Box>
+                    ))}
+                  </Flex>
+                </Box>
               )}
+
+              {showGroupResult && (
+                <Box>
+                  <Flex maxWidth="100vw">
+                    {currentClass?.groups?.map((group) => (
+                      <Box margin={2} minWidth="300" width={"40%"} key={group.name}>
+                        <GroupResult
+                          name={group.name}
+                          players={group.players}
+                          matches={group.matches}
+                        />
+                      </Box>
+                    ))}
+                  </Flex>
+                </Box>
+              )}
+            </Flex>
           </Flex>
         </ChakraProvider>
       </Flex>
