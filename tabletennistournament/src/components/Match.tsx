@@ -29,7 +29,7 @@ function Match(props: Match){
       
       <Box width={"100%"} p="1" _hover={{ cursor:"pointer", bg: "green.300" }} bg="#F7E1AE" rounded="lg">
         <Center>
-        <Text fontSize="30">#{props.matchId} {props.player1?.name} - {props.player2?.name}</Text>
+        <Text fontSize="18">#{props.matchId} {props.player1?.name} - {props.player2?.name}</Text>
         </Center>
       </Box>
     );

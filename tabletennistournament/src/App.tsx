@@ -127,6 +127,7 @@ function App() {
   const [showMyTournaments, setShowMyTournament] = useState(false);
   const [showOpenTournaments, setShowOpenTournaments] = useState(false);
   const [atStartScreen, setAtStartScreen] = useState(false);
+  const [showClassesButton, setShowClassesButton] = useState(false);
 
   // State for overview of tournament
   const [showTournamentOverview, setShowTournamentOverview] = useState(false);
@@ -148,6 +149,7 @@ function App() {
     showGroupsResultsAndUnreportedMatches,
     setShowGroupsResultsAndUnreportedMatches,
   ] = useState(false);
+  const [matchSearch, setMatchSearch] = useState("");
 
   // define modal variables
 
@@ -360,6 +362,10 @@ function App() {
   const handleClubSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchClub(event.target.value);
   };
+
+  const handleUnreportedMatchSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    setMatchSearch(event.target.value);
+  };
   // define tournament type
   const handleTournamentType = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -449,6 +455,7 @@ function App() {
   };
   // go home resets all state variables
   const handlegoToHome = () => {
+    setShowClassesButton(false);
     setShowClassInfo(false);
     setAtStartScreen(true);
     setClassStarted(false);
@@ -562,7 +569,24 @@ function App() {
     return nameMatch && clubMatch;
   });
 
+  const filteredMatches = unreportedMatches.filter((match) => {
+    const namePlayer1 = match.player1!.name!
+      .toLowerCase()
+      .includes(matchSearch.toLowerCase());
+  
+    const namePlayer2 = match.player2!.name!
+      .toLowerCase()
+      .includes(matchSearch.toLowerCase());
+
+    const matchId = match.matchId!.toString().includes(matchSearch);
+  
+    
+    return namePlayer1 || namePlayer2 || matchId;
+  });
+  
+
   async function handleTournamentOverview(tournament: Tournament) {
+    setShowClassesButton(true);
     setTournamentClasses([]);
     setClassStarted(false);
     setClassSeededPlayers([]);
@@ -1501,6 +1525,11 @@ function App() {
     }
   }
 
+ 
+
+  // Filter the unreportedMatches based on searchQuery
+  
+
   function resetStates() {
     setClassStarted(false);
     setTournamentClasses([]);
@@ -1587,7 +1616,7 @@ function App() {
     }
   }
   // function that checks unreported matches in every group
-  function handleCheckGroupStatus() {
+   function handleCheckGroupStatus() {
     const matchIds: Match[] = []; // Array to store the matchIds
 
     if (currentClass) {
@@ -1759,11 +1788,11 @@ function App() {
                 >
                   Sign in
                 </Button>
-                {currentTournament && !atStartScreen && (
+                {currentTournament && !atStartScreen && showClassesButton && (
                   <Button
                     m={2}
                     bg="yellow.300"
-                    textColor="white"
+                    textColor="gray.700"
                     onClick={() => handleTournamentOverview(currentTournament)}
                   >
                     Classes
@@ -2084,7 +2113,6 @@ function App() {
 
             {showOpenTournaments && (
               <Box maxWidth="100vw">
-                
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
@@ -2411,7 +2439,7 @@ function App() {
             )}
             {/** Class info */}
             {showClassInfo && classStarted === false && currentClass && (
-              <Box>
+              <Flex>
                 <Center>
                   <Stack>
                     <Box>
@@ -2535,7 +2563,7 @@ function App() {
                     </ModalContent>
                   </Modal>
                 </Center>
-              </Box>
+              </Flex>
             )}
             {showTournamentButtons && classStarted === false && (
               <>
@@ -2705,11 +2733,11 @@ function App() {
             {currentClass &&
               currentClass.started === true &&
               showGroupsResultsAndUnreportedMatches && (
-                <Box>
+                <Flex direction="column">
                   <Center>
                     <Heading margin={5}>{currentClass?.name || ""}</Heading>
                   </Center>
-                  <Flex justifyContent="space-between">
+                  <Flex>
                     <Button
                       m="2"
                       fontSize={"30"}
@@ -2741,37 +2769,35 @@ function App() {
                         <ModalBody>
                           <Center>
                             <Flex direction="column" alignItems="center">
-                             
                               <Flex alignItems="center">
                                 <Center>
-                                <Input
-                                  ref={inputMatchIdRefA}
-                                  bg="white"
-                                  maxLength={5}
-                                  fontWeight="bold"
-                                  id="matchid"
-                                  size="sm"
-                                  width="40%"
-                                  borderRadius="4"
-                                  placeholder="Match ID"
-                                  
-                                  value={matchId}
-                                  onChange={(e) => setMatchId(e.target.value)}
-                                />
-                              </Center>
+                                  <Input
+                                    ref={inputMatchIdRefA}
+                                    bg="white"
+                                    maxLength={5}
+                                    fontWeight="bold"
+                                    id="matchid"
+                                    size="sm"
+                                    width="40%"
+                                    borderRadius="4"
+                                    placeholder="Match ID"
+                                    value={matchId}
+                                    onChange={(e) => setMatchId(e.target.value)}
+                                  />
+                                </Center>
                               </Flex>
                               <Button
-                                  bg="green.300"
-                                  textColor="white"
-                                  m="2"
-                                  onClick={() => {
-                                    console.log(matchId);
-                                    console.log(matchIdError);
-                                    loadReportPlayers(parseInt(matchId));
-                                  }}
-                                >
-                                  Load match
-                                </Button>
+                                bg="green.300"
+                                textColor="white"
+                                m="2"
+                                onClick={() => {
+                                  console.log(matchId);
+                                  console.log(matchIdError);
+                                  loadReportPlayers(parseInt(matchId));
+                                }}
+                              >
+                                Load match
+                              </Button>
                             </Flex>
                           </Center>
 
@@ -3348,7 +3374,7 @@ function App() {
                       onClick={() => {
                         onOpenScoreModal();
                       }}
-                      bg={"#F7E1AE"}
+                      bg={"green.300"}
                     >
                       Report result
                     </Button>
@@ -3357,9 +3383,11 @@ function App() {
                       m={2}
                       fontSize={"30"}
                       size={"lg"}
-                      bg={"blue.300"}
+                      bg={"orange.300"}
                       onClick={() => {
                         handleCheckGroupStatus();
+                        console.log(unreportedMatches)
+                        
                         setShowGroupResult(false);
                         setShowGroups(false);
                       }}
@@ -3394,29 +3422,43 @@ function App() {
                         size="lg"
                         fontSize="30"
                         bg={"#E76161"}
-                        mr={"5"}
+                        m="2"
                       >
                         Start bracket
                       </Button>
                     )}
                   </Flex>
-                  <Box>
+                  <Flex direction="column">
                     {showUnreportedMatches &&
                       unreportedMatches.length !== 0 && (
                         <Center>
-                          <Text fontSize={"40"}>Unreported Matches</Text>
+                          <Text fontSize={"24"}>Unreported Matches</Text>
                         </Center>
                       )}
                     {showUnreportedMatches &&
                       unreportedMatches.length === 0 && (
                         <Center>
-                          <Text fontSize={"30"}>No unreported matches</Text>
+                          <Text fontSize={"24"}>No unreported matches</Text>
                         </Center>
                       )}
                     <Box p={3}>
+                      {showUnreportedMatches && (
+                        <Center>
+                        
+                        <Input
+                        value={matchSearch}
+                        onChange={handleUnreportedMatchSearch}
+                        fontWeight={"bold"}
+                        
+                        placeholder="Search for MatchID or Name" width={"40%"} size="md" ></Input>
+                          
+                        </Center>
+                      )}
                       {showUnreportedMatches &&
-                        unreportedMatches.map((match) => {
+                       filteredMatches.map((match) => {
+                        
                           if (!match.matchId) {
+                            console.log("hllo")
                             return null; // Skip the iteration if there is no matchId
                           }
 
@@ -3429,7 +3471,7 @@ function App() {
                                   loadReportPlayers(match.matchId!);
                                   setCurrentMatch(match);
                                 }}
-                                width={"50%"}
+                                width={"40%"}
                                 margin={"3px"}
                               >
                                 <Match
@@ -3443,7 +3485,7 @@ function App() {
                           );
                         })}
                     </Box>
-                  </Box>
+                  </Flex>
 
                   {showGroups && (
                     <Box>
@@ -3452,7 +3494,7 @@ function App() {
                           <Box
                             margin={"5"}
                             onClick={onOpenMatchesModal}
-                            width={"30%"}
+                            width={"40%"}
                             key={group.name}
                           >
                             <Modal
@@ -3540,7 +3582,7 @@ function App() {
                     <Box>
                       <Flex display="flex" flexWrap="wrap">
                         {currentClass?.groups?.map((group) => (
-                          <Box margin={5} width={"30%"} key={group.name}>
+                          <Box margin={5} width={"40%"} key={group.name}>
                             <GroupResult
                               name={group.name}
                               players={group.players}
@@ -3551,7 +3593,7 @@ function App() {
                       </Flex>
                     </Box>
                   )}
-                </Box>
+                </Flex>
               )}
           </Flex>
         </ChakraProvider>
