@@ -11,6 +11,7 @@ import { writeClass } from "./Backend/updateFirebase2";
 import { writeTournament2 } from "./Backend/updateFirebase2";
 import deleteTournament from "./Backend/deleteTournament";
 import deleteClassesByTournamentId from "./Backend/deleteClassesByTournamentId";
+import deleteClass from "./Backend/deleteClassByTournamentId";
 
 import {
   getUsernameAndSessionDuration,
@@ -185,6 +186,13 @@ function App() {
     onClose: onCloseDeleteTournamentModal,
   } = useDisclosure();
 
+  const {
+    isOpen: isDeleteClassModal,
+    onOpen: onOpenDeleteClassModal,
+    onClose: onCloseDeleteClassModal,
+  } = useDisclosure();
+  
+
   // States for loading the right tournaments for Uid
   const [userName, setUserName] = useState("");
   const [uid, setUid] = useState("");
@@ -254,6 +262,9 @@ function App() {
   const [classId, setClassId] = useState(-1);
   const [publicOrPrivateClass, setPublicOrPrivateClass] = useState("Public");
   const [className, setClassName] = useState("");
+  const [editClass, setEditClass] = useState(false);
+  const [deleteClassInput, setDeleteClassInput] = useState("");
+  const [showDeleteClassConfirmation, setShowDeleteClassConfirmation] = useState(false);
 
   // save or update the tournament to Firebase
 
@@ -319,15 +330,16 @@ function App() {
   };
 
   async function createClass(tournament: Tournament) {
+    console.log(currentClass?.classId, "class ID before sending  ");
     if (!tournament.tournamentId) {
       return; // Handle the case when tournamentId is null
     }
 
     const newClass: Class = {
-      classId: -1,
+      classId: currentClass?.classId ? currentClass.classId : -1,
       uid: uid,
       name: className,
-      format: tournamentType,
+      format: "groups",
       numberInGroup: numberInGroup,
       threeOrFive: threeOrFive,
       tournamentId: tournament.tournamentId,
@@ -343,10 +355,56 @@ function App() {
     const updatedClasses = [...tournamentClasses, newClass];
 
     const classID = await writeClass(false, newClass); // Write to Firebase
-    console.log(classID, "classID");
+
     setClassId(classID);
     setTournamentClasses(updatedClasses);
 
+    setClassPlayers([]);
+    setClassName("");
+    setNumberInGroup(4);
+    setTournamentType("");
+  }
+
+  async function editClassNameAndPublicity(tournament: Tournament) {
+    if (!tournament.tournamentId) {
+      return; // Handle the case when tournamentId is null
+    }
+
+    const newClass: Class = {
+      classId: currentClass?.classId ? currentClass.classId : -1,
+      uid: uid,
+      name: className,
+      format: currentClass?.format ? currentClass.format : "groups",
+      numberInGroup: currentClass?.numberInGroup
+        ? currentClass.numberInGroup
+        : 4,
+      threeOrFive: currentClass?.threeOrFive ? currentClass.threeOrFive : "3",
+      tournamentId: currentTournament!.tournamentId!,
+      players: currentClass?.players ? currentClass.players : [],
+      seededPlayersIds: currentClass?.seededPlayersIds
+        ? currentClass.seededPlayersIds
+        : [],
+      groups: currentClass?.groups ? currentClass.groups : [],
+      started: currentClass?.started ? currentClass.started : false,
+      matches: currentClass?.matches ? currentClass.matches : [],
+      readyToStart: currentClass?.readyToStart
+        ? currentClass.readyToStart
+        : false,
+      bo: currentClass?.bo ? currentClass.bo : "Bo5",
+      public: currentClass?.public ? currentClass.public : "Public",
+    };
+
+    const updatedClasses = tournamentClasses.map((myClass) => {
+      if (myClass.classId === newClass.classId) {
+        return newClass;
+      }
+      return myClass;
+    });
+
+    const classID = await writeClass(true, newClass); // Write to Firebase
+
+    setClassId(classID);
+    setTournamentClasses(updatedClasses);
     setClassPlayers([]);
     setClassName("");
     setNumberInGroup(4);
@@ -586,6 +644,7 @@ function App() {
 
   async function handleTournamentOverview(tournament: Tournament) {
     setShowClassesButton(true);
+    setShowPlayersAndGroups(false);
     setTournamentClasses([]);
     setClassStarted(false);
     setClassSeededPlayers([]);
@@ -1695,6 +1754,18 @@ function App() {
     }
   }
 
+  function handleDeleteClass(thisClass: Class) {
+    console.log("handleDeleteClass");
+    deleteClass(thisClass.classId!);
+    setCurrentClass(undefined);
+    setTournamentClasses((prevClasses) =>
+      prevClasses.filter((c) => c.classId !== thisClass.classId)
+    );
+    setDeleteClassInput("");
+  }
+
+    
+
   function handleDeleteClasses(tournament: Tournament) {
     deleteClassesByTournamentId(tournament.tournamentId!);
     console.log("handleDeleteClasses");
@@ -1749,6 +1820,19 @@ function App() {
     setEditTournament(true);
     setShowCreateTournament(true);
     setShowMyTournament(false);
+  }
+
+  function handleEditClass(myClass: Class) {
+    console.log("handleEditClass");
+    setCurrentClass(myClass);
+    setClassName(myClass.name ? myClass.name : "");
+    setClassId(myClass.classId ? myClass.classId : -1);
+    setPublicOrPrivateClass(myClass.public ? myClass.public : "Public");
+    setThreeOrFive(myClass.threeOrFive ? myClass.threeOrFive : "3");
+    setBo(myClass.bo ? myClass.bo : "Bo5");
+    setNumberInGroup(myClass.numberInGroup ? myClass.numberInGroup : 4);
+    setEditClass(true);
+    onOpenCreateClassModal();
   }
 
   function handleJoinTournament(tournament: Tournament) {
@@ -2264,7 +2348,11 @@ function App() {
                     >
                       <ModalOverlay />
                       <ModalContent>
-                        <ModalHeader> Create new Class</ModalHeader>
+                        <ModalHeader>
+                          {editClass === true
+                            ? "Edit class " + currentClass?.name
+                            : "Create new class"}
+                        </ModalHeader>
                         <ModalCloseButton />
                         <ModalBody pb={8}>
                           <FormControl isRequired>
@@ -2276,19 +2364,21 @@ function App() {
                               onChange={handleClassNameChange}
                             />
                           </FormControl>
-                          <FormControl>
-                            <FormLabel>Type</FormLabel>
-                            <Select
-                              borderRadius="md"
-                              placeholder="Select option"
-                              onChange={handleTournamentType}
-                            >
-                              <option value="groups">Groups</option>
-                              <option value="bracket">Bracket</option>
-                              <option value="teamMatch">Team Match</option>
-                            </Select>
-                          </FormControl>
-                          {tournamentType === "groups" && (
+                          {editClass === !true && (
+                            <FormControl>
+                              <FormLabel>Type</FormLabel>
+                              <Select
+                                borderRadius="md"
+                                placeholder="Select option"
+                                onChange={handleTournamentType}
+                              >
+                                <option value="groups">Groups</option>
+                                <option value="bracket">Bracket</option>
+                                <option value="teamMatch">Team Match</option>
+                              </Select>
+                            </FormControl>
+                          )}
+                          {tournamentType === "groups" && !editClass && (
                             <FormControl>
                               <FormLabel>Groups of</FormLabel>
                               <NumberInput
@@ -2335,21 +2425,21 @@ function App() {
                                   <Radio value="Bo7">Bo7</Radio>
                                 </HStack>
                               </RadioGroup>
-                              <FormLabel as="legend">
-                                Public or Private
-                              </FormLabel>
-                              <RadioGroup
-                                onChange={handlePublicOrPrivateClass}
-                                value={publicOrPrivateClass}
-                                defaultValue="Private"
-                              >
-                                <HStack spacing="24px">
-                                  <Radio value="Public">Public</Radio>
-                                  <Radio value="Private">Private</Radio>
-                                </HStack>
-                              </RadioGroup>
                             </FormControl>
                           )}
+                          <FormControl>
+                            <FormLabel as="legend">Public or Private</FormLabel>
+                            <RadioGroup
+                              onChange={handlePublicOrPrivateClass}
+                              value={publicOrPrivateClass}
+                              defaultValue="Private"
+                            >
+                              <HStack spacing="24px">
+                                <Radio value="Public">Public</Radio>
+                                <Radio value="Private">Private</Radio>
+                              </HStack>
+                            </RadioGroup>
+                          </FormControl>
                           {tournamentType === "bracket" && (
                             <FormControl>
                               <RadioGroup defaultValue="Single elimination">
@@ -2381,8 +2471,15 @@ function App() {
                         <ModalFooter>
                           <Button
                             onClick={() => {
-                              createClass(currentTournament!);
+                              if (editClass) {
+                                editClassNameAndPublicity(currentClass!);
+                                console.log("edit class");
+                              } else {
+                                createClass(currentTournament!);
+                                console.log("create class");
+                              }
                               onCloseCreateClassModal();
+                              setEditClass(false);
                             }}
                             colorScheme="blue"
                             disabled={className === ""}
@@ -2405,34 +2502,116 @@ function App() {
                       justifyContent="center"
                     >
                       {tournamentClasses.map((myClass: Class, index) => (
-                        <Box
-                          key={`${myClass.classId}-${index}`}
-                          _hover={{ bg: "green.300" }}
-                          bg="blue.800"
-                          m={2}
-                          p={4}
-                          borderRadius="md"
-                          onClick={() => handleGoToClassInfo(myClass)}
-                          display="flex"
-                          justifyContent="center"
-                          alignItems="center"
-                          cursor="pointer"
-                        >
-                          <Tooltip
-                            label={myClass.name}
-                            aria-label="edit-tooltip"
+                        <Box key={`${myClass.classId}-${index}`}>
+                          <Box
+                            _hover={{ bg: "green.300" }}
+                            bg="blue.800"
+                            m={2}
+                            p={4}
+                            borderRadius="md"
+                            onClick={() => handleGoToClassInfo(myClass)}
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            cursor="pointer"
                           >
-                            <Text textColor="white" fontSize={40}>
-                              {myClass.name}
-                            </Text>
-                          </Tooltip>
+                            <Tooltip
+                              label={myClass.name}
+                              aria-label="edit-tooltip"
+                            >
+                              <Text textColor="white" fontSize={40}>
+                                {myClass.name}
+                              </Text>
+                            </Tooltip>
+                          </Box>
+
+                          <Box>
+                            <Center>
+                              <Tooltip
+                                label={`Edit Class ${myClass.name}`}
+                                aria-label="edit-tooltip"
+                              >
+                                <EditIcon
+                                  margin={4}
+                                  color="black"
+                                  boxSize={24}
+                                  _hover={{ cursor: "pointer" }}
+                                  aria-label="Edit Tournament"
+                                  onClick={() => handleEditClass(myClass)}
+                                />
+                              </Tooltip>
+
+                              <Tooltip
+                                label={`Delete class ${myClass.name}`}
+                                aria-label="delete-tooltip"
+                              >
+                                <DeleteIcon
+                                  color="black"
+                                  boxSize={24}
+                                  margin={4}
+                                  _hover={{ cursor: "pointer" }}
+                                  aria-label="Delete Tournament"
+                                  onClick={() => {
+                                    setCurrentClass(myClass);
+                                    setShowDeleteClassConfirmation(true);
+                                    onOpenDeleteClassModal();
+                                    // Add your delete logic here
+                                  }}
+                                />
+                              </Tooltip>
+                            </Center>
+                          </Box>
                         </Box>
                       ))}
                     </Flex>
                   </Box>
+                  {showDeleteClassConfirmation && currentTournament && currentClass && (
+                  <Modal
+                    isOpen={isDeleteClassModal}
+                    onClose={onCloseDeleteClassModal}
+                  >
+                    <ModalOverlay />
+                    <ModalContent>
+                      <ModalHeader textColor="red.300">
+                        Delete Class {currentClass.name}
+                      </ModalHeader>
+                      <ModalCloseButton />
+                      <ModalBody>
+                        <Input
+                          type="text"
+                          value={deleteClassInput}
+                          onChange={(e) => setDeleteClassInput(e.target.value)}
+                          placeholder={`Type "${currentClass.name}" to confirm deletion`}
+                        />
+                      </ModalBody>
+                      <ModalFooter>
+                        <Button
+                          bg="red.300"
+                          onClick={() => {
+                            if (deleteClassInput === currentClass.name) {
+                              handleDeleteClass(currentClass);
+                            } else {
+                              alert(
+                                "Class name does not match. Deletion aborted."
+                              );
+                            }
+                            setDeleteClassInput("");
+                            setCurrentClass(undefined);
+                            onCloseDeleteClassModal();
+                          }}
+                        >
+                          Confirm deletion
+                        </Button>
+                      </ModalFooter>
+                    </ModalContent>
+                  </Modal>
+                )}
                 </Box>
+
               </Center>
             )}
+
+            
             {/** Class info */}
             <Flex direction="column" maxWidth="100vw">
               {showClassInfo && classStarted === false && currentClass && (
@@ -2710,7 +2889,7 @@ function App() {
                 </Flex>
               )}
             </Flex>
- {/** TODO */}
+            {/** TODO */}
             <Flex direction="column">
               {currentClass &&
                 currentClass.started === true &&
@@ -2726,7 +2905,11 @@ function App() {
                 currentClass.started === true &&
                 showGroupsResultsAndUnreportedMatches && (
                   <Center>
-                    <Flex  flexWrap="wrap" justifyContent="center" maxWidth="100vw">
+                    <Flex
+                      flexWrap="wrap"
+                      justifyContent="center"
+                      maxWidth="100vw"
+                    >
                       <Button
                         m="2"
                         fontSize={"30"}
@@ -3416,7 +3599,7 @@ function App() {
                       >
                         Status
                       </Button>
-                      
+
                       {unreportedMatches.length === 0 && (
                         <Button
                           onClick={() => {
@@ -3451,70 +3634,67 @@ function App() {
                         </Button>
                       )}
                     </Flex>
-
-                    
                   </Center>
                 )}
 
-                {<Flex direction="column">
+              {
+                <Flex direction="column">
+                  {showUnreportedMatches && unreportedMatches.length !== 0 && (
+                    <Center>
+                      <Text fontSize={"24"}>Unreported Matches</Text>
+                    </Center>
+                  )}
+                  {showUnreportedMatches && unreportedMatches.length === 0 && (
+                    <Center>
+                      <Text fontSize={"24"}>No unreported matches</Text>
+                    </Center>
+                  )}
+                  <Box p={3}>
+                    {showUnreportedMatches && (
+                      <Center>
+                        <Input
+                          value={matchSearch}
+                          onChange={handleUnreportedMatchSearch}
+                          fontWeight={"bold"}
+                          placeholder="Search for MatchID or Name"
+                          width={"40%"}
+                          size="md"
+                        ></Input>
+                      </Center>
+                    )}
                     {showUnreportedMatches &&
-                      unreportedMatches.length !== 0 && (
-                        <Center>
-                          <Text fontSize={"24"}>Unreported Matches</Text>
-                        </Center>
-                      )}
-                    {showUnreportedMatches &&
-                      unreportedMatches.length === 0 && (
-                        <Center>
-                          <Text fontSize={"24"}>No unreported matches</Text>
-                        </Center>
-                      )}
-                    <Box p={3}>
-                      {showUnreportedMatches && (
-                        <Center>
-                          <Input
-                            value={matchSearch}
-                            onChange={handleUnreportedMatchSearch}
-                            fontWeight={"bold"}
-                            placeholder="Search for MatchID or Name"
-                            width={"40%"}
-                            size="md"
-                          ></Input>
-                        </Center>
-                      )}
-                      {showUnreportedMatches &&
-                        filteredMatches.map((match) => {
-                          if (!match.matchId) {
-                            console.log("hllo");
-                            return null; // Skip the iteration if there is no matchId
-                          }
+                      filteredMatches.map((match) => {
+                        if (!match.matchId) {
+                          console.log("hllo");
+                          return null; // Skip the iteration if there is no matchId
+                        }
 
-                          return (
-                            <Center key={match.matchId}>
-                              <Box
-                                onClick={() => {
-                                  onOpenScoreModal();
-                                  setMatchId(String(match.matchId));
-                                  loadReportPlayers(match.matchId!);
-                                  setCurrentMatch(match);
-                                }}
-                                width={"40%"}
-                                margin={"3px"}
-                              >
-                                <Match
-                                  key={match.matchId}
-                                  matchId={match.matchId}
-                                  player1={match.player1}
-                                  player2={match.player2}
-                                />
-                              </Box>
-                            </Center>
-                          );
-                        })}
-                        
-                    </Box>
-                    </Flex>}
-                
+                        return (
+                          <Center key={match.matchId}>
+                            <Box
+                              onClick={() => {
+                                onOpenScoreModal();
+                                setMatchId(String(match.matchId));
+                                loadReportPlayers(match.matchId!);
+                                setCurrentMatch(match);
+                              }}
+                              width={"40%"}
+                              margin={"3px"}
+                            >
+                              <Match
+                                key={match.matchId}
+                                matchId={match.matchId}
+                                player1={match.player1}
+                                player2={match.player2}
+                              />
+                            </Box>
+                          </Center>
+                        );
+                      })}
+                  </Box>
+                </Flex>
+              }
+
               {showGroups && (
                 <Box>
                   <Flex maxWidth="100vw">
@@ -3606,7 +3786,12 @@ function App() {
                 <Box>
                   <Flex maxWidth="100vw">
                     {currentClass?.groups?.map((group) => (
-                      <Box margin={2} minWidth="300" width={"40%"} key={group.name}>
+                      <Box
+                        margin={2}
+                        minWidth="300"
+                        width={"40%"}
+                        key={group.name}
+                      >
                         <GroupResult
                           name={group.name}
                           players={group.players}
