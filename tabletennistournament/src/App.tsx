@@ -191,7 +191,6 @@ function App() {
     onOpen: onOpenDeleteClassModal,
     onClose: onCloseDeleteClassModal,
   } = useDisclosure();
-  
 
   // States for loading the right tournaments for Uid
   const [userName, setUserName] = useState("");
@@ -264,7 +263,8 @@ function App() {
   const [className, setClassName] = useState("");
   const [editClass, setEditClass] = useState(false);
   const [deleteClassInput, setDeleteClassInput] = useState("");
-  const [showDeleteClassConfirmation, setShowDeleteClassConfirmation] = useState(false);
+  const [showDeleteClassConfirmation, setShowDeleteClassConfirmation] =
+    useState(false);
 
   // save or update the tournament to Firebase
 
@@ -1764,8 +1764,6 @@ function App() {
     setDeleteClassInput("");
   }
 
-    
-
   function handleDeleteClasses(tournament: Tournament) {
     deleteClassesByTournamentId(tournament.tournamentId!);
     console.log("handleDeleteClasses");
@@ -2565,53 +2563,55 @@ function App() {
                       ))}
                     </Flex>
                   </Box>
-                  {showDeleteClassConfirmation && currentTournament && currentClass && (
-                  <Modal
-                    isOpen={isDeleteClassModal}
-                    onClose={onCloseDeleteClassModal}
-                  >
-                    <ModalOverlay />
-                    <ModalContent>
-                      <ModalHeader textColor="red.300">
-                        Delete Class {currentClass.name}
-                      </ModalHeader>
-                      <ModalCloseButton />
-                      <ModalBody>
-                        <Input
-                          type="text"
-                          value={deleteClassInput}
-                          onChange={(e) => setDeleteClassInput(e.target.value)}
-                          placeholder={`Type "${currentClass.name}" to confirm deletion`}
-                        />
-                      </ModalBody>
-                      <ModalFooter>
-                        <Button
-                          bg="red.300"
-                          onClick={() => {
-                            if (deleteClassInput === currentClass.name) {
-                              handleDeleteClass(currentClass);
-                            } else {
-                              alert(
-                                "Class name does not match. Deletion aborted."
-                              );
-                            }
-                            setDeleteClassInput("");
-                            setCurrentClass(undefined);
-                            onCloseDeleteClassModal();
-                          }}
-                        >
-                          Confirm deletion
-                        </Button>
-                      </ModalFooter>
-                    </ModalContent>
-                  </Modal>
-                )}
+                  {showDeleteClassConfirmation &&
+                    currentTournament &&
+                    currentClass && (
+                      <Modal
+                        isOpen={isDeleteClassModal}
+                        onClose={onCloseDeleteClassModal}
+                      >
+                        <ModalOverlay />
+                        <ModalContent>
+                          <ModalHeader textColor="red.300">
+                            Delete Class {currentClass.name}
+                          </ModalHeader>
+                          <ModalCloseButton />
+                          <ModalBody>
+                            <Input
+                              type="text"
+                              value={deleteClassInput}
+                              onChange={(e) =>
+                                setDeleteClassInput(e.target.value)
+                              }
+                              placeholder={`Type "${currentClass.name}" to confirm deletion`}
+                            />
+                          </ModalBody>
+                          <ModalFooter>
+                            <Button
+                              bg="red.300"
+                              onClick={() => {
+                                if (deleteClassInput === currentClass.name) {
+                                  handleDeleteClass(currentClass);
+                                } else {
+                                  alert(
+                                    "Class name does not match. Deletion aborted."
+                                  );
+                                }
+                                setDeleteClassInput("");
+                                setCurrentClass(undefined);
+                                onCloseDeleteClassModal();
+                              }}
+                            >
+                              Confirm deletion
+                            </Button>
+                          </ModalFooter>
+                        </ModalContent>
+                      </Modal>
+                    )}
                 </Box>
-
               </Center>
             )}
 
-            
             {/** Class info */}
             <Flex direction="column" maxWidth="100vw">
               {showClassInfo && classStarted === false && currentClass && (
@@ -2808,35 +2808,6 @@ function App() {
 
               {showPlayersAndGroups && classStarted === false && (
                 <Flex maxWidth="100vw">
-                  <Box>
-                    <Box>
-                      {currentClass?.groups
-                        ?.slice(0, Math.ceil(currentClass.groups.length / 2))
-                        .map((group) => (
-                          <Box m="2" p={1} key={group.name}>
-                            <Group
-                              seededPlayersIds={currentClass.seededPlayersIds}
-                              name={group.name}
-                              players={group.players}
-                            />
-                          </Box>
-                        ))}
-                    </Box>
-                    <Box>
-                      {currentClass?.groups
-                        ?.slice(Math.ceil(currentClass.groups.length / 2))
-                        .map((group) => (
-                          <Box m="2" p={1} key={group.name}>
-                            <Group
-                              seededPlayersIds={currentClass.seededPlayersIds}
-                              name={group.name}
-                              players={group.players}
-                            />
-                          </Box>
-                        ))}
-                    </Box>
-                  </Box>
-
                   <Box m="2">
                     {currentClass &&
                       currentClass.players &&
@@ -2885,6 +2856,32 @@ function App() {
                             </Box>
                           );
                         })}
+                  </Box>
+                  <Box>
+                    {currentClass?.groups
+                      ?.slice(0, Math.ceil(currentClass.groups.length / 2))
+                      .map((group) => (
+                        <Box m="2" p={1} key={group.name}>
+                          <Group
+                            seededPlayersIds={currentClass.seededPlayersIds}
+                            name={group.name}
+                            players={group.players}
+                          />
+                        </Box>
+                      ))}
+                  </Box>
+                  <Box>
+                    {currentClass?.groups
+                      ?.slice(Math.ceil(currentClass.groups.length / 2))
+                      .map((group) => (
+                        <Box m="2" p={1} key={group.name}>
+                          <Group
+                            seededPlayersIds={currentClass.seededPlayersIds}
+                            name={group.name}
+                            players={group.players}
+                          />
+                        </Box>
+                      ))}
                   </Box>
                 </Flex>
               )}
@@ -3698,98 +3695,98 @@ function App() {
               }
 
               {showGroups && (
-                
                 <Flex flexWrap="wrap" justifyContent="center" maxWidth="100vw">
-                    {currentClass?.groups!.map((group) => (
-                      <Box
-                        maxWidth="100vw"
-                        margin={"2"}
-                        onClick={onOpenMatchesModal}
-                        width={"40%"}
-                        minWidth={"300px"}
-                        key={group.name}
+                  {currentClass?.groups!.map((group) => (
+                    <Box
+                      maxWidth="100vw"
+                      margin={"2"}
+                      onClick={onOpenMatchesModal}
+                      width={"40%"}
+                      minWidth={"300px"}
+                      key={group.name}
+                    >
+                      <Modal
+                        finalFocusRef={inputSetRef}
+                        isCentered
+                        onClose={onCloseMatchesModal}
+                        isOpen={isOpenMatchesModal}
+                        motionPreset="slideInBottom"
+                        blockScrollOnMount={false}
                       >
-                        <Modal
-                          finalFocusRef={inputSetRef}
-                          isCentered
-                          onClose={onCloseMatchesModal}
-                          isOpen={isOpenMatchesModal}
-                          motionPreset="slideInBottom"
-                          blockScrollOnMount={false}
-                        >
-                          <ModalOverlay opacity={0.6} bg={"#"} />
-                          <ModalContent>
-                            {currentPlayer && currentPlayer.name && (
-                              <ModalHeader>
-                                Matches for {currentPlayer.name}
-                              </ModalHeader>
-                            )}
-                            <ModalCloseButton />
-                            <ModalBody>
-                              <Box>
-                                {currentPlayer && currentClass?.matches && (
-                                  <>
-                                    {currentClass.matches
-                                      .filter(
-                                        (match) =>
-                                          match.player1?.id ===
-                                            currentPlayer.id ||
-                                          match.player2?.id === currentPlayer.id
-                                      )
-                                      .map((match) => {
-                                        // Add this console.log statement
-                                        return (
-                                          <Box
-                                            m={2}
+                        <ModalOverlay opacity={0.6} bg={"#"} />
+                        <ModalContent>
+                          {currentPlayer && currentPlayer.name && (
+                            <ModalHeader>
+                              Matches for {currentPlayer.name}
+                            </ModalHeader>
+                          )}
+                          <ModalCloseButton />
+                          <ModalBody>
+                            <Box>
+                              {currentPlayer && currentClass?.matches && (
+                                <>
+                                  {currentClass.matches
+                                    .filter(
+                                      (match) =>
+                                        match.player1?.id ===
+                                          currentPlayer.id ||
+                                        match.player2?.id === currentPlayer.id
+                                    )
+                                    .map((match) => {
+                                      // Add this console.log statement
+                                      return (
+                                        <Box
+                                          m={2}
+                                          key={match.matchId}
+                                          onClick={() => {
+                                            setMatchId(String(match.matchId));
+                                            loadReportPlayers(match.matchId!);
+                                            setCurrentMatch(match);
+                                            onOpenScoreModal();
+                                          }}
+                                        >
+                                          <DisplayMatchScore
                                             key={match.matchId}
-                                            onClick={() => {
-                                              setMatchId(String(match.matchId));
-                                              loadReportPlayers(match.matchId!);
-                                              setCurrentMatch(match);
-                                              onOpenScoreModal();
-                                            }}
-                                          >
-                                            <DisplayMatchScore
-                                              key={match.matchId}
-                                              match={match}
-                                            />
-                                          </Box>
-                                        );
-                                      })}
-                                  </>
-                                )}
-                              </Box>
-                            </ModalBody>
+                                            match={match}
+                                          />
+                                        </Box>
+                                      );
+                                    })}
+                                </>
+                              )}
+                            </Box>
+                          </ModalBody>
 
-                            <ModalFooter>
-                              <Button
-                                colorScheme="blue"
-                                mr={3}
-                                onClick={onCloseMatchesModal}
-                              >
-                                Close
-                              </Button>
-                            </ModalFooter>
-                          </ModalContent>
-                        </Modal>
+                          <ModalFooter>
+                            <Button
+                              colorScheme="blue"
+                              mr={3}
+                              onClick={onCloseMatchesModal}
+                            >
+                              Close
+                            </Button>
+                          </ModalFooter>
+                        </ModalContent>
+                      </Modal>
 
-                        <GroupDisplayScore
-                          onPlayerClick={handleLookUpPlayerScore}
-                          seededPlayersIds={currentClass.seededPlayersIds}
-                          groupName={group.name}
-                          players={group.players}
-                        />
-                      </Box>
-                    ))}
-                  </Flex>
-                
+                      <GroupDisplayScore
+                        onPlayerClick={handleLookUpPlayerScore}
+                        seededPlayersIds={currentClass.seededPlayersIds}
+                        groupName={group.name}
+                        players={group.players}
+                      />
+                    </Box>
+                  ))}
+                </Flex>
               )}
 
               {showGroupResult && (
-                <Box flexWrap="wrap"
-                justifyContent="center" maxWidth="100vw">
-                  <Flex flexWrap="wrap"
-                      justifyContent="center" maxWidth="100vw">
+                <Box flexWrap="wrap" justifyContent="center" maxWidth="100vw">
+                  <Flex
+                    flexWrap="wrap"
+                    justifyContent="center"
+                    maxWidth="100vw"
+                  >
                     {currentClass?.groups?.map((group) => (
                       <Box
                         margin={2}
