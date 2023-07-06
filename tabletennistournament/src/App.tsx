@@ -1451,19 +1451,19 @@ function App() {
         );
       }
 
-      if (bestOf === "bo3") {
+      if (bestOf === "Bo3") {
         if (wonSetsPlayer1 < 2 && wonSetsPlayer2 < 2) {
           throw new Error("Input error: At least one player must win 2 sets.");
         }
       }
 
-      if (bestOf === "bo5") {
+      if (bestOf === "Bo5") {
         if (wonSetsPlayer1 < 3 && wonSetsPlayer2 < 3) {
           throw new Error("Input error: At least one player must win 3 sets.");
         }
       }
 
-      if (bestOf === "bo7") {
+      if (bestOf === "Bo7") {
         if (wonSetsPlayer1 < 4 && wonSetsPlayer2 < 4) {
           throw new Error("Input error: At least one player must win 4 sets.");
         }
