@@ -16,6 +16,7 @@ import deleteClass from "./Backend/deleteClassByTournamentId";
 import {
   getUsernameAndSessionDuration,
   login,
+  signOut,
 } from "./Backend/auth_google_provider_create";
 
 import Tournament from "./components/Tournament";
@@ -114,6 +115,7 @@ function App() {
   const [classStarted, setClassStarted] = useState(false);
   const [classSeededPlayers, setClassSeededPlayers] = useState<number[]>([]);
   const [showClassInfo, setShowClassInfo] = useState(false);
+  
 
   // States for classes
   const [numberInGroup, setNumberInGroup] = useState(4);
@@ -233,6 +235,7 @@ function App() {
   const [matchIdError, setMatchIdError] = useState(0);
   const [checkWinner, setCheckWinner] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const [popoverKey, setPopoverKey] = useState(0);
 
   // put the right matchId into report match from player matches and unreported matches
   const matchIdRef = useRef<HTMLInputElement | null>(null); // Declare matchIdRef as a RefObject
@@ -276,9 +279,12 @@ function App() {
           setUid(user.uid);
           setUserName(user.username);
           setUserLoggedIn(true);
+          setShowStartMenu(true);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        setUserLoggedIn(false);
+        setShowStartMenu(false);
       }
     }
 
@@ -330,13 +336,12 @@ function App() {
   };
 
   async function createClass(tournament: Tournament) {
-    console.log(currentClass?.classId, "class ID before sending  ");
     if (!tournament.tournamentId) {
       return; // Handle the case when tournamentId is null
     }
 
     const newClass: Class = {
-      classId: currentClass?.classId ? currentClass.classId : -1,
+      classId: -1,
       uid: uid,
       name: className,
       format: "groups",
@@ -348,21 +353,26 @@ function App() {
       groups: [],
       started: false,
       matches: [],
-      readyToStart: false,
+      classDrawn: false,
       bo: bo,
       public: publicOrPrivateClass,
     };
-    const updatedClasses = [...tournamentClasses, newClass];
 
-    const classID = await writeClass(false, newClass); // Write to Firebase
+    const classID = await writeClass(newClass); // Write to Firebase
 
     setClassId(classID);
-    setTournamentClasses(updatedClasses);
 
+    const updatedClass = { ...newClass, classId: classID };
+    setCurrentClass(updatedClass);
+    console.log("updatedClass", updatedClass);
     setClassPlayers([]);
     setClassName("");
     setNumberInGroup(4);
     setTournamentType("");
+
+    const updatedClasses = [...tournamentClasses, updatedClass];
+
+    setTournamentClasses(updatedClasses);
   }
 
   async function editClassNameAndPublicity(tournament: Tournament) {
@@ -387,9 +397,7 @@ function App() {
       groups: currentClass?.groups ? currentClass.groups : [],
       started: currentClass?.started ? currentClass.started : false,
       matches: currentClass?.matches ? currentClass.matches : [],
-      readyToStart: currentClass?.readyToStart
-        ? currentClass.readyToStart
-        : false,
+
       bo: currentClass?.bo ? currentClass.bo : "Bo5",
       public: currentClass?.public ? currentClass.public : "Public",
     };
@@ -401,7 +409,7 @@ function App() {
       return myClass;
     });
 
-    const classID = await writeClass(true, newClass); // Write to Firebase
+    const classID = await writeClass(newClass); // Write to Firebase
 
     setClassId(classID);
     setTournamentClasses(updatedClasses);
@@ -514,6 +522,7 @@ function App() {
   };
   // go home resets all state variables
   const handlegoToHome = () => {
+    
     setShowClassesButton(false);
     setShowClassInfo(false);
     setAtStartScreen(true);
@@ -568,7 +577,18 @@ function App() {
 
     if (result) {
       await loadTournaments();
+      setUserLoggedIn(true);
     }
+  }
+
+  async function handleGoogleLogout() {
+    await signOut();
+    setUid("");
+    setUserName("");
+    setMyTournaments([]);
+    setUserLoggedIn(false);
+
+    handlegoToHome();
   }
 
   async function loadTournaments() {
@@ -590,17 +610,18 @@ function App() {
   // go to tclass info
 
   const handleGoToClassInfo = (myClass: Class) => {
-    console.log(myClass);
+    setCurrentClass(myClass);
+    console.log(myClass.classId, "myClass.classId");
+
     setShowClassInfo(true);
 
     setCurrentClass(myClass);
     setClassPlayers(myClass.players ? myClass.players : []);
-
     setClassStarted(myClass.started ? myClass.started : false);
+    console.log(myClass.started, "myClass.started");
     setShowGroupsResultsAndUnreportedMatches(
       myClass.started ? myClass.started : false
     );
-
     setShowTournamentOverview(false);
     setClassSeededPlayers(
       myClass.seededPlayersIds ? myClass.seededPlayersIds : []
@@ -690,11 +711,12 @@ function App() {
     setSentPlayerIds([...sentPlayerIds, playerId]);
   }
   // save tournament to firebase
-  function saveTournament() {
+  async function saveTournament() {
+    console.log("saveTournament", currentClass?.classId);
     if (currentClass) {
       const newClass: Class = {
         ...currentClass,
-        classId: classId ? classId : -1,
+        classId: classId,
         players: currentClass.players ? currentClass.players : [],
         seededPlayersIds: currentClass.seededPlayersIds
           ? currentClass.seededPlayersIds
@@ -705,8 +727,15 @@ function App() {
         uid: uid,
       };
 
-      writeClass(true, newClass);
+      await writeClass(newClass);
       setCurrentClass(newClass);
+
+      
+      setTournamentClasses(
+        tournamentClasses.map((c) =>
+          c.classId === newClass.classId ? newClass : c
+        )
+      );
     }
   }
   // delete player from tournament
@@ -723,16 +752,8 @@ function App() {
   }
 
   // calculate how many players to seed according to amount of players
-  function handleSetClassSeededPlayers(players: Player[], seeded: boolean) {
+  async function handleSetClassSeededPlayers(players: Player[]) {
     //console.log(players);
-    if (seeded == false) {
-      setClassSeededPlayers([]);
-      currentClass &&
-        setCurrentClass({
-          ...currentClass,
-          seededPlayersIds: [],
-        });
-    }
 
     const totalPlayers = players.length;
 
@@ -756,15 +777,27 @@ function App() {
     const seededPlayersIds = seededPlayers.map((player) => player.id as number);
 
     setClassSeededPlayers(seededPlayersIds);
-    currentClass &&
-      setCurrentClass({
+
+    if (currentClass) {
+      const newClass: Class = {
         ...currentClass,
+
         seededPlayersIds: seededPlayersIds,
-      });
+      };
+
+      await writeClass(newClass);
+      setCurrentClass(newClass);
+
+      setTournamentClasses(
+        tournamentClasses.map((c) =>
+          c.classId === newClass.classId ? newClass : c
+        )
+      );
+    }
   }
 
   // sets states to display the drawn groups
-  function handleDrawTournament() {
+  async function handleDrawTournament() {
     if (currentClass && currentClass.players && currentClass.numberInGroup) {
       if (currentClass.players?.length === 0) {
         alert("Please add players to the tournament");
@@ -788,9 +821,11 @@ function App() {
           groups: [],
           seededPlayersIds: [],
           matches: [],
+          classDrawn: true,
+          started: false,
         };
         console.log("before error");
-        writeClass(true, newClass);
+        await writeClass(newClass);
         console.log("after error");
         setCurrentTournament(newClass);
         drawTournament(newClass);
@@ -809,7 +844,7 @@ function App() {
   // makes groups, we then use these group sizes to generate the real groups when we know our desired size
   // it uses 3 aux functions to determine if the draw is legal otherwise it draws again
   // infinite loop should be fixed if it hangs then call me
-  function drawTournament(myClass: Class): void {
+  async function drawTournament(myClass: Class): Promise<void> {
     console.log("draw tournament");
     let noGroups = 0;
     let no3Groups = 0;
@@ -1061,18 +1096,19 @@ function App() {
     }
 
     // console.log(tournamentGroups);
+    console.log("before writeClass");
+    await writeClass({
+      ...myClass,
+      groups: addGroups,
+      classDrawn: true,
+      matches: [],
+    });
 
     if (currentClass) {
       setCurrentClass({
         ...myClass,
         groups: addGroups,
-        readyToStart: true,
-        matches: [],
-      });
-      writeClass(true, {
-        ...myClass,
-        groups: addGroups,
-        readyToStart: true,
+        classDrawn: true,
         matches: [],
       });
     }
@@ -1208,7 +1244,8 @@ function App() {
   }
 
   // function put tournament in start state after draw has been done.
-  function handleStartClass() {
+  async function handleStartClass() {
+    console.log(currentClass);
     setShowGroupsResultsAndUnreportedMatches(true);
     setShowClassInfo(false);
     setShowTournamentOverview(false);
@@ -1216,23 +1253,31 @@ function App() {
     setShowMyTournament(false);
     setShowTournamentButtons(false);
     setCurrentTournament(currentTournament);
-    setCurrentClass(currentClass);
+
     const matches = assignMatchesInTournament(currentClass);
 
     setShowUnreportedMatches(false);
     setShowGroups(true);
 
     if (currentClass) {
+      const updatedClasses = tournamentClasses.map((cls) =>
+        cls.classId === currentClass.classId
+          ? { ...cls, started: true, matches }
+          : cls
+      );
+      setTournamentClasses(updatedClasses);
+
+      await writeClass({
+        ...currentClass,
+        started: true,
+        matches: matches,
+        seededPlayersIds: currentClass.seededPlayersIds,
+      });
+
       setCurrentClass({
         ...currentClass,
         started: true,
-        readyToStart: false,
-        matches: matches,
-      });
-      writeClass(true, {
-        ...currentClass,
-        started: true,
-        readyToStart: false,
+        seededPlayersIds: currentClass.seededPlayersIds,
         matches: matches,
       });
     }
@@ -1487,7 +1532,7 @@ function App() {
   }
 
   // sets the match scores for the sets to then be reported
-  function handleMatchScore() {
+  async function handleMatchScore() {
     console.log("handleMatchScore");
     if (currentMatch !== null && currentMatch !== undefined) {
       const set1 = {
@@ -1575,11 +1620,12 @@ function App() {
         };
 
         console.log(updatedClass);
-        writeClass(true, updatedClass);
+        await writeClass(updatedClass);
         setCurrentClass(updatedClass);
 
         clearMatchScore();
       }
+      setPopoverKey((prevKey) => prevKey + 1);
     }
   }
 
@@ -1718,7 +1764,7 @@ function App() {
     console.log(currentPlayer);
   }
 
-  function handleCheckIfStartBracket() {
+  async function handleCheckIfStartBracket() {
     if (handleCheckGroupStatus() === -1) {
       return;
     }
@@ -1727,7 +1773,7 @@ function App() {
       if (unreportedMatches.length === 0) {
         setStartBracket(true);
         console.log(startBracket);
-        writeClass(true, {
+        await writeClass({
           ...currentClass,
           startBracket: true,
         });
@@ -1756,7 +1802,9 @@ function App() {
 
   function handleDeleteClass(thisClass: Class) {
     console.log("handleDeleteClass");
+    console.log(thisClass.classId);
     deleteClass(thisClass.classId!);
+    deleteClass(-1);
     setCurrentClass(undefined);
     setTournamentClasses((prevClasses) =>
       prevClasses.filter((c) => c.classId !== thisClass.classId)
@@ -1865,6 +1913,13 @@ function App() {
                   onClick={async () => await handleGoogleLogin()}
                 >
                   Sign in
+                </Button>
+                <Button
+                  colorScheme="red"
+                  margin={2}
+                  onClick={async () => await handleGoogleLogout()}
+                >
+                  Sign out
                 </Button>
                 {currentTournament && !atStartScreen && showClassesButton && (
                   <Button
@@ -2614,13 +2669,14 @@ function App() {
 
             {/** Class info */}
             <Flex direction="column" maxWidth="100vw">
-              {showClassInfo && classStarted === false && currentClass && (
+              {showClassInfo && classStarted === false && (
                 <Center>
                   <Box>
                     {currentTournament && (
                       <Center>
                         <Heading size="md" fontWeight={"bold"}>
-                          {currentTournament.name} - {currentClass.name}
+                          {currentTournament.name} -{" "}
+                          {currentClass?.name ? currentClass.name : ""}
                         </Heading>
                       </Center>
                     )}
@@ -2755,10 +2811,7 @@ function App() {
                     fontSize="30"
                     bg="orange.200"
                     onClick={() =>
-                      handleSetClassSeededPlayers(
-                        currentClass?.players || [],
-                        true
-                      )
+                      handleSetClassSeededPlayers(currentClass?.players || [])
                     }
                   >
                     Seed players
@@ -2780,8 +2833,9 @@ function App() {
                   )}
 
                   {currentClass &&
-                    currentClass.readyToStart === true &&
-                    !playerDeleted && (
+                    currentClass.classDrawn === true &&
+                    !playerDeleted &&
+                    (
                       <Button
                         size="lg"
                         fontSize="30"
@@ -2794,7 +2848,7 @@ function App() {
                     )}
                   {currentClass && playerDeleted === true && (
                     <Button
-                      onClick={() => alert("Please draw tournament first")}
+                      onClick={() => alert("Please draw class first")}
                       size="lg"
                       fontSize="30"
                       bg="#FEA1A1"
@@ -3477,7 +3531,7 @@ function App() {
                               <Center>
                                 {" "}
                                 {/* Move the Center component here */}
-                                <Popover>
+                                <Popover key={popoverKey}>
                                   <PopoverTrigger>
                                     <Button
                                       bg={"orange.200"}

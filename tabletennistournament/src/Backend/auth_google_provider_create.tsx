@@ -39,8 +39,18 @@ export async function login(): Promise<UserCredential | null> {
 }
 
 
-/*export function signOut() {
-  return auth.signOut();
+export function signOut() {
+  return new Promise<void>((resolve, reject) => {
+    auth
+      .signOut()
+      .then(() => {
+        clearStorage();
+        resolve();
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
 }
 
 function clearStorage() {
@@ -51,4 +61,3 @@ function clearStorage() {
   // Clear local storage
   localStorage.removeItem("your_localstorage_key");
 }
-*/

@@ -17,7 +17,7 @@ interface Class {
   threeOrFive?: string;
   groups?: Group[];
   started?: boolean;
-  readyToStart?: boolean;
+  classDrawn?: boolean;
   bo?: string;
   startBracket?: boolean;
   public?: string;

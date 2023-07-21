@@ -80,53 +80,65 @@ async function createTournament(
   });
 }
 
-export async function writeClass(
-  update: boolean,
-  classs: Class
-): Promise<number> {
+
+export async function writeClass(classs: Class): Promise<number> {
+  console.log("class ", classs.classId);
   let classId = classs.classId;
 
-  if (update === false) {
-    classId = await getClassId();
-  }
+  if (classId === -1) {
+    classId = await generateNewClassId();
+    console.log("Creating new class with ID", classId);
 
-  const classRef = ref(db, `class/${classId}`);
-  const classSnapshot = await get(classRef);
-
-  if (classSnapshot.exists()) {
-    console.log("Class exists, updating class");
-    await updateClass(classRef, classs);
-  } else {
-    console.log("Class does not exist, creating class");
+    // Set the new classId value in the classs object
+    classs.classId = classId;
+    const classRef = ref(db, `class/${classId}`);
     await createClass(classRef, classId, classs);
+  } else {
+    // Existing class, update it using classId directly
+    const classRef = ref(db, `class/${classId}`);
+    const classSnapshot = await get(classRef);
+    console.log("classSnapshot.exists()", classSnapshot.exists());
+    if (classSnapshot.exists()) {
+      console.log("Class exists, updating class");
+      await updateClass(classRef, classs);
+    }
   }
+
   return classId;
 }
 
-async function getClassId(): Promise<number> {
+
+
+async function generateNewClassId(): Promise<number> {
   const classListRef = ref(db, "class");
   const classListSnapshot = await get(classListRef);
   const classList: Record<string, Class> = classListSnapshot.val() || {};
-  let maxClassId: number = 0;
 
-  Object.values<Class>(classList).forEach((classItem: Class) => {
-    if (classItem.classId > maxClassId) {
-      maxClassId = classItem.classId;
-    }
-  });
+  let minClassId: number = 1;
 
-  return maxClassId + 1;
+  if (Object.keys(classList).length > 0) {
+    classListSnapshot.forEach((classItemSnapshot: any) => {
+      const classItem = classItemSnapshot.val();
+      if (classItem.classId >= minClassId) {
+        minClassId = classItem.classId + 1;
+      }
+    });
+  }
+  console.log("minClassId", minClassId);
+  return minClassId;
 }
+
 
 async function createClass(
   classRef: any,
   classId: number,
   classs: Class
 ): Promise<void> {
+  // Generate the new classId if it is -1
+  console.log(classId, "inside createClass")
   await set(classRef, {
-    classId: classId,
+    classId: classId, 
     tournamentId: classs.tournamentId,
-
     uid: classs.uid,
     name: classs.name,
     format: classs.format,
@@ -137,24 +149,26 @@ async function createClass(
     groups: [],
     started: false,
     matches: [],
-    readyToStart: false,
+    classDrawn: false,
     bo: classs.bo,
     public: classs.public,
   });
 }
 
 async function updateClass(classRef: any, classs: Class): Promise<void> {
+  console.log(classs, "inside updateClass")
   await update(classRef, {
     name: classs.name,
     format: classs.format,
     numberInGroup: classs.numberInGroup,
     threeOrFive: classs.threeOrFive,
-    players: classs.players,
-    seededPlayersIds: classs.seededPlayersIds,
-    groups: classs.groups,
+    players: classs.players? classs.players : [],
+    seededPlayersIds: classs.seededPlayersIds? classs.seededPlayersIds : [],
+    groups: classs.groups? classs.groups : [],
     started: classs.started,
-    matches: classs.matches,
-    readyToStart: classs.readyToStart,
+    matches: classs.matches ? classs.matches : [],
+    classDrawn: classs.classDrawn,
+    
     bo: classs.bo,
     public: classs.public,
   });
