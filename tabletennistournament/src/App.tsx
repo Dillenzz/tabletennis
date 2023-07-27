@@ -1907,6 +1907,7 @@ function App() {
                 >
                   Home
                 </Button>
+                {userLoggedIn == false  &&(
                 <Button
                   colorScheme="blue"
                   margin={2}
@@ -1914,6 +1915,8 @@ function App() {
                 >
                   Sign in
                 </Button>
+                )}
+                {userLoggedIn &&(
                 <Button
                   colorScheme="red"
                   margin={2}
@@ -1921,6 +1924,7 @@ function App() {
                 >
                   Sign out
                 </Button>
+                )}
                 {currentTournament && !atStartScreen && showClassesButton && (
                   <Button
                     m={2}
