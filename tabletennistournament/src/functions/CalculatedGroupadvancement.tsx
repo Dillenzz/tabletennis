@@ -1,7 +1,7 @@
-import Player from "./Player";
-import Match from "./Match";
-import PlayerGroupScore from "./PlayerGroupScore";
-import { Box, Text, Center } from "@chakra-ui/react";
+import Player from "../components/Player";
+import Match from "../components/Match";
+import PlayerGroupScore from "../components/PlayerGroupScore";
+
 
 interface Group {
   name?: number;
@@ -330,8 +330,8 @@ function checkIntraPoints(
 }
 
 
-function GroupResult(props: Group) {
-  const { name, players, matches } = props;
+function checkGroupAdvancement(props: Group) {
+  const  {players, matches } = props;
   // Calculate playerGroupScore based on matches
   const playerGroupScore: PlayerGroupScore[] = [];
   // Calculate advancingPlayers when props.players or matches change
@@ -487,39 +487,18 @@ function GroupResult(props: Group) {
   // first 2 players in each group should be in the next round and displayed with a green color
   const topPlayers = sortedPlayerPosition.slice(0, 2);
 
-  return (
-    <Box width="100%" bg="#F5F0BB" rounded="md">
-      <Center>
-        <Text fontSize={20} style={{ fontWeight: "bold" }}>
-          Group {name}
-        </Text>
-      </Center>
-      {sortedPlayerScore && sortedPlayerScore && (
-        <Box>
-          {sortedPlayerPosition.map((player) => (
-            <Player
-              key={player.player.id}
-              id={player.player.id}
-              name={player.player.name}
-              score={player.score}
-              class={player.player.class}
-              isTopPlayer={topPlayers.includes(player)}
-              intraMatchScore={player.player.intraMatchScore || 0}
-              intraSetScore={player.player.intraSetScore || "0/0"}
-              intraPointScore={player.player.intraPointScore || "00/00"}
-            />
-          ))}
-        </Box>
-      )}
-      {playerGroupScore.length === 0 && (
-        <Box>
-          <Center>
-            <Text fontSize={14}>No matches reported</Text>
-          </Center>
-        </Box>
-      )}
-    </Box>
-  );
-}
 
-export default GroupResult;
+ 
+
+  return topPlayers
+    
+  }
+
+  export default checkGroupAdvancement;
+
+
+
+
+
+
+

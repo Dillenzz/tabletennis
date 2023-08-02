@@ -22,5 +22,6 @@ interface Class {
   startBracket?: boolean;
   public?: string;
   rating?: number;
+  
 }
 export default Class;

@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
 import logo from "./assets/ft11.svg";
+import calculateGroupAdvancement from "./functions/CalculatedGroupadvancement";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
@@ -115,7 +116,6 @@ function App() {
   const [classStarted, setClassStarted] = useState(false);
   const [classSeededPlayers, setClassSeededPlayers] = useState<number[]>([]);
   const [showClassInfo, setShowClassInfo] = useState(false);
-  
 
   // States for classes
   const [numberInGroup, setNumberInGroup] = useState(4);
@@ -269,6 +269,13 @@ function App() {
   const [showDeleteClassConfirmation, setShowDeleteClassConfirmation] =
     useState(false);
 
+  // STATES FOR TOURNAMENT BRACKET
+
+  const [advancingPlayers, setAdvancingPlayers] = useState<[Player, Player][]>(
+    []
+  );
+  const [showBracket, setShowBracket] = useState(false);
+
   // save or update the tournament to Firebase
 
   useEffect(() => {
@@ -352,6 +359,7 @@ function App() {
       seededPlayersIds: [],
       groups: [],
       started: false,
+      startBracket: false,
       matches: [],
       classDrawn: false,
       bo: bo,
@@ -397,6 +405,9 @@ function App() {
       groups: currentClass?.groups ? currentClass.groups : [],
       started: currentClass?.started ? currentClass.started : false,
       matches: currentClass?.matches ? currentClass.matches : [],
+      startBracket: currentClass?.startBracket
+        ? currentClass.startBracket
+        : false,
 
       bo: currentClass?.bo ? currentClass.bo : "Bo5",
       public: currentClass?.public ? currentClass.public : "Public",
@@ -522,7 +533,6 @@ function App() {
   };
   // go home resets all state variables
   const handlegoToHome = () => {
-    
     setShowClassesButton(false);
     setShowClassInfo(false);
     setAtStartScreen(true);
@@ -722,6 +732,7 @@ function App() {
           ? currentClass.seededPlayersIds
           : [],
         started: false,
+
         groups: currentClass.groups ? currentClass.groups : [],
         matches: currentClass.matches ? currentClass.matches : [],
         uid: uid,
@@ -730,7 +741,6 @@ function App() {
       await writeClass(newClass);
       setCurrentClass(newClass);
 
-      
       setTournamentClasses(
         tournamentClasses.map((c) =>
           c.classId === newClass.classId ? newClass : c
@@ -823,6 +833,7 @@ function App() {
           matches: [],
           classDrawn: true,
           started: false,
+          startBracket: false,
         };
         console.log("before error");
         await writeClass(newClass);
@@ -1383,6 +1394,7 @@ function App() {
   // only works for Bo5 at the moment
   function handleCheckWinner(bestOf: string) {
     console.log(bestOf);
+
     try {
       let wonSetsPlayer1 = 0;
       let wonSetsPlayer2 = 0;
@@ -1436,6 +1448,10 @@ function App() {
             throw new Error(
               "Input error: Absolute difference between scores needs to be 2."
             );
+          }
+
+          if (set1Player1 === 0 && set1Player2 === 0) {
+            throw new Error("Please enter valid result");
           }
 
           if (
@@ -1777,7 +1793,7 @@ function App() {
           ...currentClass,
           startBracket: true,
         });
-        //checkGroupAdvancement();
+        checkGroupAdvancement();
       }
       if (unreportedMatches === undefined || unreportedMatches === null) {
         setShowUnreportedMatches(true);
@@ -1886,11 +1902,38 @@ function App() {
     console.log(tournament);
   }
 
+  function checkGroupAdvancement() {
+    console.log("checkGroupAdvancement");
+    if (currentClass !== undefined && currentClass !== null) {
+      let newAdvancingPlayers: [Player, Player][] = [];
+      for (const group of currentClass.groups!) {
+        let groupAdvancingPlayers = calculateGroupAdvancement(group);
+
+        const arrayOfPlayers = groupAdvancingPlayers.map((obj) => obj.player);
+
+        if (arrayOfPlayers.length >= 2) {
+          const playerTuple: [Player, Player] = [
+            arrayOfPlayers[0],
+            arrayOfPlayers[1],
+          ];
+          newAdvancingPlayers.push(playerTuple);
+        }
+      }
+      setAdvancingPlayers(newAdvancingPlayers);
+      console.log(newAdvancingPlayers);
+      setShowBracket(true);
+      setShowGroups(false);
+      setShowUnreportedMatches(false);
+      setShowGroupResult(false);
+      setShowStartMenu(false);
+    }
+  }
+
   // App start
   return (
     <Box maxHeight="100vh" overflowY={"auto"} minWidth="100vw">
       <Flex
-        bg="white"
+        bg="beige"
         minHeight="100vh"
         justifyContent="center"
         //alignItems="center"
@@ -1898,8 +1941,15 @@ function App() {
       >
         <ChakraProvider>
           <Flex direction="column" align="center">
+            <Flex>
+              {showUserName && userName && atStartScreen && (
+                <Text fontWeight={"bold"} mt={4} ml={2} fontSize="24">
+                  Welcome back {userName}!
+                </Text>
+              )}
+            </Flex>
             <Center>
-              <Box>
+              <Box display="flex" alignItems="center">
                 <Button
                   colorScheme="green"
                   margin={2}
@@ -1907,29 +1957,37 @@ function App() {
                 >
                   Home
                 </Button>
-                {userLoggedIn == false  &&(
-                <Button
-                  colorScheme="blue"
-                  margin={2}
-                  onClick={async () => await handleGoogleLogin()}
-                >
-                  Sign in
-                </Button>
+                {userLoggedIn == false && (
+                  <Button
+                    colorScheme="blue"
+                    margin={2}
+                    onClick={async () => await handleGoogleLogin()}
+                  >
+                    Sign in
+                  </Button>
                 )}
-                {userLoggedIn &&(
-                <Button
-                  colorScheme="red"
-                  margin={2}
-                  onClick={async () => await handleGoogleLogout()}
-                >
-                  Sign out
-                </Button>
+                {userLoggedIn && (
+                  <Button
+                    colorScheme="red"
+                    margin={2}
+                    onClick={() => {
+                      const result = window.confirm(
+                        "Are you sure you want to sign out?"
+                      );
+                      if (result === true) {
+                        handleGoogleLogout();
+                      }
+                    }}
+                  >
+                    Sign out
+                  </Button>
                 )}
+
                 {currentTournament && !atStartScreen && showClassesButton && (
                   <Button
                     m={2}
-                    bg="yellow.300"
-                    textColor="gray.700"
+                    bg="blue.400"
+                    textColor="white"
                     onClick={() => handleTournamentOverview(currentTournament)}
                   >
                     Classes
@@ -1937,11 +1995,6 @@ function App() {
                 )}
               </Box>
             </Center>
-            {showUserName && (
-              <Box mt={4}>
-                {userName && <Text fontSize="14">Logged in as {userName}</Text>}
-              </Box>
-            )}
 
             {showStartMenu && (
               <>
@@ -1958,15 +2011,17 @@ function App() {
                     <Flex direction={"column"}>
                       <Button
                         m={2}
-                        bg="orange.200"
+                        bg="green.200"
+                        textColor="white"
                         onClick={() => handleCreateTournament()}
                       >
                         New tournament
                       </Button>
 
                       <Button
+                        textColor="white"
                         m={2}
-                        bg="orange.200"
+                        bg="orange.300"
                         onClick={() => handleShowMyTournaments()}
                       >
                         My tournaments
@@ -1978,6 +2033,7 @@ function App() {
                     <Button
                       m={2}
                       bg="blue.200"
+                      textColor="white"
                       onClick={() => handleShowOpenTournaments()}
                     >
                       Open tournaments
@@ -1987,6 +2043,7 @@ function App() {
                     <Button
                       m={2}
                       bg="purple.300"
+                      textColor="white"
                       onClick={() =>
                         alert("This feature is not yet implemented")
                       }
@@ -2016,7 +2073,7 @@ function App() {
                             }}
                             _hover={{ bg: "#A2CDB0", cursor: "pointer" }}
                             rounded="lg"
-                            bg="purple.100"
+                            bg="green.100"
                             m={1}
                             width={"100%"}
                             minWidth={`${maxWidth}px`}
@@ -2265,7 +2322,7 @@ function App() {
                       <Box
                         m={4}
                         borderRadius="md"
-                        bg={"#F7E1AE"}
+                        bg={"green.200"}
                         key={tournament.tournamentId}
                         p={4}
                         minWidth={`${maxOpenWidth}px`}
@@ -2299,7 +2356,8 @@ function App() {
                                   size="md"
                                   fontSize="20"
                                   mr={2}
-                                  bg="blue.200"
+                                  textColor={"white"}
+                                  bg={"blue.400"}
                                   onClick={() => {
                                     handleJoinTournament(tournament);
                                     alert("Not yet implemented");
@@ -2324,7 +2382,7 @@ function App() {
                       <Box
                         m={4}
                         borderRadius="md"
-                        bg={"#F7E1AE"}
+                        bg={"red.300"}
                         key={tournament.tournamentId}
                         p={4}
                         minWidth={`${maxOpenWidth}px`}
@@ -2336,7 +2394,7 @@ function App() {
                                 <Heading size="lg">{tournament.name}</Heading>
                               </Center>
                               <Center>
-                                <Text>{tournament.location}</Text>
+                                <Text> Location - {tournament.location}</Text>
                               </Center>
                               <Center>
                                 <Box>
@@ -2347,7 +2405,10 @@ function App() {
                               </Center>
                               <Center>
                                 <Box>
-                                  <Text fontSize="sm">{tournament.club}</Text>
+                                  <Text fontSize="sm">
+                                    {" "}
+                                    Club - {tournament.club}
+                                  </Text>
                                 </Box>
                               </Center>
                             </Flex>
@@ -2357,7 +2418,8 @@ function App() {
                                   m={1}
                                   size="md"
                                   fontSize="20"
-                                  bg="blue.200"
+                                  textColor={"white"}
+                                  bg="blue.400"
                                   onClick={() => {
                                     handleJoinTournament(tournament);
                                     alert("Not yet implemented");
@@ -2391,7 +2453,11 @@ function App() {
 
                   <Box>
                     <Center>
-                      <Button bg="yellow.300" onClick={onOpenCreateClassModal}>
+                      <Button
+                        textColor={"white"}
+                        bg="green.200"
+                        onClick={onOpenCreateClassModal}
+                      >
                         New class
                       </Button>
                     </Center>
@@ -2562,7 +2628,7 @@ function App() {
                         <Box key={`${myClass.classId}-${index}`}>
                           <Box
                             _hover={{ bg: "green.300" }}
-                            bg="blue.800"
+                            bg="orange.200"
                             m={2}
                             p={4}
                             borderRadius="md"
@@ -2838,8 +2904,7 @@ function App() {
 
                   {currentClass &&
                     currentClass.classDrawn === true &&
-                    !playerDeleted &&
-                    (
+                    !playerDeleted && (
                       <Button
                         size="lg"
                         fontSize="30"
@@ -3552,7 +3617,11 @@ function App() {
                                     <PopoverContent>
                                       <PopoverArrow />
                                       <PopoverCloseButton />
-                                      <PopoverBody>{errorMessage}</PopoverBody>
+                                      <Center>
+                                        <PopoverBody>
+                                          {errorMessage}
+                                        </PopoverBody>
+                                      </Center>
                                     </PopoverContent>
                                   )}
                                   {checkWinner === 1 && (
@@ -3563,7 +3632,8 @@ function App() {
                                         fontSize={20}
                                         fontWeight={"bold"}
                                       >
-                                        {winner?.name} wins
+                                        <Center>{winner?.name} wins</Center>
+
                                         <Center>
                                           <Text>
                                             {wonSetsPlayer1} - {wonSetsPlayer2}
@@ -3860,6 +3930,16 @@ function App() {
                       </Box>
                     ))}
                   </Flex>
+                </Box>
+              )}
+
+              {showBracket && (
+                <Box>
+                  {advancingPlayers[0].map((player) => (
+                    <Box key={player.id}>
+                      <Text>{player.name}</Text>
+                    </Box>
+                  ))}
                 </Box>
               )}
             </Flex>
