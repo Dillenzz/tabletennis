@@ -82,12 +82,26 @@ function checkIntraMatches(
     return sortedPlayerIds; // Return the individual groups if merging is not required
   }
 
+  function resetIntraSetScores(players: Player[]) {
+    for (const player of players) {
+      player.intraSetScore = undefined;
+    }
+  }
+
+  function resetIntraPointScores(players: Player[]) {
+    for (const player of players) {
+      player.intraPointScore = undefined;
+    }
+  }
+
 
 function checkIntraSets(
   playerSets: number[][],
   matches: Match[],
   players: Player[]
 ) {
+
+  resetIntraSetScores(players);
   const sortedPlayerIds: number[][] = [];
 
   //console.log(playerSets,"playerSets");
@@ -213,6 +227,7 @@ function checkIntraPoints(
   matches: Match[],
   players: Player[]
 ): number[][] {
+  resetIntraPointScores(players);
   const sortedPlayerIds: number[][] = [];
 
   for (let i = 0; i < playerSets.length; i++) {
@@ -418,6 +433,8 @@ function GroupResult(props: Group) {
             playerGroupScore[playerIndex].position = i + 1;
           }
         }
+        resetIntraSetScores(props.players!);
+        resetIntraPointScores(props.players!);
       } else {
         let playerOrder = checkIntraMatches(sameScore, matches, props.players!);
        // console.log("playerOrder", playerOrder)
@@ -468,7 +485,10 @@ function GroupResult(props: Group) {
           }
         }
       }
+      resetIntraSetScores(props.players!);
+      resetIntraPointScores(props.players!);
     }
+    
   }
   
       
@@ -505,6 +525,7 @@ function GroupResult(props: Group) {
               class={player.player.class}
               isTopPlayer={topPlayers.includes(player)}
               intraMatchScore={player.player.intraMatchScore || 0}
+              
               intraSetScore={player.player.intraSetScore || "0/0"}
               intraPointScore={player.player.intraPointScore || "00/00"}
             />

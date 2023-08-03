@@ -1264,6 +1264,7 @@ function App() {
     setShowMyTournament(false);
     setShowTournamentButtons(false);
     setCurrentTournament(currentTournament);
+    
 
     const matches = assignMatchesInTournament(currentClass);
 
@@ -1294,6 +1295,7 @@ function App() {
     }
 
     //console.log(currentTournament?.started);
+    handleCheckIfStartBracket()
   }
 
   // from the groups sets matches in every group according to order
@@ -1756,13 +1758,21 @@ function App() {
       setUnreportedMatches(matchIds);
     }
 
+    if (matchIds.length !== 0) {
     setShowUnreportedMatches(true);
     setShowGroupResult(false);
     setShowGroups(false);
-
-    if (matchIds.length !== 0) {
-      return -1;
+    return -1;
     }
+    else{
+      setShowUnreportedMatches(false);
+      setShowGroupResult(false);
+      setShowGroups(false);
+      return 1;
+    }
+    
+
+    
   }
 
   // displays the scores for every player in every match
