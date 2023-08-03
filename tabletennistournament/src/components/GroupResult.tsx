@@ -460,6 +460,7 @@ function GroupResult(props: Group) {
           }
           
         } else {
+          resetIntraPointScores(props.players!);
           const intrasetsFlat = checkIntraSets(sameScore, matches, props.players!).flat();
           
           for (let i = 0; i < intrasetsFlat.length; i++) {
