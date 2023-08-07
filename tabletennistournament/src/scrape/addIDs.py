@@ -1,6 +1,8 @@
 import json
 
 def assign_player_ids(json_file_path, output_file_path):
+    
+    
     with open(json_file_path, 'r') as f:
         players = json.load(f)
 
