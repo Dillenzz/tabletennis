@@ -168,7 +168,7 @@ async function updateClass(classRef: any, classs: Class): Promise<void> {
     started: classs.started,
     matches: classs.matches ? classs.matches : [],
     classDrawn: classs.classDrawn,
-    
+    startBracket: classs.startBracket,
     bo: classs.bo,
     public: classs.public,
   });
