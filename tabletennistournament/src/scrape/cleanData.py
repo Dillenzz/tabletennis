@@ -1,7 +1,9 @@
 import json
+
 from scrapePlayers import scrapePlayers
 from removeComma import removeComma
 from addIntra import addIntra
+
 
 def assign_player_ids(json_file_path, output_file_path):
     with open(json_file_path, 'r') as f:
@@ -54,12 +56,14 @@ def add_player_class(json_file_path, output_file_path):
         json.dump(players, f, indent=4)
 
 # Example usage
-scrapePlayers()
 
-assign_player_ids('./players.json', './players_with_ids.json')
-removeComma()
-pointToNumber('./players_with_ids.json', './players_with_ids.json')
-add_player_class('./players_with_ids.json', './players_with_ids.json')
-addIntra()
-# Example usage
 
+def run_script():
+    scrapePlayers()
+    assign_player_ids('./players.json', './players_with_ids.json')
+    removeComma()
+    pointToNumber('./players_with_ids.json', './players_with_ids.json')
+    add_player_class('./players_with_ids.json', './players_with_ids.json')
+    addIntra()
+
+run_script()
