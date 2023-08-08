@@ -2,6 +2,10 @@ import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
 import logo from "./assets/ft11.svg";
 import calculateGroupAdvancement from "./functions/CalculatedGroupadvancement";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHouse } from "@fortawesome/free-solid-svg-icons";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
@@ -83,6 +87,7 @@ import {
   EditIcon,
 } from "@chakra-ui/icons";
 import { set } from "firebase/database";
+
 
 function App() {
   // Call the function on startup
@@ -1269,7 +1274,7 @@ function App() {
     const matches = assignMatchesInTournament(currentClass);
 
     setShowUnreportedMatches(false);
-    setShowGroups(true);
+    setShowGroups(false);
 
     if (currentClass) {
       const updatedClasses = tournamentClasses.map((cls) =>
@@ -1960,13 +1965,8 @@ function App() {
             </Flex>
             <Center>
               <Box display="flex" alignItems="center">
-                <Button
-                  colorScheme="green"
-                  margin={2}
-                  onClick={() => handlegoToHome()}
-                >
-                  Home
-                </Button>
+                
+                <FontAwesomeIcon color="silver"  onClick={() => handlegoToHome()} icon={faHouse} size="2xl" />
                 {userLoggedIn == false && (
                   <Button
                     colorScheme="blue"
@@ -1977,6 +1977,8 @@ function App() {
                   </Button>
                 )}
                 {userLoggedIn && (
+                  <Box  marginInline={2}>
+                    <FontAwesomeIcon  size="2xl" icon={faUser}/>
                   <Button
                     colorScheme="red"
                     margin={2}
@@ -1992,6 +1994,7 @@ function App() {
                   >
                     Sign out
                   </Button>
+                  </Box>
                 )}
 
                 {currentTournament && !atStartScreen && showClassesButton && (
@@ -2084,13 +2087,16 @@ function App() {
                             }}
                             _hover={{ bg: "#A2CDB0", cursor: "pointer" }}
                             rounded="lg"
-                            bg="green.100"
+                            textColor={"white"}
+                            fontWeight={"bold"}
+                            bg="green.200"
                             m={1}
                             width={"100%"}
                             minWidth={`${maxWidth}px`}
                           >
                             <Center>
                               <Tournament
+                                
                                 name={tournament.name}
                                 dateFrom={tournament.dateFrom}
                                 dateTo={tournament.dateTo}
@@ -3045,8 +3051,9 @@ function App() {
                         m="2"
                         fontSize={"30"}
                         size={"lg"}
+                        textColor={"whiteAlpha.900"}
                         // Color scheme for more colors use bg
-                        bg={"#F7E1AE"}
+                        bg={"green.300"}
                         onClick={() => {
                           setShowGroups(true);
                           setShowGroupResult(false);
@@ -3698,7 +3705,8 @@ function App() {
                         m={2}
                         size="lg"
                         fontSize={"30"}
-                        bg={"#F7E1AE"}
+                        textColor={"white"}
+                        bg={"orange.300"}
                         onClick={() => {
                           setShowGroupResult(true);
                           setShowUnreportedMatches(false);
@@ -3712,10 +3720,11 @@ function App() {
                         fontSize={"30"}
                         m={2}
                         size={"lg"}
+                        textColor={"whiteAlpha.900"}
                         onClick={() => {
                           onOpenScoreModal();
                         }}
-                        bg={"green.300"}
+                        bg={"blue.200"}
                       >
                         Report result
                       </Button>
@@ -3724,6 +3733,7 @@ function App() {
                         m={2}
                         fontSize={"30"}
                         size={"lg"}
+                        textColor={"whiteAlpha.900"}
                         bg={"orange.300"}
                         onClick={() => {
                           handleCheckGroupStatus();
@@ -3744,6 +3754,7 @@ function App() {
                           // justifyContent={"flex-end"}
                           size="lg"
                           fontSize="30"
+                          textColor={"whiteAlpha.900"}
                           bg={"green.300"}
                           m="2"
                         >
@@ -3763,7 +3774,8 @@ function App() {
                           // justifyContent={"flex-end"}
                           size="lg"
                           fontSize="30"
-                          bg={"#E76161"}
+                          textColor={"whiteAlpha.900"}
+                          bg={"red.300"}
                           m="2"
                         >
                           Start bracket

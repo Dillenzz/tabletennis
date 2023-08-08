@@ -26,19 +26,19 @@ function Tournament(props: Tournament) {
       <Center>
       <Flex direction="column">
         {props.location && (
-          <Text  fontSize="14" ml={2}>
+          <Text color={"grey"}  fontSize="14" ml={2}>
             Location: {props.location}
           </Text>
         )}
 
         {props.dateFrom && props.dateTo && (
-          <Text fontSize="14" ml={2}>
+          <Text color={"grey"} fontSize="14" ml={2}>
             Date: {props.dateFrom} / {props.dateTo}
           </Text>
         )}
 
         {props.club && (
-          <Text fontSize="14" ml={2}>
+          <Text color={"grey"} fontSize="14" ml={2}>
             Club: {props.club}
           </Text>
         )}
