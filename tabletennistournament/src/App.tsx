@@ -6,7 +6,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 
-
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
 import { getAllPublicTournaments } from "./Backend/updateFirebase2";
@@ -87,7 +86,6 @@ import {
   EditIcon,
 } from "@chakra-ui/icons";
 import { set } from "firebase/database";
-
 
 function App() {
   // Call the function on startup
@@ -737,6 +735,7 @@ function App() {
           ? currentClass.seededPlayersIds
           : [],
         started: false,
+        startBracket: false,
 
         groups: currentClass.groups ? currentClass.groups : [],
         matches: currentClass.matches ? currentClass.matches : [],
@@ -1269,7 +1268,6 @@ function App() {
     setShowMyTournament(false);
     setShowTournamentButtons(false);
     setCurrentTournament(currentTournament);
-    
 
     const matches = assignMatchesInTournament(currentClass);
 
@@ -1300,7 +1298,7 @@ function App() {
     }
 
     //console.log(currentTournament?.started);
-    handleCheckIfStartBracket()
+    handleCheckIfStartBracket();
   }
 
   // from the groups sets matches in every group according to order
@@ -1764,20 +1762,16 @@ function App() {
     }
 
     if (matchIds.length !== 0) {
-    setShowUnreportedMatches(true);
-    setShowGroupResult(false);
-    setShowGroups(false);
-    return -1;
-    }
-    else{
+      setShowUnreportedMatches(true);
+      setShowGroupResult(false);
+      setShowGroups(false);
+      return -1;
+    } else {
       setShowUnreportedMatches(false);
       setShowGroupResult(false);
       setShowGroups(false);
       return 1;
     }
-    
-
-    
   }
 
   // displays the scores for every player in every match
@@ -1964,42 +1958,73 @@ function App() {
               )}
             </Flex>
             <Center>
-              <Box display="flex" alignItems="center">
-                
-                <FontAwesomeIcon color="silver"  onClick={() => handlegoToHome()} icon={faHouse} size="2xl" />
-                {userLoggedIn == false && (
-                  <Button
-                    colorScheme="blue"
-                    margin={2}
-                    onClick={async () => await handleGoogleLogin()}
-                  >
-                    Sign in
-                  </Button>
-                )}
-                {userLoggedIn && (
-                  <Box  marginInline={2}>
-                    <FontAwesomeIcon  size="2xl" icon={faUser}/>
-                  <Button
-                    colorScheme="red"
-                    margin={2}
-                    
-                    onClick={() => {
-                      const result = window.confirm(
-                        "Are you sure you want to sign out?"
-                      );
-                      if (result === true) {
-                        handleGoogleLogout();
-                      }
-                    }}
-                  >
-                    Sign out
-                  </Button>
+              <Box>
+                <Box
+                  _hover={{ cursor: "pointer" }}
+                  display="flex"
+                  alignItems="center"
+                >
+                  <Box _hover={{ label: "Home" }} marginRight={1}>
+                    <FontAwesomeIcon
+                      aria-label="Home"
+                      color="silver"
+                      onClick={() => handlegoToHome()}
+                      icon={faHouse}
+                      size="2xl"
+                    />
+                    <Center>
+                      <Text fontSize={8}>Home</Text>
+                    </Center>
                   </Box>
-                )}
+                  {userLoggedIn == false && (
+                    <Button
+                      colorScheme="blue"
+                      margin={2}
+                      onClick={async () => await handleGoogleLogin()}
+                    >
+                      Sign in
+                    </Button>
+                  )}
+                  {userLoggedIn && (
+                    <Box
+                      _hover={{ cursor: "pointer" }}
+                      bg="beige"
+                      marginInline={1}
+                      display="flex"
+                      alignItems="center"
+                    >
+                      <Box onClick={() =>
+                        alert("This feature is not yet implemented")
+                      }>
+                        <FontAwesomeIcon color="grey" size="2xl" icon={faUser} />
+                      
+                        <Center>
+                        <Text fontSize={8}>Profile</Text>
+                        </Center>
+                      </Box>
+                      <Box>
+                        <Button
+                          colorScheme="red"
+                          margin={2}
+                          onClick={() => {
+                            const result = window.confirm(
+                              "Are you sure you want to sign out?"
+                            );
+                            if (result === true) {
+                              handleGoogleLogout();
+                            }
+                          }}
+                        >
+                          Sign out
+                        </Button>
+                      </Box>
+                    </Box>
+                  )}
+                
 
                 {currentTournament && !atStartScreen && showClassesButton && (
                   <Button
-                    m={2}
+                    
                     bg="blue.400"
                     textColor="white"
                     onClick={() => handleTournamentOverview(currentTournament)}
@@ -2007,6 +2032,7 @@ function App() {
                     Classes
                   </Button>
                 )}
+              </Box>
               </Box>
             </Center>
 
@@ -2076,6 +2102,8 @@ function App() {
                 </Center>
                 {myTournaments
                   .filter((tournament) => tournament.uid === uid)
+                  .sort((a, b) => new Date(b.dateFrom!).getTime() - new Date(a.dateFrom!).getTime())
+
                   .map((tournament, index) => {
                     return (
                       <Box key={`${tournament.tournamentId}-${index}`}>
@@ -2087,7 +2115,7 @@ function App() {
                             }}
                             _hover={{ bg: "#A2CDB0", cursor: "pointer" }}
                             rounded="lg"
-                            textColor={"white"}
+                            textColor={"whiteAlpha.800"}
                             fontWeight={"bold"}
                             bg="green.200"
                             m={1}
@@ -2096,7 +2124,6 @@ function App() {
                           >
                             <Center>
                               <Tournament
-                                
                                 name={tournament.name}
                                 dateFrom={tournament.dateFrom}
                                 dateTo={tournament.dateTo}
@@ -2641,7 +2668,7 @@ function App() {
                       flexWrap="wrap"
                       justifyContent="center"
                     >
-                      {tournamentClasses.map((myClass: Class, index) => (
+                      {tournamentClasses.sort((a, b) => a.name!.localeCompare(b.name!)).map((myClass: Class, index) => (
                         <Box key={`${myClass.classId}-${index}`}>
                           <Box
                             _hover={{ bg: "green.300" }}
