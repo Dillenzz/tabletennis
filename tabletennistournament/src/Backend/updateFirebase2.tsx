@@ -171,6 +171,7 @@ async function updateClass(classRef: any, classs: Class): Promise<void> {
     startBracket: classs.startBracket,
     bo: classs.bo,
     public: classs.public,
+    advancingPlayers: classs.advancingPlayers? classs.advancingPlayers : [],
   });
 }
 

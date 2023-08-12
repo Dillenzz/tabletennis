@@ -22,6 +22,7 @@ interface Class {
   startBracket?: boolean;
   public?: string;
   rating?: number;
+  advancingPlayers?: [Player, Player][] | undefined;
   
 }
 export default Class;

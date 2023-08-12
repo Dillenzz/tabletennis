@@ -5,6 +5,7 @@ import calculateGroupAdvancement from "./functions/CalculatedGroupadvancement";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faPowerOff } from "@fortawesome/free-solid-svg-icons";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
@@ -109,10 +110,7 @@ function App() {
   const [showUserName, setShowUserName] = useState(true);
 
   const [deleteInput, setDeleteInput] = useState("");
-  const [
-    showDeleteTournamentConfirmation,
-    setShowDeleteTournamentConfirmation,
-  ] = useState(false);
+  const [showDeleteTournamentConfirmation, setShowDeleteTournamentConfirmation,] = useState(false);
 
   const [currentClass, setCurrentClass] = useState<Class>();
   const [classPlayers, setClassPlayers] = useState<Player[]>([]);
@@ -240,21 +238,19 @@ function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const [popoverKey, setPopoverKey] = useState(0);
 
-  // put the right matchId into report match from player matches and unreported matches
+  // put the right match Id into report match from player matches and unreported matches
   const matchIdRef = useRef<HTMLInputElement | null>(null); // Declare matchIdRef as a RefObject
   const [unreportedMatches, setUnreportedMatches] = useState<Match[]>([]);
   const inputMatchIdRefA = useRef<HTMLInputElement | null>(null);
 
-  // states for showing the right player
+  // states for showing the right players scores
   const [showGroupResult, setShowGroupResult] = useState(false);
   const [currentPlayer, setCurrentPlayer] = useState<Player>();
-
-  // I dont know about this state
-  const [startBracket, setStartBracket] = useState(false);
 
   // states for loading tournaments
   const [loading, setLoading] = useState(false);
   const [loadingOpenTournaments, setLoadingOpenTournaments] = useState(false);
+  const [loadingClasses, setLoadingClasses] = useState(false);
   const [noTournaments, setNoTournaments] = useState(false);
 
   // States for directing highligted menu item
@@ -262,7 +258,7 @@ function App() {
   const inputSetRef = useRef(null);
 
   // CLASS VARIABLES
-  // const [myClasses, setMyClasses] = useState<Class[]>([]);
+ 
   const [tournamentClasses, setTournamentClasses] = useState<Class[]>([]);
   const [classId, setClassId] = useState(-1);
   const [publicOrPrivateClass, setPublicOrPrivateClass] = useState("Public");
@@ -274,10 +270,12 @@ function App() {
 
   // STATES FOR TOURNAMENT BRACKET
 
-  const [advancingPlayers, setAdvancingPlayers] = useState<[Player, Player][]>(
-    []
-  );
+  
   const [showBracket, setShowBracket] = useState(false);
+  const [showBracketOverview, setShowBracketOverview] = useState(false);
+  const [showBracketAdvancingPlayers, setShowBracketAdvancingPlayers] = useState(false)
+   // State for when groups are done
+  
 
   // save or update the tournament to Firebase
 
@@ -338,12 +336,18 @@ function App() {
     setMyTournaments(updatedTournaments);
     calculateMyTournamentLength(updatedTournaments);
     setCurrentTournament(newTournament);
+    resetCreateTournamentVariables();
+  };
+
+  function resetCreateTournamentVariables() {
+    setTournamentName("");
     setTournamentDateFrom("");
     setTournamentDateTo("");
     setTournamentLocation("");
     setTournamentClub("");
-    setTournamentName("");
-  };
+    setTournamentType("");
+  }
+
 
   async function createClass(tournament: Tournament) {
     if (!tournament.tournamentId) {
@@ -472,11 +476,7 @@ function App() {
       setShowStartMenu(false);
 
       // reset all state variables to their initial values
-      setTournamentDateFrom("");
-      setTournamentDateTo("");
-      setTournamentLocation("");
-      setTournamentClub("");
-      setTournamentName("");
+      resetCreateTournamentVariables()
       setTournamentId(-1);
       setPublicOrPrivate("Private");
       setEditTournament(false);
@@ -536,33 +536,33 @@ function App() {
   };
   // go home resets all state variables
   const handlegoToHome = () => {
+    setShowStartMenu(true);
+    setAtStartScreen(true);
     setShowClassesButton(false);
     setShowClassInfo(false);
-    setAtStartScreen(true);
     setClassStarted(false);
     setTournamentClasses([]);
     setShowMyTournament(false);
-    setShowStartMenu(true);
     setShowCreateTournament(false);
     setShowPlayersAndGroups(false);
     setShowTournamentOverview(false);
     setShowGroupsResultsAndUnreportedMatches(false);
     setEditTournament(false);
-    setShowTournamentButtons(false);
+    
     setShowGroupResult(false);
     setShowGroups(false);
     setShowTournamentButtons(false);
     setClassSeededPlayers([]);
     setShowOpenTournaments(false);
-    setTournamentName("");
-    setTournamentDateFrom("");
-    setTournamentDateTo("");
-    setTournamentLocation("");
-    setTournamentClub("");
-    setTournamentType("");
+    resetCreateTournamentVariables()
     setShowUnreportedMatches(false);
     setShowUserName(true);
     setUnreportedMatches([]);
+    setShowBracketOverview(false)
+
+    setShowBracketAdvancingPlayers(false)
+    setShowBracketOverview(false)
+    setShowBracket(false)
   };
   // go to tournament info
   const handleGoToTournaments = () => {
@@ -583,6 +583,10 @@ function App() {
     loadTournaments();
     setShowOpenTournaments(false);
     setEditTournament(false);
+
+    setShowBracketAdvancingPlayers(false)
+    setShowBracketOverview(false)
+    setShowBracket(false)
   };
   // login with google
   async function handleGoogleLogin() {
@@ -624,25 +628,34 @@ function App() {
 
   const handleGoToClassInfo = (myClass: Class) => {
     setCurrentClass(myClass);
-    console.log(myClass.classId, "myClass.classId");
-
     setShowClassInfo(true);
-
     setCurrentClass(myClass);
     setClassPlayers(myClass.players ? myClass.players : []);
     setClassStarted(myClass.started ? myClass.started : false);
-    console.log(myClass.started, "myClass.started");
-    setShowGroupsResultsAndUnreportedMatches(
-      myClass.started ? myClass.started : false
-    );
+  
+
     setShowTournamentOverview(false);
     setClassSeededPlayers(
       myClass.seededPlayersIds ? myClass.seededPlayersIds : []
     );
-    setShowTournamentButtons(true);
     setShowUserName(false);
-
-    setShowPlayersAndGroups(true);
+    if (myClass.startBracket === true) {
+      setShowBracketOverview(true);
+      setShowBracketAdvancingPlayers(true)
+      setShowTournamentButtons(false);
+      setShowGroupsResultsAndUnreportedMatches(false);
+      setShowGroupResult(false);
+      setShowClassInfo(false);
+    }
+    else {
+      setShowGroupsResultsAndUnreportedMatches(
+        myClass.started ? myClass.started : false
+      );
+      setShowTournamentButtons(true);
+      setShowPlayersAndGroups(true);
+      setShowClassInfo(true);
+    }
+    
     setSentPlayerIds(
       myClass.players
         ? myClass.players
@@ -676,7 +689,16 @@ function App() {
     return namePlayer1 || namePlayer2 || matchId;
   });
 
+ function disableShowOverview() {
+  setShowGroups(false);
+  setShowGroupResult(false);
+  setShowUnreportedMatches(false);
+  setShowGroupsResultsAndUnreportedMatches(false);
+ }
+
   async function handleTournamentOverview(tournament: Tournament) {
+
+    setLoadingClasses(true);
     setShowClassesButton(true);
     setShowPlayersAndGroups(false);
     setTournamentClasses([]);
@@ -685,11 +707,11 @@ function App() {
     setCurrentClass(undefined);
     setShowTournamentOverview(true);
 
-    setShowGroups(false);
-    setShowGroupResult(false);
-    setShowUnreportedMatches(false);
-    setShowGroupsResultsAndUnreportedMatches(false);
-    setShowTournamentButtons(false);
+    disableShowOverview();
+    setShowBracketOverview(false)
+    setShowBracketAdvancingPlayers(false)
+    setShowBracket(false)
+    
     setShowMyTournament(false);
     setShowClassInfo(false);
     setShowTournamentButtons(false);
@@ -700,7 +722,8 @@ function App() {
     setCurrentTournament(tournament);
 
     setTournamentClasses(newTournamentClasses);
-    console.log(newTournamentClasses);
+    
+    setLoadingClasses(false);
   }
 
   // add player to tournament
@@ -848,10 +871,7 @@ function App() {
     } else {
       drawTournament(currentClass);
     }
-    setShowMyTournament(false);
-    setShowStartMenu(false);
-    setShowCreateTournament(false);
-    setShowClassInfo(true);
+  
     setShowPlayersAndGroups(true);
   }
 
@@ -1127,6 +1147,7 @@ function App() {
         matches: [],
       });
     }
+    // rerendering
     setShowPlayersAndGroups(false);
     setShowPlayersAndGroups(true);
 
@@ -1678,6 +1699,11 @@ function App() {
     setShowUnreportedMatches(false);
     setShowUserName(false);
     setUnreportedMatches([]);
+    setShowBracketAdvancingPlayers(false)
+    setShowBracketOverview(false)
+    setShowBracket(false)
+    setShowBracketOverview(false)
+    
   }
 
   //clears all the match scores to report the next match
@@ -1767,7 +1793,7 @@ function App() {
       setShowGroups(false);
       return -1;
     } else {
-      setShowUnreportedMatches(false);
+      setShowUnreportedMatches(true);
       setShowGroupResult(false);
       setShowGroups(false);
       return 1;
@@ -1796,8 +1822,8 @@ function App() {
 
     if (currentClass !== undefined && currentClass !== null) {
       if (unreportedMatches.length === 0) {
-        setStartBracket(true);
-        console.log(startBracket);
+        
+        
         await writeClass({
           ...currentClass,
           startBracket: true,
@@ -1922,20 +1948,46 @@ function App() {
 
         if (arrayOfPlayers.length >= 2) {
           const playerTuple: [Player, Player] = [
-            arrayOfPlayers[0],
-            arrayOfPlayers[1],
+            arrayOfPlayers[0]!,
+            arrayOfPlayers[1]!,
           ];
           newAdvancingPlayers.push(playerTuple);
         }
       }
-      setAdvancingPlayers(newAdvancingPlayers);
-      console.log(newAdvancingPlayers);
-      setShowBracket(true);
+      
+      writeClass({
+        ...currentClass,
+        advancingPlayers: newAdvancingPlayers,
+        startBracket: true
+      });
+      setCurrentClass({
+        ...currentClass,
+        advancingPlayers: newAdvancingPlayers,
+        startBracket: true
+      });
+      
       setShowGroups(false);
       setShowUnreportedMatches(false);
       setShowGroupResult(false);
       setShowStartMenu(false);
+      setShowGroupsResultsAndUnreportedMatches(false);
+      setShowGroupResult(false);
+      setShowGroups(false);
+      setShowBracketOverview(true)
+      setShowBracketAdvancingPlayers(true)
     }
+  }
+
+  function handleShowAdvancingPlayers(){
+    setShowBracketAdvancingPlayers(true)
+    setShowBracket(false)
+  }
+
+
+  function handleShowDrawBracket(){
+    setShowBracketAdvancingPlayers(false)
+    setShowBracket(true)
+
   }
 
   // App start
@@ -1952,13 +2004,13 @@ function App() {
           <Flex direction="column" align="center">
             <Flex>
               {showUserName && userName && atStartScreen && (
-                <Text fontWeight={"bold"} mt={4} ml={2} fontSize="24">
+                <Text fontWeight={"bold"} mt={2} ml={2} fontSize="24">
                   Welcome back {userName}!
                 </Text>
               )}
             </Flex>
             <Center>
-              <Box>
+              <Box marginTop={2}>
                 <Box
                   _hover={{ cursor: "pointer" }}
                   display="flex"
@@ -1993,19 +2045,23 @@ function App() {
                       display="flex"
                       alignItems="center"
                     >
-                      <Box onClick={() =>
-                        alert("This feature is not yet implemented")
-                      }>
-                        <FontAwesomeIcon color="grey" size="2xl" icon={faUser} />
-                      
+                      <Box
+                        onClick={() =>
+                          alert("This feature is not yet implemented")
+                        }
+                      >
+                        <FontAwesomeIcon
+                          color="grey"
+                          size="2xl"
+                          icon={faUser}
+                        />
+
                         <Center>
-                        <Text fontSize={8}>Profile</Text>
+                          <Text fontSize={8}>Profile</Text>
                         </Center>
                       </Box>
-                      <Box>
-                        <Button
-                          colorScheme="red"
-                          margin={2}
+                      <Box marginInline={2}>
+                        <FontAwesomeIcon
                           onClick={() => {
                             const result = window.confirm(
                               "Are you sure you want to sign out?"
@@ -2014,25 +2070,29 @@ function App() {
                               handleGoogleLogout();
                             }
                           }}
-                        >
-                          Sign out
-                        </Button>
+                          color="grey"
+                          size={"2xl"}
+                          icon={faPowerOff}
+                        />
+                        <Center>
+                          <Text fontSize={8}>Sign out</Text>
+                        </Center>
                       </Box>
                     </Box>
                   )}
-                
 
-                {currentTournament && !atStartScreen && showClassesButton && (
-                  <Button
-                    
-                    bg="blue.400"
-                    textColor="white"
-                    onClick={() => handleTournamentOverview(currentTournament)}
-                  >
-                    Classes
-                  </Button>
-                )}
-              </Box>
+                  {currentTournament && !atStartScreen && showClassesButton && (
+                    <Button
+                      bg="blue.400"
+                      textColor="white"
+                      onClick={() =>
+                        handleTournamentOverview(currentTournament)
+                      }
+                    >
+                      Classes
+                    </Button>
+                  )}
+                </Box>
               </Box>
             </Center>
 
@@ -2102,7 +2162,11 @@ function App() {
                 </Center>
                 {myTournaments
                   .filter((tournament) => tournament.uid === uid)
-                  .sort((a, b) => new Date(b.dateFrom!).getTime() - new Date(a.dateFrom!).getTime())
+                  .sort(
+                    (a, b) =>
+                      new Date(b.dateFrom!).getTime() -
+                      new Date(a.dateFrom!).getTime()
+                  )
 
                   .map((tournament, index) => {
                     return (
@@ -2215,7 +2279,7 @@ function App() {
                 {loading && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
-                    <Spinner size="xl" />
+                    <Spinner marginLeft={2} size="xl" />
                   </Center>
                 )}
                 {noTournaments && (
@@ -2331,11 +2395,15 @@ function App() {
                           m={4}
                           onClick={() => createTournament()}
                           disabled={
-                            tournamentName === "" || tournamentDateFrom === ""
+                            tournamentName === "" ||
+                            tournamentDateFrom === "" ||
+                            tournamentDateTo === ""
                           }
                           style={{
                             visibility:
-                              tournamentName === "" || tournamentDateFrom === ""
+                              tournamentName === "" ||
+                              tournamentDateFrom === "" ||
+                              tournamentDateTo === ""
                                 ? "hidden"
                                 : "visible",
                           }}
@@ -2505,6 +2573,16 @@ function App() {
                         New class
                       </Button>
                     </Center>
+                    {loadingClasses && (
+                      <Center>
+                        <Text>Classes are loading please be patient</Text>
+                        <Spinner marginLeft={2} size="xl" />
+                      </Center>
+                    )}
+
+                    {(tournamentClasses.length === 0  && loadingClasses === false) && (
+                      <Text m={2}>Create a class!</Text>
+                    )}
                   </Box>
 
                   <FormControl>
@@ -2668,68 +2746,70 @@ function App() {
                       flexWrap="wrap"
                       justifyContent="center"
                     >
-                      {tournamentClasses.sort((a, b) => a.name!.localeCompare(b.name!)).map((myClass: Class, index) => (
-                        <Box key={`${myClass.classId}-${index}`}>
-                          <Box
-                            _hover={{ bg: "green.300" }}
-                            bg="orange.200"
-                            m={2}
-                            p={4}
-                            borderRadius="md"
-                            onClick={() => handleGoToClassInfo(myClass)}
-                            display="flex"
-                            justifyContent="center"
-                            alignItems="center"
-                            cursor="pointer"
-                          >
-                            <Tooltip
-                              label={myClass.name}
-                              aria-label="edit-tooltip"
+                      {tournamentClasses
+                        .sort((a, b) => a.name!.localeCompare(b.name!))
+                        .map((myClass: Class, index) => (
+                          <Box key={`${myClass.classId}-${index}`}>
+                            <Box
+                              _hover={{ bg: "green.300" }}
+                              bg="orange.200"
+                              m={2}
+                              p={4}
+                              borderRadius="md"
+                              onClick={() => handleGoToClassInfo(myClass)}
+                              display="flex"
+                              justifyContent="center"
+                              alignItems="center"
+                              cursor="pointer"
                             >
-                              <Text textColor="white" fontSize={40}>
-                                {myClass.name}
-                              </Text>
-                            </Tooltip>
-                          </Box>
-
-                          <Box>
-                            <Center>
                               <Tooltip
-                                label={`Edit Class ${myClass.name}`}
+                                label={myClass.name}
                                 aria-label="edit-tooltip"
                               >
-                                <EditIcon
-                                  margin={4}
-                                  color="black"
-                                  boxSize={24}
-                                  _hover={{ cursor: "pointer" }}
-                                  aria-label="Edit Tournament"
-                                  onClick={() => handleEditClass(myClass)}
-                                />
+                                <Text textColor="white" fontSize={40}>
+                                  {myClass.name}
+                                </Text>
                               </Tooltip>
+                            </Box>
 
-                              <Tooltip
-                                label={`Delete class ${myClass.name}`}
-                                aria-label="delete-tooltip"
-                              >
-                                <DeleteIcon
-                                  color="black"
-                                  boxSize={24}
-                                  margin={4}
-                                  _hover={{ cursor: "pointer" }}
-                                  aria-label="Delete Tournament"
-                                  onClick={() => {
-                                    setCurrentClass(myClass);
-                                    setShowDeleteClassConfirmation(true);
-                                    onOpenDeleteClassModal();
-                                    // Add your delete logic here
-                                  }}
-                                />
-                              </Tooltip>
-                            </Center>
+                            <Box>
+                              <Center>
+                                <Tooltip
+                                  label={`Edit Class ${myClass.name}`}
+                                  aria-label="edit-tooltip"
+                                >
+                                  <EditIcon
+                                    margin={4}
+                                    color="black"
+                                    boxSize={24}
+                                    _hover={{ cursor: "pointer" }}
+                                    aria-label="Edit Tournament"
+                                    onClick={() => handleEditClass(myClass)}
+                                  />
+                                </Tooltip>
+
+                                <Tooltip
+                                  label={`Delete class ${myClass.name}`}
+                                  aria-label="delete-tooltip"
+                                >
+                                  <DeleteIcon
+                                    color="black"
+                                    boxSize={24}
+                                    margin={4}
+                                    _hover={{ cursor: "pointer" }}
+                                    aria-label="Delete Tournament"
+                                    onClick={() => {
+                                      setCurrentClass(myClass);
+                                      setShowDeleteClassConfirmation(true);
+                                      onOpenDeleteClassModal();
+                                      // Add your delete logic here
+                                    }}
+                                  />
+                                </Tooltip>
+                              </Center>
+                            </Box>
                           </Box>
-                        </Box>
-                      ))}
+                        ))}
                     </Flex>
                   </Box>
                   {showDeleteClassConfirmation &&
@@ -2783,7 +2863,7 @@ function App() {
 
             {/** Class info */}
             <Flex direction="column" maxWidth="100vw">
-              {showClassInfo && classStarted === false && (
+              {showClassInfo === true && classStarted === false && (
                 <Center>
                   <Box>
                     {currentTournament && (
@@ -2795,15 +2875,7 @@ function App() {
                       </Center>
                     )}
 
-                    <Button
-                      size={"lg"}
-                      fontSize={"30"}
-                      colorScheme="purple"
-                      onClick={onOpenAddPlayersModal}
-                      m={2}
-                    >
-                      Add Players
-                    </Button>
+                    
                   </Box>
 
                   <Modal
@@ -2909,6 +2981,15 @@ function App() {
 
               {showTournamentButtons && classStarted === false && (
                 <Flex flexWrap="wrap" justifyContent="center" maxWidth="100vw">
+                  <Button
+                      size={"lg"}
+                      fontSize={"30"}
+                      colorScheme="purple"
+                      onClick={onOpenAddPlayersModal}
+                      m={2}
+                    >
+                      Add Players
+                    </Button>
                   <Button
                     size="lg"
                     m={2}
@@ -3096,10 +3177,10 @@ function App() {
                         onClose={onCloseScoreModal}
                       >
                         <ModalOverlay />
-                        <ModalContent bg={"blue.200"}>
-                          <ModalHeader fontSize="24">
+                        <ModalContent borderRadius={4} bg={"beige"}>
+                          <ModalHeader   fontSize="20">
                             <Center>
-                              <Text> Report match score</Text>
+                              <Text fontWeight={"bold"}> Report match score</Text>
                             </Center>
                           </ModalHeader>
                           <ModalCloseButton />
@@ -3649,7 +3730,7 @@ function App() {
                                   <PopoverTrigger>
                                     <Button
                                       bg={"orange.200"}
-                                      textColor="whiteAlpha.900"
+                                      textColor="grey"
                                       margin={"4"}
                                       onClick={() =>
                                         handleCheckWinner(currentClass.bo!)
@@ -3884,6 +3965,7 @@ function App() {
                       key={group.name}
                     >
                       <Modal
+                        
                         finalFocusRef={inputSetRef}
                         isCentered
                         onClose={onCloseMatchesModal}
@@ -3892,7 +3974,7 @@ function App() {
                         blockScrollOnMount={false}
                       >
                         <ModalOverlay opacity={0.6} bg={"#"} />
-                        <ModalContent>
+                        <ModalContent bg="beige">
                           {currentPlayer && currentPlayer.name && (
                             <ModalHeader>
                               Matches for {currentPlayer.name}
@@ -3900,7 +3982,7 @@ function App() {
                           )}
                           <ModalCloseButton />
                           <ModalBody>
-                            <Box>
+                            <Box >
                               {currentPlayer && currentClass?.matches && (
                                 <>
                                   {currentClass.matches
@@ -3983,14 +4065,37 @@ function App() {
                 </Box>
               )}
 
-              {showBracket && (
+              {showBracketOverview && (
                 <Box>
-                  {advancingPlayers[0].map((player) => (
-                    <Box key={player.id}>
-                      <Text>{player.name}</Text>
-                    </Box>
-                  ))}
+                  <Center>
+                  <Text>{currentTournament?.name} - {currentClass?.name}</Text>
+                  </Center>
+                  <Button onClick={() => handleShowAdvancingPlayers()} textColor={"white"} bg="blue.400" m={2}>Players</Button>
+                  <Button onClick={() => handleShowDrawBracket()} bg="orange.200" textColor={"white.200"}>Draw Bracket</Button>
                 </Box>
+                
+              )}
+
+              {showBracketAdvancingPlayers && (
+                <Box>
+                {currentClass?.advancingPlayers?.map((playerList, listIndex) => (
+
+                  <Box borderRadius={4} m={2} bg="green.200" key={listIndex}>
+                    <Center>
+                    <Text>Group {listIndex + 1}</Text>
+                    </Center>
+                    {playerList.map((player,  playerIndex: number) => (
+                      <Box key={player.id}>
+                        <Text>{player.name} - {playerIndex + 1} </Text>
+                      </Box>
+                    ))}
+                  </Box>
+                ))}
+              </Box>
+              )}
+
+              {showBracket && (
+                <Text>Draw bracket here</Text>
               )}
             </Flex>
           </Flex>

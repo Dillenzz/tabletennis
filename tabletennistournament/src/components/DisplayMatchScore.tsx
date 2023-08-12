@@ -12,15 +12,19 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
       width={"100%"}
       p={"1"}
       _hover={{ cursor: "pointer", bg: "green.100" }}
-      bg="purple.200"
+      bg="bisque"
       rounded="lg"
     >
       <Stack>
+      <Center>
         <Flex margin={"1"}>
+          
           <Box>
             <Text> Match ID {props.match.matchId}</Text>
           </Box>
+          
         </Flex>
+        </Center>
         <Box>
           <Center>
             <Text fontSize="20">
@@ -35,13 +39,19 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
               if (set.player1Score !== 0 || set.player2Score !== 0) {
                 return (
                   <Box width={"100%"} margin="4" key={index}>
+                    <Center>
                     <Text fontSize={14}>Set {index + 1}</Text>
+                    </Center>
+                    <Center>
                     <Text fontSize={20}>
                       {set.player1Score} 
                     </Text>
+                    </Center>
+                    <Center>
                     <Text fontSize={20}>
                       {set.player2Score}
                     </Text>
+                    </Center>
                   </Box>
 
                 );
@@ -49,11 +59,19 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
                 return null; // Skip rendering the set
               }
             })}
+            <Center>
              <Stack>
+              <Center>
               <Text fontWeight={"bold"} fontSize={"15"}>Winner</Text>
+              </Center>
+              <Center>
               <Text>{props.match.winner?.name}</Text>
+              </Center>
+              <Center>
               <Text> {props.match.player1wonSets} - {props.match.player2wonSets}</Text>
+              </Center>
               </Stack>
+              </Center>
         </Flex>
       </Stack>
     </Box>

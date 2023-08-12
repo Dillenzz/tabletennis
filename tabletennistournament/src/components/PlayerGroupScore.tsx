@@ -1,9 +1,9 @@
 import Player from "./Player";
 
 interface PlayerGroupScore {
-    player: Player;
-    score: number;
-    position: number;
+    player?: Player;
+    score?: number;
+    position?: number;
 }
 
 
