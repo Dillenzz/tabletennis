@@ -363,7 +363,7 @@ function GroupResult(props: Group) {
     for (let j = 0; j < players!.length; j++) {
       const player = players![j];
 
-      if (!playerGroupScore.some((score) => score.player.id === player.id)) {
+      if (!playerGroupScore.some((score) => score.player!.id === player.id)) {
         playerGroupScore.push({
           player,
           score: 0,
@@ -372,16 +372,16 @@ function GroupResult(props: Group) {
       }
 
       if (player.id === player1Id) {
-        playerGroupScore[j].score += winnerId === player1Id ? 2 : 1;
+        playerGroupScore[j].score! += winnerId === player1Id ? 2 : 1;
       }
       if (player.id === player2Id) {
-        playerGroupScore[j].score += winnerId === player2Id ? 2 : 1;
+        playerGroupScore[j].score! += winnerId === player2Id ? 2 : 1;
       }
     }
   }
 
   // Sort the playerGroupScore array in descending order
-  let sortedPlayerScore = playerGroupScore.sort((a, b) => b.score - a.score);
+  let sortedPlayerScore = playerGroupScore.sort((a, b) => b.score! - a.score!);
 
   // console.log("sortedPlayerScore", sortedPlayerScore)
 
@@ -394,15 +394,15 @@ function GroupResult(props: Group) {
     const player = sortedPlayerScore[i];
     const sameScorePlayers: number[] = [];
 
-    if (!processedScores.has(player.score)) {
-      sameScorePlayers.push(player.player.id);
-      processedScores.add(player.score);
+    if (!processedScores.has(player.score!)) {
+      sameScorePlayers.push(player.player!.id);
+      processedScores.add(player.score!);
 
       for (let j = i + 1; j < sortedPlayerScore.length; j++) {
         const otherPlayer = sortedPlayerScore[j];
 
         if (playerGroupScore[i].score === playerGroupScore[j].score) {
-          sameScorePlayers.push(otherPlayer.player.id);
+          sameScorePlayers.push(otherPlayer.player!.id);
         }
       }
 
@@ -427,7 +427,7 @@ function GroupResult(props: Group) {
         for (let i = 0; i < intraMerge.length; i++) {
           const playerId = intraMerge[i]; // Get the first player ID from the array
           const playerIndex = playerGroupScore.findIndex(
-            (score) => score.player.id === playerId
+            (score) => score.player!.id === playerId
           );
           if (playerIndex !== -1) {
             playerGroupScore[playerIndex].position = i + 1;
@@ -451,7 +451,7 @@ function GroupResult(props: Group) {
             for (let i = 0; i < intrapointsFlat.length; i++) {
               const playerId = intrapointsFlat[i];
               const playerIndex = playerGroupScore.findIndex(
-                (score) => score.player.id === playerId
+                (score) => score.player!.id === playerId
               );
               if (playerIndex !== -1) {
                 playerGroupScore[playerIndex].position = i + 1;
@@ -466,7 +466,7 @@ function GroupResult(props: Group) {
           for (let i = 0; i < intrasetsFlat.length; i++) {
             const playerId = intrasetsFlat[i];
             const playerIndex = playerGroupScore.findIndex(
-              (score) => score.player.id === playerId
+              (score) => score.player!.id === playerId
             );
             if (playerIndex !== -1) {
               playerGroupScore[playerIndex].position = i + 1;
@@ -479,7 +479,7 @@ function GroupResult(props: Group) {
         const playerIds = intraM[i];
         for (const playerId of playerIds) {
           const playerIndex = playerGroupScore.findIndex(
-            (score) => score.player.id === playerId
+            (score) => score.player!.id === playerId
           );
           if (playerIndex !== -1) {
             playerGroupScore[playerIndex].position = i + 1;
@@ -496,7 +496,7 @@ function GroupResult(props: Group) {
 
 
   const sortedPlayerPosition = playerGroupScore.sort(
-    (a, b) => a.position - b.position
+    (a, b) => a.position! - b.position!
   );
 
   //console.log(sortedPlayerPosition, "sortedPlayerPosition");
@@ -519,16 +519,16 @@ function GroupResult(props: Group) {
         <Box>
           {sortedPlayerPosition.map((player) => (
             <Player
-              key={player.player.id}
-              id={player.player.id}
-              name={player.player.name}
+              key={player.player!.id}
+              id={player.player!.id}
+              name={player.player!.name}
               score={player.score}
-              class={player.player.class}
+              class={player.player!.class}
               isTopPlayer={topPlayers.includes(player)}
-              intraMatchScore={player.player.intraMatchScore || 0}
+              intraMatchScore={player.player!.intraMatchScore || 0}
               
-              intraSetScore={player.player.intraSetScore || "0/0"}
-              intraPointScore={player.player.intraPointScore || "00/00"}
+              intraSetScore={player.player!.intraSetScore || "0/0"}
+              intraPointScore={player.player!.intraPointScore || "00/00"}
             />
           ))}
         </Box>

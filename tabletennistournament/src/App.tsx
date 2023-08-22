@@ -110,7 +110,10 @@ function App() {
   const [showUserName, setShowUserName] = useState(true);
 
   const [deleteInput, setDeleteInput] = useState("");
-  const [showDeleteTournamentConfirmation, setShowDeleteTournamentConfirmation,] = useState(false);
+  const [
+    showDeleteTournamentConfirmation,
+    setShowDeleteTournamentConfirmation,
+  ] = useState(false);
 
   const [currentClass, setCurrentClass] = useState<Class>();
   const [classPlayers, setClassPlayers] = useState<Player[]>([]);
@@ -129,7 +132,7 @@ function App() {
   const [showStartMenu, setShowStartMenu] = useState(true);
   const [showMyTournaments, setShowMyTournament] = useState(false);
   const [showOpenTournaments, setShowOpenTournaments] = useState(false);
-  const [atStartScreen, setAtStartScreen] = useState(false);
+  const [atStartScreen, setAtStartScreen] = useState(true);
   const [showClassesButton, setShowClassesButton] = useState(false);
 
   // State for overview of tournament
@@ -258,7 +261,7 @@ function App() {
   const inputSetRef = useRef(null);
 
   // CLASS VARIABLES
- 
+
   const [tournamentClasses, setTournamentClasses] = useState<Class[]>([]);
   const [classId, setClassId] = useState(-1);
   const [publicOrPrivateClass, setPublicOrPrivateClass] = useState("Public");
@@ -270,12 +273,11 @@ function App() {
 
   // STATES FOR TOURNAMENT BRACKET
 
-  
   const [showBracket, setShowBracket] = useState(false);
   const [showBracketOverview, setShowBracketOverview] = useState(false);
-  const [showBracketAdvancingPlayers, setShowBracketAdvancingPlayers] = useState(false)
-   // State for when groups are done
-  
+  const [showBracketAdvancingPlayers, setShowBracketAdvancingPlayers] =
+    useState(false);
+  // State for when groups are done
 
   // save or update the tournament to Firebase
 
@@ -347,7 +349,6 @@ function App() {
     setTournamentClub("");
     setTournamentType("");
   }
-
 
   async function createClass(tournament: Tournament) {
     if (!tournament.tournamentId) {
@@ -476,7 +477,7 @@ function App() {
       setShowStartMenu(false);
 
       // reset all state variables to their initial values
-      resetCreateTournamentVariables()
+      resetCreateTournamentVariables();
       setTournamentId(-1);
       setPublicOrPrivate("Private");
       setEditTournament(false);
@@ -548,21 +549,21 @@ function App() {
     setShowTournamentOverview(false);
     setShowGroupsResultsAndUnreportedMatches(false);
     setEditTournament(false);
-    
+
     setShowGroupResult(false);
     setShowGroups(false);
     setShowTournamentButtons(false);
     setClassSeededPlayers([]);
     setShowOpenTournaments(false);
-    resetCreateTournamentVariables()
+    resetCreateTournamentVariables();
     setShowUnreportedMatches(false);
     setShowUserName(true);
     setUnreportedMatches([]);
-    setShowBracketOverview(false)
+    setShowBracketOverview(false);
 
-    setShowBracketAdvancingPlayers(false)
-    setShowBracketOverview(false)
-    setShowBracket(false)
+    setShowBracketAdvancingPlayers(false);
+    setShowBracketOverview(false);
+    setShowBracket(false);
   };
   // go to tournament info
   const handleGoToTournaments = () => {
@@ -584,9 +585,9 @@ function App() {
     setShowOpenTournaments(false);
     setEditTournament(false);
 
-    setShowBracketAdvancingPlayers(false)
-    setShowBracketOverview(false)
-    setShowBracket(false)
+    setShowBracketAdvancingPlayers(false);
+    setShowBracketOverview(false);
+    setShowBracket(false);
   };
   // login with google
   async function handleGoogleLogin() {
@@ -632,7 +633,6 @@ function App() {
     setCurrentClass(myClass);
     setClassPlayers(myClass.players ? myClass.players : []);
     setClassStarted(myClass.started ? myClass.started : false);
-  
 
     setShowTournamentOverview(false);
     setClassSeededPlayers(
@@ -641,13 +641,12 @@ function App() {
     setShowUserName(false);
     if (myClass.startBracket === true) {
       setShowBracketOverview(true);
-      setShowBracketAdvancingPlayers(true)
+      setShowBracketAdvancingPlayers(true);
       setShowTournamentButtons(false);
       setShowGroupsResultsAndUnreportedMatches(false);
       setShowGroupResult(false);
       setShowClassInfo(false);
-    }
-    else {
+    } else {
       setShowGroupsResultsAndUnreportedMatches(
         myClass.started ? myClass.started : false
       );
@@ -655,7 +654,7 @@ function App() {
       setShowPlayersAndGroups(true);
       setShowClassInfo(true);
     }
-    
+
     setSentPlayerIds(
       myClass.players
         ? myClass.players
@@ -689,15 +688,14 @@ function App() {
     return namePlayer1 || namePlayer2 || matchId;
   });
 
- function disableShowOverview() {
-  setShowGroups(false);
-  setShowGroupResult(false);
-  setShowUnreportedMatches(false);
-  setShowGroupsResultsAndUnreportedMatches(false);
- }
+  function disableShowOverview() {
+    setShowGroups(false);
+    setShowGroupResult(false);
+    setShowUnreportedMatches(false);
+    setShowGroupsResultsAndUnreportedMatches(false);
+  }
 
   async function handleTournamentOverview(tournament: Tournament) {
-
     setLoadingClasses(true);
     setShowClassesButton(true);
     setShowPlayersAndGroups(false);
@@ -708,10 +706,10 @@ function App() {
     setShowTournamentOverview(true);
 
     disableShowOverview();
-    setShowBracketOverview(false)
-    setShowBracketAdvancingPlayers(false)
-    setShowBracket(false)
-    
+    setShowBracketOverview(false);
+    setShowBracketAdvancingPlayers(false);
+    setShowBracket(false);
+
     setShowMyTournament(false);
     setShowClassInfo(false);
     setShowTournamentButtons(false);
@@ -722,7 +720,7 @@ function App() {
     setCurrentTournament(tournament);
 
     setTournamentClasses(newTournamentClasses);
-    
+
     setLoadingClasses(false);
   }
 
@@ -871,7 +869,7 @@ function App() {
     } else {
       drawTournament(currentClass);
     }
-  
+
     setShowPlayersAndGroups(true);
   }
 
@@ -1699,11 +1697,10 @@ function App() {
     setShowUnreportedMatches(false);
     setShowUserName(false);
     setUnreportedMatches([]);
-    setShowBracketAdvancingPlayers(false)
-    setShowBracketOverview(false)
-    setShowBracket(false)
-    setShowBracketOverview(false)
-    
+    setShowBracketAdvancingPlayers(false);
+    setShowBracketOverview(false);
+    setShowBracket(false);
+    setShowBracketOverview(false);
   }
 
   //clears all the match scores to report the next match
@@ -1822,8 +1819,6 @@ function App() {
 
     if (currentClass !== undefined && currentClass !== null) {
       if (unreportedMatches.length === 0) {
-        
-        
         await writeClass({
           ...currentClass,
           startBracket: true,
@@ -1954,18 +1949,18 @@ function App() {
           newAdvancingPlayers.push(playerTuple);
         }
       }
-      
+
       writeClass({
         ...currentClass,
         advancingPlayers: newAdvancingPlayers,
-        startBracket: true
+        startBracket: true,
       });
       setCurrentClass({
         ...currentClass,
         advancingPlayers: newAdvancingPlayers,
-        startBracket: true
+        startBracket: true,
       });
-      
+
       setShowGroups(false);
       setShowUnreportedMatches(false);
       setShowGroupResult(false);
@@ -1973,28 +1968,26 @@ function App() {
       setShowGroupsResultsAndUnreportedMatches(false);
       setShowGroupResult(false);
       setShowGroups(false);
-      setShowBracketOverview(true)
-      setShowBracketAdvancingPlayers(true)
+      setShowBracketOverview(true);
+      setShowBracketAdvancingPlayers(true);
     }
   }
 
-  function handleShowAdvancingPlayers(){
-    setShowBracketAdvancingPlayers(true)
-    setShowBracket(false)
+  function handleShowAdvancingPlayers() {
+    setShowBracketAdvancingPlayers(true);
+    setShowBracket(false);
   }
 
-
-  function handleShowDrawBracket(){
-    setShowBracketAdvancingPlayers(false)
-    setShowBracket(true)
-
+  function handleShowDrawBracket() {
+    setShowBracketAdvancingPlayers(false);
+    setShowBracket(true);
   }
 
   // App start
   return (
     <Box maxHeight="100vh" overflowY={"auto"} minWidth="100vw">
       <Flex
-        bg="beige"
+        bg="white"
         minHeight="100vh"
         justifyContent="center"
         //alignItems="center"
@@ -2002,126 +1995,154 @@ function App() {
       >
         <ChakraProvider>
           <Flex direction="column" align="center">
-            <Flex>
-              {showUserName && userName && atStartScreen && (
-                <Text fontWeight={"bold"} mt={2} ml={2} fontSize="24">
-                  Welcome back {userName}!
-                </Text>
-              )}
-            </Flex>
             <Center>
-              <Box marginTop={2}>
-                <Box
-                  _hover={{ cursor: "pointer" }}
-                  display="flex"
-                  alignItems="center"
-                >
-                  <Box _hover={{ label: "Home" }} marginRight={1}>
-                    <FontAwesomeIcon
+              <Box shadow={"md"} minWidth={"100vw"} border={"1px"} borderRadius={"4px"}>
+                <Box>
+                  
+                  <Center>
+                  <img  src={logo} alt="SVG Image" style={{ width: "5%" }} />
+                    {/* Logo positioned in the top-left corner */}
+                  <Box
+                   
+                    display="flex"
+                    alignItems="center"
+                  >
+                    <Tooltip
+                      textColor={"whiteAlpha.800"}
+                      borderRadius={"5px"}
+                      label="Home"
                       aria-label="Home"
-                      color="silver"
-                      onClick={() => handlegoToHome()}
-                      icon={faHouse}
-                      size="2xl"
-                    />
-                    <Center>
-                      <Text fontSize={8}>Home</Text>
-                    </Center>
-                  </Box>
-                  {userLoggedIn == false && (
-                    <Button
-                      colorScheme="blue"
-                      margin={2}
-                      onClick={async () => await handleGoogleLogin()}
                     >
-                      Sign in
-                    </Button>
-                  )}
-                  {userLoggedIn && (
-                    <Box
-                      _hover={{ cursor: "pointer" }}
-                      bg="beige"
-                      marginInline={1}
-                      display="flex"
-                      alignItems="center"
-                    >
-                      <Box
-                        onClick={() =>
-                          alert("This feature is not yet implemented")
-                        }
-                      >
+                      <Box  onClick={() => handlegoToHome()} borderRadius={"4px"} _hover={{ bg: "#F5F5F5",  cursor: "pointer" }} p={4} marginInline={"5px"}>
                         <FontAwesomeIcon
-                          color="grey"
+                          aria-label="Home"
+                         
+                          icon={faHouse}
+                          color="#D8D9DA"
+                          
                           size="2xl"
-                          icon={faUser}
                         />
-
-                        <Center>
-                          <Text fontSize={8}>Profile</Text>
-                        </Center>
                       </Box>
-                      <Box marginInline={2}>
-                        <FontAwesomeIcon
-                          onClick={() => {
-                            const result = window.confirm(
-                              "Are you sure you want to sign out?"
-                            );
-                            if (result === true) {
-                              handleGoogleLogout();
+                    </Tooltip>
+                    {userLoggedIn == false && (
+                      <Button
+                        colorScheme="blue"
+                        onClick={async () => await handleGoogleLogin()}
+                      >
+                        Sign in
+                      </Button>
+                    )}
+                    {userLoggedIn && (
+                      <Box
+                       
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <Tooltip
+                          textColor={"whiteAlpha.800"}
+                          borderRadius={"4px"}
+                          label="Profile"
+                          aria-aria-label="Sign out"
+                        >
+                          <Box
+                          
+                          borderRadius={"4px"}
+                          marginInline={"5px"}
+                            _hover={{ bg: "#F5F5F5",  cursor: "pointer" }}
+                            p={4}
+                            onClick={() =>
+                              alert("This feature is not yet implemented")
                             }
-                          }}
-                          color="grey"
-                          size={"2xl"}
-                          icon={faPowerOff}
-                        />
-                        <Center>
-                          <Text fontSize={8}>Sign out</Text>
-                        </Center>
+                          >
+                            <FontAwesomeIcon
+                              color="#D8D9DA"
+                              size="2xl"
+                              icon={faUser}
+                            />
+                          </Box>
+                        </Tooltip>
+                        <Tooltip
+                          textColor={"whiteAlpha.800"}
+                          borderRadius={"4px"}
+                          label="Sign out"
+                          aria-label="Sign out"
+                        >
+                          <Box borderRadius={"4px"} marginInline={"5px"}  _hover={{ bg: "#F5F5F5" ,  cursor: "pointer" }} p={4}>
+                            <FontAwesomeIcon
+                              onClick={() => {
+                                const result = window.confirm(
+                                  "Are you sure you want to sign out?"
+                                );
+                                if (result === true) {
+                                  handleGoogleLogout();
+                                }
+                              }}
+                              color="#D8D9DA"
+                              size={"2xl"}
+                              icon={faPowerOff}
+                            />
+                          </Box>
+                        </Tooltip>
                       </Box>
-                    </Box>
-                  )}
+                    )}
 
-                  {currentTournament && !atStartScreen && showClassesButton && (
-                    <Button
-                      bg="blue.400"
-                      textColor="white"
-                      onClick={() =>
-                        handleTournamentOverview(currentTournament)
-                      }
-                    >
-                      Classes
-                    </Button>
-                  )}
+                    {currentTournament &&
+                      !atStartScreen &&
+                      showClassesButton && (
+                        <Button
+                          bg="blue.400"
+                          textColor="white"
+                          onClick={() =>
+                            handleTournamentOverview(currentTournament)
+                          }
+                        >
+                          Classes
+                        </Button>
+                      )}
+                  </Box>
+                  </Center>
                 </Box>
               </Box>
             </Center>
 
             {showStartMenu && (
-              <>
-                <Box mt={2}>
-                  <img
-                    src={logo}
-                    alt="SVG Image"
-                    style={{ width: "50%", margin: "auto" }}
-                  />
-                </Box>
+              <Box
+                margin={10}
+                bg="white"
+                // box-shadow = "2xl"
+                borderRadius={15}
+                // shadow={"xl"}
+                boxShadow={"2xl"}
+              >
+                <Center margin={10}>
+                  {showUserName && userName && atStartScreen && (
+                    <Text fontWeight={"bold"} mt={2} ml={2} fontSize="24">
+                      Welcome back {userName}!
+                    </Text>
+                  )}
+                </Center>
 
                 <Flex direction={"column"}>
                   {userLoggedIn && (
                     <Flex direction={"column"}>
                       <Button
                         m={2}
-                        bg="green.200"
-                        textColor="white"
+                        bg={"white"}
+                        border={"2px solid black"}
+                        textColor="black"
+                        borderRadius={20}
+                        _hover={{ bg: "green.200", border: "2px solid black" }}
                         onClick={() => handleCreateTournament()}
                       >
                         New tournament
                       </Button>
 
                       <Button
-                        textColor="white"
                         m={2}
-                        bg="orange.300"
+                        bg={"white"}
+                        border={"2px solid black"}
+                        borderRadius={20}
+                        _hover={{ bg: "green.200", border: "2px solid black" }}
                         onClick={() => handleShowMyTournaments()}
                       >
                         My tournaments
@@ -2129,37 +2150,30 @@ function App() {
                     </Flex>
                   )}
 
-                  <Box>
+                  <Flex paddingBottom={"4"} direction={"column"}>
                     <Button
                       m={2}
-                      bg="blue.200"
-                      textColor="white"
+                      border={"2px solid black"}
+                      borderRadius={20}
+                      _hover={{ bg: "#", border: "2px solid black" }}
                       onClick={() => handleShowOpenTournaments()}
+                      bg={"white"}
                     >
                       Open tournaments
                     </Button>
-                  </Box>
-                  {userLoggedIn && (
-                    <Button
-                      m={2}
-                      bg="purple.300"
-                      textColor="white"
-                      onClick={() =>
-                        alert("This feature is not yet implemented")
-                      }
-                    >
-                      My Profile
-                    </Button>
-                  )}
+                  </Flex>
                 </Flex>
-              </>
+              </Box>
             )}
 
             {showMyTournaments && (
-              <Box maxWidth="100vw" bg="#FFFFF">
+
+              <Box >
                 <Center>
-                  <Heading>My tournaments</Heading>
+                <Heading m="8px"> My Tournaments</Heading>
                 </Center>
+                <Box borderRadius={"5px"} boxShadow={"xl"} maxWidth="100vw">
+                
                 {myTournaments
                   .filter((tournament) => tournament.uid === uid)
                   .sort(
@@ -2170,19 +2184,19 @@ function App() {
 
                   .map((tournament, index) => {
                     return (
-                      <Box key={`${tournament.tournamentId}-${index}`}>
-                        <Center>
-                          <Box
+                      <Box p={"8px"} m={"4px"} key={`${tournament.tournamentId}-${index}`}>
+                        
+                          <Box 
+                            
                             onClick={() => {
                               handleTournamentOverview(tournament),
                                 setCurrentTournament(tournament);
                             }}
-                            _hover={{ bg: "#A2CDB0", cursor: "pointer" }}
+                            _hover={{ bg: "#D8D9DA", cursor: "pointer" }}
                             rounded="lg"
-                            textColor={"whiteAlpha.800"}
+                            
                             fontWeight={"bold"}
-                            bg="green.200"
-                            m={1}
+                            bg=""
                             width={"100%"}
                             minWidth={`${maxWidth}px`}
                           >
@@ -2196,30 +2210,37 @@ function App() {
                               />
                             </Center>
                           </Box>
-
-                          <Box margin={2}>
+                          
+                          <Flex direction={"column"} 
+                                >
+                            <Center>
                             <Tooltip
+                              marginInline={"10px"}
                               label={`Edit Tournament ${tournament.name}`}
                               aria-label="edit-tooltip"
                             >
+                              <Box  marginInline={6}>
                               <EditIcon
-                                margin={4}
+                                
+                               
                                 color="black"
-                                boxSize={24}
+                                boxSize={4}
                                 _hover={{ cursor: "pointer" }}
                                 aria-label="Edit Tournament"
                                 onClick={() => handleEditTournament(tournament)}
                               />
+                              </Box>
                             </Tooltip>
 
-                            <Tooltip
+                            <Tooltip 
                               label={`Delete Tournament ${tournament.name}`}
                               aria-label="delete-tooltip"
-                            >
+                            > 
+                            <Box marginInline={6}>
                               <DeleteIcon
                                 color="black"
-                                boxSize={24}
-                                margin={4}
+                                boxSize={4}
+                                m={2}
                                 _hover={{ cursor: "pointer" }}
                                 aria-label="Delete Tournament"
                                 onClick={() => {
@@ -2228,9 +2249,11 @@ function App() {
                                   setShowDeleteTournamentConfirmation(true);
                                 }}
                               />
+                              </Box>
                             </Tooltip>
-                          </Box>
-                        </Center>
+                            </Center>
+                          </Flex>
+                        
                       </Box>
                     );
                   })}
@@ -2300,16 +2323,17 @@ function App() {
                     </Center>
                   </Box>
                 )}
+                </Box>
               </Box>
             )}
 
             {showCreateTournament && (
-              <Box>
+              <Box p={"4px"} m={"4px"}>
                 <Center>
                   <Stack>
                     <FormControl>
                       <Center>
-                        <FormLabel>
+                        <FormLabel m={"4px"}>
                           {editTournament === true
                             ? "Edit Tournament " + currentTournament?.name
                             : "Create new Tournament"}
@@ -2580,9 +2604,10 @@ function App() {
                       </Center>
                     )}
 
-                    {(tournamentClasses.length === 0  && loadingClasses === false) && (
-                      <Text m={2}>Create a class!</Text>
-                    )}
+                    {tournamentClasses.length === 0 &&
+                      loadingClasses === false && (
+                        <Text m={2}>Create a class!</Text>
+                      )}
                   </Box>
 
                   <FormControl>
@@ -2874,8 +2899,6 @@ function App() {
                         </Heading>
                       </Center>
                     )}
-
-                    
                   </Box>
 
                   <Modal
@@ -2982,14 +3005,14 @@ function App() {
               {showTournamentButtons && classStarted === false && (
                 <Flex flexWrap="wrap" justifyContent="center" maxWidth="100vw">
                   <Button
-                      size={"lg"}
-                      fontSize={"30"}
-                      colorScheme="purple"
-                      onClick={onOpenAddPlayersModal}
-                      m={2}
-                    >
-                      Add Players
-                    </Button>
+                    size={"lg"}
+                    fontSize={"30"}
+                    colorScheme="purple"
+                    onClick={onOpenAddPlayersModal}
+                    m={2}
+                  >
+                    Add Players
+                  </Button>
                   <Button
                     size="lg"
                     m={2}
@@ -3178,9 +3201,12 @@ function App() {
                       >
                         <ModalOverlay />
                         <ModalContent borderRadius={4} bg={"beige"}>
-                          <ModalHeader   fontSize="20">
+                          <ModalHeader fontSize="20">
                             <Center>
-                              <Text fontWeight={"bold"}> Report match score</Text>
+                              <Text fontWeight={"bold"}>
+                                {" "}
+                                Report match score
+                              </Text>
                             </Center>
                           </ModalHeader>
                           <ModalCloseButton />
@@ -3965,7 +3991,6 @@ function App() {
                       key={group.name}
                     >
                       <Modal
-                        
                         finalFocusRef={inputSetRef}
                         isCentered
                         onClose={onCloseMatchesModal}
@@ -3982,7 +4007,7 @@ function App() {
                           )}
                           <ModalCloseButton />
                           <ModalBody>
-                            <Box >
+                            <Box>
                               {currentPlayer && currentClass?.matches && (
                                 <>
                                   {currentClass.matches
@@ -4068,35 +4093,55 @@ function App() {
               {showBracketOverview && (
                 <Box>
                   <Center>
-                  <Text>{currentTournament?.name} - {currentClass?.name}</Text>
+                    <Text>
+                      {currentTournament?.name} - {currentClass?.name}
+                    </Text>
                   </Center>
-                  <Button onClick={() => handleShowAdvancingPlayers()} textColor={"white"} bg="blue.400" m={2}>Players</Button>
-                  <Button onClick={() => handleShowDrawBracket()} bg="orange.200" textColor={"white.200"}>Draw Bracket</Button>
+                  <Button
+                    onClick={() => handleShowAdvancingPlayers()}
+                    textColor={"white"}
+                    bg="blue.400"
+                    m={2}
+                  >
+                    Players
+                  </Button>
+                  <Button
+                    onClick={() => handleShowDrawBracket()}
+                    bg="orange.200"
+                    textColor={"white.200"}
+                  >
+                    Draw Bracket
+                  </Button>
                 </Box>
-                
               )}
 
               {showBracketAdvancingPlayers && (
                 <Box>
-                {currentClass?.advancingPlayers?.map((playerList, listIndex) => (
-
-                  <Box borderRadius={4} m={2} bg="green.200" key={listIndex}>
-                    <Center>
-                    <Text>Group {listIndex + 1}</Text>
-                    </Center>
-                    {playerList.map((player,  playerIndex: number) => (
-                      <Box key={player.id}>
-                        <Text>{player.name} - {playerIndex + 1} </Text>
+                  {currentClass?.advancingPlayers?.map(
+                    (playerList, listIndex) => (
+                      <Box
+                        borderRadius={4}
+                        m={2}
+                        bg="green.200"
+                        key={listIndex}
+                      >
+                        <Center>
+                          <Text>Group {listIndex + 1}</Text>
+                        </Center>
+                        {playerList.map((player, playerIndex: number) => (
+                          <Box key={player.id}>
+                            <Text>
+                              {player.name} - {playerIndex + 1}{" "}
+                            </Text>
+                          </Box>
+                        ))}
                       </Box>
-                    ))}
-                  </Box>
-                ))}
-              </Box>
+                    )
+                  )}
+                </Box>
               )}
 
-              {showBracket && (
-                <Text>Draw bracket here</Text>
-              )}
+              {showBracket && <Text>Draw bracket here</Text>}
             </Flex>
           </Flex>
         </ChakraProvider>
