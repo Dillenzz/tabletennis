@@ -2,11 +2,16 @@ import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
 import logo from "./assets/ft11.svg";
 import calculateGroupAdvancement from "./functions/CalculatedGroupadvancement";
+
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faPowerOff } from "@fortawesome/free-solid-svg-icons";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { faCalendarDays } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
@@ -82,8 +87,7 @@ import {
 } from "@chakra-ui/react";
 
 import {
-  ArrowBackIcon,
-  ArrowForwardIcon,
+ 
   DeleteIcon,
   EditIcon,
 } from "@chakra-ui/icons";
@@ -321,7 +325,7 @@ function App() {
   const createTournament = () => {
     setShowStartMenu(true);
     setShowCreateTournament(false);
-    console.log("Id we are sending to writeTournamnet", tournamentId);
+   
 
     const newTournament: Tournament = {
       uid: uid,
@@ -714,7 +718,7 @@ function App() {
     setShowMyTournament(false);
     setShowClassInfo(false);
     setShowTournamentButtons(false);
-    console.log(tournament.tournamentId);
+    
     const newTournamentClasses = await loadTournamentClasses(
       tournament.tournamentId!
     );
@@ -1997,12 +2001,7 @@ function App() {
         <ChakraProvider>
           <Flex direction="column" align="center">
             <Center>
-              <Box
-                shadow={"md"}
-                minWidth={"100vw"}
-                border={"1px"}
-                borderRadius={"4px"}
-              >
+              <Box shadow={"md"} border={"1px"} borderRadius={"40px"} m={2}>
                 <Box>
                   <Center>
                     <img src={logo} alt="SVG Image" style={{ width: "5%" }} />
@@ -2087,15 +2086,21 @@ function App() {
                       {currentTournament &&
                         !atStartScreen &&
                         showClassesButton && (
-                          <Button
-                            bg="blue.400"
-                            textColor="white"
-                            onClick={() =>
-                              handleTournamentOverview(currentTournament)
-                            }
+                          <Tooltip
+                            textColor={"whiteAlpha.800"}
+                            borderRadius={"4px"}
+                            label="Classes"
+                            aria-label="Classes"
                           >
-                            Classes
-                          </Button>
+                          <Box _hover={{ bg: "#F5F5F5", cursor: "pointer" }} p={4} onClick={() =>
+                            handleTournamentOverview(currentTournament)
+                          }
+                        >
+                            <FontAwesomeIcon color="#D8D9DA"
+                                size={"2xl"} icon={faCalendarDays}></FontAwesomeIcon>
+                          
+                          </Box>
+                          </Tooltip>
                         )}
                     </Box>
                   </Center>
@@ -2199,184 +2204,196 @@ function App() {
             )}
 
             {showMyTournaments && (
-              <Box overflowX={"scroll"} maxWidth={"100vw"} boxShadow={"md"}>
-                <Center>
-                  <Heading m="8px"> My Tournaments</Heading>
-                </Center>
-                <Flex
-                  p={"10px"}
-                  borderRadius={"5px"}
-                  boxShadow={"xl"}
-                  maxWidth="100vw"
-                >
-                  {myTournaments
-                    .filter((tournament) => tournament.uid === uid)
-                    .sort(
-                      (a, b) =>
-                        new Date(b.dateFrom!).getTime() -
-                        new Date(a.dateFrom!).getTime()
-                    )
+              <Box >
+              <Center>
+              <Heading m="8px"> My Tournaments</Heading>
+            </Center>
+              <Box maxW={"100vw"} shadow="md" >
+                
+                <Box>
+                  <Box
+                    p={"10px"}
+                    borderRadius={"5px"}
+                    boxShadow={"xl"}
+                    maxWidth="100vw"
+                  >
+                    {myTournaments
+                      .filter((tournament) => tournament.uid === uid)
+                      .sort(
+                        (a, b) =>
+                          new Date(b.dateFrom!).getTime() -
+                          new Date(a.dateFrom!).getTime()
+                      )
 
-                    .map((tournament, index) => {
-                      return (
-                        <Box
-                          p={"8px"}
-                          m={"4px"}
-                          key={`${tournament.tournamentId}-${index}`}
-                          shadow={"md"}
-                          borderRadius={"5px"}
-                        >
-                          <Box
-                            onClick={() => {
-                              handleTournamentOverview(tournament),
-                                setCurrentTournament(tournament);
-                            }}
-                            _hover={{ bg: "#C8E4B2", cursor: "pointer" }}
-                            rounded="lg"
-                            fontWeight={"bold"}
-                            bg=""
-                            width={"100%"}
-                            minWidth={`${maxWidth}px`}
-                            p={2}
+                      .map((tournament, index) => {
+                        return (
+                          <Box  
+                            _hover={{ bg: "#FAF1E4", cursor: "pointer" }}
+                            p={"8px"}
+                            m={"8px"}
+                            key={`${tournament.tournamentId}-${index}`}
+                            shadow={"md"}
+                            borderRadius={"5px"}
                           >
-                            <Center>
-                              <Tournament
-                                name={tournament.name}
-                                dateFrom={tournament.dateFrom}
-                                dateTo={tournament.dateTo}
-                                location={tournament.location}
-                                club={tournament.club}
-                              />
-                            </Center>
+                            <Box
+                              onClick={() => {
+                                handleTournamentOverview(tournament),
+                                  setCurrentTournament(tournament);
+                              }}
+                              _hover={{  cursor: "pointer" }}
+                              rounded="lg"
+                              fontWeight={"bold"}
+                              bg=""
+                              width={"100%"}
+                              minWidth={`${maxWidth}px`}
+                              p={2}
+                            >
+                              <Center>
+                                <Tournament
+                                  name={tournament.name}
+                                  dateFrom={tournament.dateFrom}
+                                  dateTo={tournament.dateTo}
+                                  location={tournament.location}
+                                  club={tournament.club}
+                                />
+                              </Center>
+                            </Box>
+
+                            <Flex borderRadius={"10px"} direction={"column"}>
+                              <Center>
+                                <Tooltip
+                                  borderRadius={"4px"}
+                                  marginInline={"10px"}
+                                  label={`Edit Tournament ${tournament.name}`}
+                                  aria-label="edit-tooltip"
+                                >
+                                  <Box
+                                    onClick={() =>
+                                      handleEditTournament(tournament)
+                                    }
+                                    
+                                    borderRadius={"4px"}
+                                    p={"6px"}
+                                    _hover={{
+                                      
+                                      cursor: "pointer",
+                                    }}
+                                    marginInline={6}
+                                  >
+                                    <EditIcon
+                                      color="black"
+                                      boxSize={4}
+                                      _hover={{ cursor: "pointer" }}
+                                      aria-label="Edit Tournament"
+                                    />
+                                  </Box>
+                                </Tooltip>
+
+                                <Tooltip
+                                  label={`Delete Tournament ${tournament.name}`}
+                                  aria-label="delete-tooltip"
+                                  borderRadius={"4px"}
+                                >
+                                  <Box
+                                    onClick={() => {
+                                      setCurrentTournament(tournament);
+                                      onOpenDeleteTournamentModal();
+                                      setShowDeleteTournamentConfirmation(true);
+                                    }}
+                                    
+                                    borderRadius={"4px"}
+                                    paddingBlock={"8px"}
+                                    p={"6px"}
+                                    _hover={{
+                                      
+                                      cursor: "pointer",
+                                    }}
+                                    marginInline={6}
+                                  >
+                                    <DeleteIcon
+                                      color="black"
+                                      boxSize={4}
+                                      _hover={{ cursor: "pointer" }}
+                                      aria-label="Delete Tournament"
+                                    />
+                                  </Box>
+                                </Tooltip>
+                              </Center>
+                            </Flex>
                           </Box>
-
-                          <Flex borderRadius={"10px"} direction={"column"}>
-                            <Center>
-                              <Tooltip
-                                borderRadius={"4px"}
-                                marginInline={"10px"}
-                                label={`Edit Tournament ${tournament.name}`}
-                                aria-label="edit-tooltip"
-                              >
-                                <Box
-                                  onClick={() =>
-                                    handleEditTournament(tournament)
-                                  }
-                                  shadow={"md"}
-                                  borderRadius={"4px"}
-                                  p={"6px"}
-                                  _hover={{ bg: "blue.200", cursor: "pointer" }}
-                                  marginInline={6}
-                                >
-                                  <EditIcon
-                                    color="black"
-                                    boxSize={4}
-                                    _hover={{ cursor: "pointer" }}
-                                    aria-label="Edit Tournament"
-                                  />
-                                </Box>
-                              </Tooltip>
-
-                              <Tooltip
-                                label={`Delete Tournament ${tournament.name}`}
-                                aria-label="delete-tooltip"
-                                borderRadius={"4px"}
-                              >
-                                <Box
-                                  onClick={() => {
-                                    setCurrentTournament(tournament);
-                                    onOpenDeleteTournamentModal();
-                                    setShowDeleteTournamentConfirmation(true);
-                                  }}
-                                  shadow={"md"}
-                                  borderRadius={"4px"}
-                                  paddingBlock={"8px"}
-                                  p={"6px"}
-                                  _hover={{ bg: "red.200", cursor: "pointer" }}
-                                  marginInline={6}
-                                >
-                                  <DeleteIcon
-                                    color="black"
-                                    boxSize={4}
-                                    _hover={{ cursor: "pointer" }}
-                                    aria-label="Delete Tournament"
-                                  />
-                                </Box>
-                              </Tooltip>
-                            </Center>
-                          </Flex>
-                        </Box>
-                      );
-                    })}
-                  {showDeleteTournamentConfirmation && currentTournament && (
-                    <Modal
-                      isOpen={isDeleteTournamentModal}
-                      onClose={onCloseDeleteTournamentModal}
-                    >
-                      <ModalOverlay />
-                      <ModalContent>
-                        <ModalHeader textColor="red.300">
-                          Delete Tournament {currentTournament.name}
-                        </ModalHeader>
-                        <ModalCloseButton />
-                        <ModalBody>
-                          <Input
-                            type="text"
-                            value={deleteInput}
-                            
-                            onChange={(e) => setDeleteInput(e.target.value)}
-                            placeholder={`Type "${currentTournament.name}" to confirm deletion`}
-                          />
-                        </ModalBody>
-                        <ModalFooter>
-                          <Button
-                            bg="red.300"
-                            textColor={"white"}
-                            onClick={() => {
-                              if (deleteInput === currentTournament.name) {
-                                handleDeleteTournament(currentTournament);
-                                handleDeleteClasses(currentTournament);
-                              } else {
-                                alert(
-                                  "Tournament name does not match. Deletion aborted."
-                                );
-                              }
-                              setDeleteInput("");
-                              setCurrentTournament(undefined);
-                              onCloseDeleteTournamentModal();
-                            }}
-                          >
-                            Confirm deletion
-                          </Button>
-                        </ModalFooter>
-                      </ModalContent>
-                    </Modal>
-                  )}
-                  {loading && (
-                    <Center>
-                      <Text>Tournaments are loading, please be patient</Text>
-                      <Spinner marginLeft={2} size="xl" />
-                    </Center>
-                  )}
-                  {noTournaments && (
-                    <Box>
-                      <Text m="4" fontSize="40">
-                        You don't have any tournaments! Create one!
-                      </Text>
+                        );
+                      })}
+                    {showDeleteTournamentConfirmation && currentTournament && (
+                      <Modal
+                        isOpen={isDeleteTournamentModal}
+                        onClose={onCloseDeleteTournamentModal}
+                      >
+                        <ModalOverlay />
+                        <ModalContent>
+                          <ModalHeader textColor="red.300">
+                            Delete Tournament {currentTournament.name}
+                          </ModalHeader>
+                          <ModalCloseButton />
+                          <ModalBody>
+                            <Input
+                              type="text"
+                              value={deleteInput}
+                              onChange={(e) => setDeleteInput(e.target.value)}
+                              placeholder={`Type "${currentTournament.name}" to confirm deletion`}
+                            />
+                          </ModalBody>
+                          <ModalFooter>
+                            <Button
+                              bg="red.300"
+                              textColor={"white"}
+                              borderRadius={"20px"}
+                              onClick={() => {
+                                if (deleteInput === currentTournament.name) {
+                                  handleDeleteTournament(currentTournament);
+                                  handleDeleteClasses(currentTournament);
+                                } else {
+                                  alert(
+                                    "Tournament name does not match. Deletion aborted."
+                                  );
+                                }
+                                setDeleteInput("");
+                                setCurrentTournament(undefined);
+                                onCloseDeleteTournamentModal();
+                              }}
+                            >
+                              Confirm deletion
+                            </Button>
+                          </ModalFooter>
+                        </ModalContent>
+                      </Modal>
+                    )}
+                    {loading && (
                       <Center>
-                        <Button
-                          onClick={() => {
-                            resetStates();
-                            handleCreateTournament();
-                          }}
-                          bg="green.200"
-                        >
-                          New tournament
-                        </Button>
+                        <Text>Tournaments are loading, please be patient</Text>
+                        <Spinner marginLeft={2} size="xl" />
                       </Center>
-                    </Box>
-                  )}
-                </Flex>
+                    )}
+                    {noTournaments && (
+                      <Box>
+                        <Text m="4" fontSize="40">
+                          You don't have any tournaments! Create one!
+                        </Text>
+                        <Center>
+                          <Button
+                            onClick={() => {
+                              resetStates();
+                              handleCreateTournament();
+                            }}
+                            bg="green.200"
+                          >
+                            New tournament
+                          </Button>
+                        </Center>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
               </Box>
             )}
 
@@ -2487,7 +2504,7 @@ function App() {
             )}
 
             {showOpenTournaments && (
-              <Box  >
+              <Box>
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
@@ -2495,140 +2512,151 @@ function App() {
                   </Center>
                 )}
                 {upcomingTournaments.length > 0 && (
-                  <Box  overflowX={"scroll"} maxWidth="100vw">
+                  <Box>
                     <Center>
                       <Heading size="lg">Upcoming Tournaments</Heading>
                     </Center>
-                  <Flex>
-                    <Center>
-                    {upcomingTournaments.map((tournament) => (
-                      <Box
-                        shadow={"lg"}
-                        m={4}
-                        borderRadius="md"
-                        bg={"green.200"}
-                        key={tournament.tournamentId}
-                        p={4}
-                        minWidth={`${maxOpenWidth}px`}
-                      >
+                    <Box maxWidth="100vw">
+                      <Flex m={4} overflowX={"auto"} justifyContent={"center"}>
                         <Center>
-                          <Stack>
-                            <Flex direction="column">
-                              <Center>
-                                <Heading size="lg">{tournament.name}</Heading>
-                              </Center>
-                              <Center>
-                                <Text>{tournament.location}</Text>
-                              </Center>
-                              <Center>
-                                <Box>
-                                  <Text fontSize="sm">
-                                    {tournament.dateFrom} / {tournament.dateTo}
-                                  </Text>
-                                </Box>
-                              </Center>
-                              <Center>
-                                <Box>
-                                  <Text fontSize="sm">{tournament.club}</Text>
-                                </Box>
-                              </Center>
-                            </Flex>
+                          {upcomingTournaments.map((tournament) => (
                             <Center>
-                              <Flex>
-                                <Button
-                                  m={1}
-                                  size="md"
-                                  fontSize="20"
-                                  mr={2}
-                                  textColor={"white"}
-                                  bg={"blue.400"}
-                                  onClick={() => {
-                                    handleJoinTournament(tournament);
-                                    alert("Not yet implemented");
-                                  }}
-                                >
-                                  Info
-                                </Button>
-                              </Flex>
+                              <Box
+                                shadow={"lg"}
+                                m={4}
+                                borderRadius="md"
+                                bg={"green.200"}
+                                key={tournament.tournamentId}
+                                p={4}
+                                minWidth={`${maxOpenWidth}px`}
+                              >
+                                <Center>
+                                  <Stack>
+                                    <Flex direction="column">
+                                      <Center>
+                                        <Heading size="lg">
+                                          {tournament.name}
+                                        </Heading>
+                                      </Center>
+                                      <Center>
+                                        <Text>{tournament.location}</Text>
+                                      </Center>
+                                      <Center>
+                                        <Box>
+                                          <Text fontSize="sm">
+                                            {tournament.dateFrom} /{" "}
+                                            {tournament.dateTo}
+                                          </Text>
+                                        </Box>
+                                      </Center>
+                                      <Center>
+                                        <Box>
+                                          <Text fontSize="sm">
+                                            {tournament.club}
+                                          </Text>
+                                        </Box>
+                                      </Center>
+                                    </Flex>
+                                    <Center>
+                                      <Flex>
+                                        <Button
+                                          m={1}
+                                          size="md"
+                                          fontSize="20"
+                                          mr={2}
+                                          textColor={"white"}
+                                          bg={"blue.400"}
+                                          onClick={() => {
+                                            handleJoinTournament(tournament);
+                                            alert("Not yet implemented");
+                                          }}
+                                        >
+                                          Info
+                                        </Button>
+                                      </Flex>
+                                    </Center>
+                                  </Stack>
+                                </Center>
+                              </Box>
                             </Center>
-                          </Stack>
+                          ))}
                         </Center>
-                      </Box>
-                    ))}
-                    </Center>
-                  </Flex>
+                      </Flex>
+                    </Box>
                   </Box>
                 )}
                 {pastTournaments.length > 0 && (
-                  <Box overflowX={"scroll"} maxWidth="100vw" >
                   <Box>
-                  <Center>
-                  <Heading size="lg">Past Tournaments</Heading>
-                </Center>
-                </Box>
-                  <Flex>
-                    
-                    {pastTournaments.map((tournament) => (
-                      <Box
-                        shadow={"lg"}
-                        m={4}
-                        borderRadius="md"
-                        bg={"#FF9B9B"}
-                        key={tournament.tournamentId}
-                        p={4}
-                        minWidth={`${maxOpenWidth}px`}
-                      >
-                        <Center>
-                          <Stack>
-                            <Flex direction="column">
-                              <Center>
-                                <Heading size="lg">{tournament.name}</Heading>
-                              </Center>
-                              <Center>
-                                <Text>  {tournament.location}</Text>
-                              </Center>
-                              <Center>
-                                <Box>
-                                  <Text fontSize="sm">
-                                    {tournament.dateFrom} / {tournament.dateTo}
-                                  </Text>
-                                </Box>
-                              </Center>
-                              <Center>
-                                <Box>
-                                  <Text fontSize="sm">
-                                    {" "}
-                                    {tournament.club}
-                                  </Text>
-                                </Box>
-                              </Center>
-                            </Flex>
+                    <Center>
+                      <Heading size="lg">Past Tournaments</Heading>
+                    </Center>
+
+                    <Box maxWidth="100vw">
+                      <Flex m={4} overflowX={"auto"}>
+                        {pastTournaments.map((tournament) => (
+                          <Box
+                            shadow={"lg"}
+                            m={4}
+                            borderRadius="md"
+                            bg={"#FF9B9B"}
+                            key={tournament.tournamentId}
+                            p={4}
+                            minWidth={`${maxOpenWidth}px`}
+                          >
                             <Center>
-                              <Flex>
-                                <Button
-                                  m={1}
-                                  size="md"
-                                  fontSize="20"
-                                  textColor={"white"}
-                                  bg="blue.400"
-                                  onClick={() => {
-                                    handleJoinTournament(tournament);
-                                    alert("Not yet implemented");
-                                  }}
-                                >
-                                  View Result
-                                </Button>
-                              </Flex>
+                              <Stack>
+                                <Flex direction="column">
+                                  <Center>
+                                    <Heading size="lg">
+                                      {tournament.name}
+                                    </Heading>
+                                  </Center>
+                                  <Center>
+                                    <Text> {tournament.location}</Text>
+                                  </Center>
+                                  <Center>
+                                    <Box>
+                                      <Text fontSize="sm">
+                                        {tournament.dateFrom} /{" "}
+                                        {tournament.dateTo}
+                                      </Text>
+                                    </Box>
+                                  </Center>
+                                  <Center>
+                                    <Box>
+                                      <Text fontSize="sm">
+                                        {" "}
+                                        {tournament.club}
+                                      </Text>
+                                    </Box>
+                                  </Center>
+                                </Flex>
+                                <Center>
+                                  <Flex>
+                                    <Button
+                                      m={1}
+                                      size="md"
+                                      fontSize="20"
+                                      textColor={"white"}
+                                      bg="blue.400"
+                                      onClick={() => {
+                                        handleJoinTournament(tournament);
+                                        alert("Not yet implemented");
+                                      }}
+                                    >
+                                      View Result
+                                    </Button>
+                                  </Flex>
+                                </Center>
+                              </Stack>
                             </Center>
-                          </Stack>
-                        </Center>
-                      </Box>
-                    ))}
-                  </Flex>
+                          </Box>
+                        ))}
+                      </Flex>
+                    </Box>
                   </Box>
                 )}
               </Box>
-              
             )}
 
             {showTournamentOverview && (
@@ -2647,8 +2675,11 @@ function App() {
                   <Box>
                     <Center>
                       <Button
+                        m={2}
+                        shadow={"md"}
                         textColor={"white"}
                         bg="green.200"
+                        borderRadius={"20px"}
                         onClick={onOpenCreateClassModal}
                       >
                         New class
@@ -2663,7 +2694,11 @@ function App() {
 
                     {tournamentClasses.length === 0 &&
                       loadingClasses === false && (
-                        <Text m={2}>Create a class!</Text>
+                        <Center>
+                          <Text m={2}>
+                            You don't have any classes yet, create a class!
+                          </Text>
+                        </Center>
                       )}
                   </Box>
 
@@ -2685,6 +2720,7 @@ function App() {
                           <FormControl isRequired>
                             <FormLabel>Name</FormLabel>
                             <Input
+                              borderRadius="20px"
                               ref={initialRef}
                               placeholder="Classname"
                               value={className}
@@ -2695,13 +2731,13 @@ function App() {
                             <FormControl>
                               <FormLabel>Type</FormLabel>
                               <Select
-                                borderRadius="md"
+                                borderRadius="20px"
                                 placeholder="Select option"
                                 onChange={handleTournamentType}
                               >
                                 <option value="groups">Groups</option>
-                                <option value="bracket">Bracket</option>
-                                <option value="teamMatch">Team Match</option>
+                                {/* <option value="bracket">Bracket</option>
+                                 <option value="teamMatch">Team Match</option> */}
                               </Select>
                             </FormControl>
                           )}
@@ -2754,19 +2790,7 @@ function App() {
                               </RadioGroup>
                             </FormControl>
                           )}
-                          <FormControl>
-                            <FormLabel as="legend">Public or Private</FormLabel>
-                            <RadioGroup
-                              onChange={handlePublicOrPrivateClass}
-                              value={publicOrPrivateClass}
-                              defaultValue="Private"
-                            >
-                              <HStack spacing="24px">
-                                <Radio value="Public">Public</Radio>
-                                <Radio value="Private">Private</Radio>
-                              </HStack>
-                            </RadioGroup>
-                          </FormControl>
+
                           {tournamentType === "bracket" && (
                             <FormControl>
                               <RadioGroup defaultValue="Single elimination">
@@ -2793,10 +2817,24 @@ function App() {
                               </RadioGroup>
                             </FormControl>
                           )}
+                          <FormControl>
+                            <FormLabel as="legend">Public or Private</FormLabel>
+                            <RadioGroup
+                              onChange={handlePublicOrPrivateClass}
+                              value={publicOrPrivateClass}
+                              defaultValue="Private"
+                            >
+                              <HStack spacing="24px">
+                                <Radio value="Public">Public</Radio>
+                                <Radio value="Private">Private</Radio>
+                              </HStack>
+                            </RadioGroup>
+                          </FormControl>
                         </ModalBody>
 
                         <ModalFooter>
                           <Button
+                            borderRadius={"20px"}
                             onClick={() => {
                               if (editClass) {
                                 editClassNameAndPublicity(currentClass!);
@@ -2822,8 +2860,10 @@ function App() {
                     </Modal>
                   </FormControl>
 
-                  <Box p={4}>
+                  <Box  box-shadow={"xl"} borderRadius={"10px"} p={4}>
                     <Flex
+                      
+                      borderRadius={"10px"}
                       display="flex"
                       flexWrap="wrap"
                       justifyContent="center"
@@ -2831,10 +2871,17 @@ function App() {
                       {tournamentClasses
                         .sort((a, b) => a.name!.localeCompare(b.name!))
                         .map((myClass: Class, index) => (
-                          <Box key={`${myClass.classId}-${index}`}>
+                          <Box
+                            
+                            
+                            borderRadius={"5px"}
+                            shadow={"xl"}
+                            key={`${myClass.classId}-${index}`}
+                          >
                             <Box
-                              _hover={{ bg: "green.300" }}
-                              bg="orange.200"
+                               _hover={{ bg: "#FAF1E4" }}
+                              bg="white"
+                              shadow={"xl"}
                               m={2}
                               p={4}
                               borderRadius="md"
@@ -2844,14 +2891,7 @@ function App() {
                               alignItems="center"
                               cursor="pointer"
                             >
-                              <Tooltip
-                                label={myClass.name}
-                                aria-label="edit-tooltip"
-                              >
-                                <Text textColor="white" fontSize={40}>
-                                  {myClass.name}
-                                </Text>
-                              </Tooltip>
+                              <Text fontSize={40}>{myClass.name}</Text>
                             </Box>
 
                             <Box>
@@ -2863,7 +2903,7 @@ function App() {
                                   <EditIcon
                                     margin={4}
                                     color="black"
-                                    boxSize={24}
+                                    boxSize={4}
                                     _hover={{ cursor: "pointer" }}
                                     aria-label="Edit Tournament"
                                     onClick={() => handleEditClass(myClass)}
@@ -2876,7 +2916,7 @@ function App() {
                                 >
                                   <DeleteIcon
                                     color="black"
-                                    boxSize={24}
+                                    boxSize={4}
                                     margin={4}
                                     _hover={{ cursor: "pointer" }}
                                     aria-label="Delete Tournament"
@@ -2920,6 +2960,8 @@ function App() {
                           <ModalFooter>
                             <Button
                               bg="red.300"
+                              textColor={"white"}
+                              borderRadius={"20px"}
                               onClick={() => {
                                 if (deleteClassInput === currentClass.name) {
                                   handleDeleteClass(currentClass);
@@ -2950,7 +2992,7 @@ function App() {
                   <Box>
                     {currentTournament && (
                       <Center>
-                        <Heading size="md" fontWeight={"bold"}>
+                        <Heading p={"20px"}  m={"8px"} size="lg" fontWeight={"bold"}>
                           {currentTournament.name} -{" "}
                           {currentClass?.name ? currentClass.name : ""}
                         </Heading>
@@ -2967,7 +3009,7 @@ function App() {
                       <ModalHeader>Add player</ModalHeader>
                       <ModalCloseButton />
                       <ModalBody>
-                        <Text mb="8px">Name: {searchName}</Text>
+                        <Text mb="8px">Name {searchName}</Text>
                         <Input
                           value={searchName}
                           onChange={handleNameSearch}
@@ -2975,7 +3017,7 @@ function App() {
                           borderRadius="md"
                           size="sm"
                         />
-                        <Text mb="8px">Club: {searchClub}</Text>
+                        <Text mb="8px">Club {searchClub}</Text>
                         <Flex>
                           <Input
                             borderRadius="md"
@@ -3015,42 +3057,48 @@ function App() {
                       <Center>
                         <ModalFooter>
                           <Center>
-                            <IconButton
-                              m={2}
+                            <Box _hover={{ cursor: "pointer" }} m="10px">
+                            <FontAwesomeIcon
+                              
                               aria-label="Arrow Back"
-                              icon={<ArrowBackIcon />}
-                              colorScheme="red"
+                              icon={faArrowLeft}
+                              
+                              color="black"
                               onClick={() => {
                                 setDisplayedPlayersFrom(
                                   displayedPlayersFrom - 10
                                 );
                                 setDisplayedPlayersTo(displayedPlayersTo - 10);
                               }}
-                              size={"md"}
+                              size={"2xl"}
                             />
+                            </Box>
+                            
 
-                            <IconButton
-                              m={2}
+                            <Button
+                              borderRadius={"20px"}
+                              onClick={onCloseAddPlayersModal}
+                              colorScheme="blue"
+                              
+                            >
+                              Done
+                            </Button>
+
+                            <Box _hover={{ cursor: "pointer" }} m={"10px"} >
+                            <FontAwesomeIcon
+                              
                               aria-label="Arrow Back"
-                              icon={<ArrowForwardIcon />}
-                              colorScheme="green"
+                              icon={faArrowRight}
+                              color="black"
                               onClick={() => {
                                 setDisplayedPlayersFrom(
                                   displayedPlayersFrom + 10
                                 );
                                 setDisplayedPlayersTo(displayedPlayersTo + 10);
                               }}
-                              size={"md"}
+                              size={"2xl"}
                             />
-
-                            <Button
-                              m={2}
-                              onClick={onCloseAddPlayersModal}
-                              colorScheme="blue"
-                              mr={3}
-                            >
-                              Done
-                            </Button>
+                            </Box>
                           </Center>
                         </ModalFooter>
                       </Center>
@@ -3064,7 +3112,10 @@ function App() {
                   <Button
                     size={"lg"}
                     fontSize={"30"}
-                    colorScheme="purple"
+                    borderRadius={"20px"}
+                    shadow="md"
+                    bg={"#FAF1E4"}
+                    _hover={{ bg: "green.200", border: "1px solid black" }}
                     onClick={onOpenAddPlayersModal}
                     m={2}
                   >
@@ -3074,7 +3125,10 @@ function App() {
                     size="lg"
                     m={2}
                     fontSize="30"
-                    bg="green.200"
+                    bg={"#FAF1E4"}
+                    _hover={{ bg: "green.200", border: "1px solid black" }}
+                    shadow={"md"}
+                    borderRadius={"20px"}
                     onClick={() => saveTournament()}
                   >
                     Save Class
@@ -3084,7 +3138,10 @@ function App() {
                     size="lg"
                     m={2}
                     fontSize="30"
-                    bg="orange.200"
+                    bg={"#FAF1E4"}
+                    shadow={"md"}
+                    _hover={{ bg: "green.200", border: "1px solid black" }}
+                    borderRadius={"20px"}
                     onClick={() =>
                       handleSetClassSeededPlayers(currentClass?.players || [])
                     }
@@ -3097,7 +3154,10 @@ function App() {
                       m={2}
                       size="lg"
                       fontSize="30"
-                      bg="#B2A4FF"
+                      bg={"#FAF1E4"}
+                      borderRadius={"20px"}
+                      _hover={{ bg: "green.200", border: "1px solid black" }}
+                      shadow={"md"}
                       onClick={() => {
                         handleDrawTournament();
                         setPlayerDeleted(false);
