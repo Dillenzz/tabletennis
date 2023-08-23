@@ -2199,7 +2199,7 @@ function App() {
             )}
 
             {showMyTournaments && (
-              <Box maxWidth={"100vw"} boxShadow={"md"}>
+              <Box overflowX={"scroll"} maxWidth={"100vw"} boxShadow={"md"}>
                 <Center>
                   <Heading m="8px"> My Tournaments</Heading>
                 </Center>
