@@ -2199,7 +2199,7 @@ function App() {
             )}
 
             {showMyTournaments && (
-              <Box boxShadow={"md"}>
+              <Box maxWidth={"100vw"} boxShadow={"md"}>
                 <Center>
                   <Heading m="8px"> My Tournaments</Heading>
                 </Center>
