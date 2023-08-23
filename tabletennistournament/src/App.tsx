@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { faPowerOff } from "@fortawesome/free-solid-svg-icons";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
@@ -1996,110 +1997,107 @@ function App() {
         <ChakraProvider>
           <Flex direction="column" align="center">
             <Center>
-              <Box shadow={"md"} minWidth={"100vw"} border={"1px"} borderRadius={"4px"}>
+              <Box
+                shadow={"md"}
+                minWidth={"100vw"}
+                border={"1px"}
+                borderRadius={"4px"}
+              >
                 <Box>
-                  
                   <Center>
-                  <img  src={logo} alt="SVG Image" style={{ width: "5%" }} />
+                    <img src={logo} alt="SVG Image" style={{ width: "5%" }} />
                     {/* Logo positioned in the top-left corner */}
-                  <Box
-                   
-                    display="flex"
-                    alignItems="center"
-                  >
-                    <Tooltip
-                      textColor={"whiteAlpha.800"}
-                      borderRadius={"5px"}
-                      label="Home"
-                      aria-label="Home"
-                    >
-                      <Box  onClick={() => handlegoToHome()} borderRadius={"4px"} _hover={{ bg: "#F5F5F5",  cursor: "pointer" }} p={4} marginInline={"5px"}>
-                        <FontAwesomeIcon
-                          aria-label="Home"
-                         
-                          icon={faHouse}
-                          color="#D8D9DA"
-                          
-                          size="2xl"
-                        />
-                      </Box>
-                    </Tooltip>
-                    {userLoggedIn == false && (
-                      <Button
-                        colorScheme="blue"
-                        onClick={async () => await handleGoogleLogin()}
+                    <Box display="flex" alignItems="center">
+                      <Tooltip
+                        textColor={"whiteAlpha.800"}
+                        borderRadius={"5px"}
+                        label="Home"
+                        aria-label="Home"
                       >
-                        Sign in
-                      </Button>
-                    )}
-                    {userLoggedIn && (
-                      <Box
-                       
-                        display="flex"
-                        alignItems="center"
-                      >
-                        <Tooltip
-                          textColor={"whiteAlpha.800"}
+                        <Box
+                          onClick={() => handlegoToHome()}
                           borderRadius={"4px"}
-                          label="Profile"
-                          aria-aria-label="Sign out"
-                        >
-                          <Box
-                          
-                          borderRadius={"4px"}
+                          _hover={{ bg: "#F5F5F5", cursor: "pointer" }}
+                          p={4}
                           marginInline={"5px"}
-                            _hover={{ bg: "#F5F5F5",  cursor: "pointer" }}
-                            p={4}
+                        >
+                          <FontAwesomeIcon
+                            aria-label="Home"
+                            icon={faHouse}
+                            color="#D8D9DA"
+                            size="2xl"
+                          />
+                        </Box>
+                      </Tooltip>
+
+                      {userLoggedIn && (
+                        <Box display="flex" alignItems="center">
+                          <Tooltip
+                            textColor={"whiteAlpha.800"}
+                            borderRadius={"4px"}
+                            label="Profile"
+                            aria-aria-label="Sign out"
+                          >
+                            <Box
+                              borderRadius={"4px"}
+                              marginInline={"5px"}
+                              _hover={{ bg: "#F5F5F5", cursor: "pointer" }}
+                              p={4}
+                              onClick={() =>
+                                alert("This feature is not yet implemented")
+                              }
+                            >
+                              <FontAwesomeIcon
+                                color="#D8D9DA"
+                                size="2xl"
+                                icon={faUser}
+                              />
+                            </Box>
+                          </Tooltip>
+                          <Tooltip
+                            textColor={"whiteAlpha.800"}
+                            borderRadius={"4px"}
+                            label="Sign out"
+                            aria-label="Sign out"
+                          >
+                            <Box
+                              borderRadius={"4px"}
+                              marginInline={"5px"}
+                              _hover={{ bg: "#F5F5F5", cursor: "pointer" }}
+                              p={4}
+                            >
+                              <FontAwesomeIcon
+                                onClick={() => {
+                                  const result = window.confirm(
+                                    "Are you sure you want to sign out?"
+                                  );
+                                  if (result === true) {
+                                    handleGoogleLogout();
+                                  }
+                                }}
+                                color="#D8D9DA"
+                                size={"2xl"}
+                                icon={faPowerOff}
+                              />
+                            </Box>
+                          </Tooltip>
+                        </Box>
+                      )}
+
+                      {currentTournament &&
+                        !atStartScreen &&
+                        showClassesButton && (
+                          <Button
+                            bg="blue.400"
+                            textColor="white"
                             onClick={() =>
-                              alert("This feature is not yet implemented")
+                              handleTournamentOverview(currentTournament)
                             }
                           >
-                            <FontAwesomeIcon
-                              color="#D8D9DA"
-                              size="2xl"
-                              icon={faUser}
-                            />
-                          </Box>
-                        </Tooltip>
-                        <Tooltip
-                          textColor={"whiteAlpha.800"}
-                          borderRadius={"4px"}
-                          label="Sign out"
-                          aria-label="Sign out"
-                        >
-                          <Box borderRadius={"4px"} marginInline={"5px"}  _hover={{ bg: "#F5F5F5" ,  cursor: "pointer" }} p={4}>
-                            <FontAwesomeIcon
-                              onClick={() => {
-                                const result = window.confirm(
-                                  "Are you sure you want to sign out?"
-                                );
-                                if (result === true) {
-                                  handleGoogleLogout();
-                                }
-                              }}
-                              color="#D8D9DA"
-                              size={"2xl"}
-                              icon={faPowerOff}
-                            />
-                          </Box>
-                        </Tooltip>
-                      </Box>
-                    )}
-
-                    {currentTournament &&
-                      !atStartScreen &&
-                      showClassesButton && (
-                        <Button
-                          bg="blue.400"
-                          textColor="white"
-                          onClick={() =>
-                            handleTournamentOverview(currentTournament)
-                          }
-                        >
-                          Classes
-                        </Button>
-                      )}
-                  </Box>
+                            Classes
+                          </Button>
+                        )}
+                    </Box>
                   </Center>
                 </Box>
               </Box>
@@ -2107,20 +2105,28 @@ function App() {
 
             {showStartMenu && (
               <Box
-                margin={10}
+                margin={8}
                 bg="white"
                 // box-shadow = "2xl"
                 borderRadius={15}
                 // shadow={"xl"}
                 boxShadow={"2xl"}
               >
-                <Center margin={10}>
-                  {showUserName && userName && atStartScreen && (
+                {showUserName && userName && atStartScreen && (
+                  <Center margin={5}>
                     <Text fontWeight={"bold"} mt={2} ml={2} fontSize="24">
                       Welcome back {userName}!
                     </Text>
-                  )}
-                </Center>
+                  </Center>
+                )}
+
+                {showUserName && userName === "" && atStartScreen && (
+                  <Center margin={5}>
+                    <Text fontWeight={"bold"} mt={2} ml={2} fontSize="24">
+                      Welcome back!
+                    </Text>
+                  </Center>
+                )}
 
                 <Flex direction={"column"}>
                   {userLoggedIn && (
@@ -2128,10 +2134,10 @@ function App() {
                       <Button
                         m={2}
                         bg={"white"}
-                        border={"2px solid black"}
+                        border={"1px solid black"}
                         textColor="black"
                         borderRadius={20}
-                        _hover={{ bg: "green.200", border: "2px solid black" }}
+                        _hover={{ bg: "green.200", border: "1px solid black" }}
                         onClick={() => handleCreateTournament()}
                       >
                         New tournament
@@ -2140,9 +2146,9 @@ function App() {
                       <Button
                         m={2}
                         bg={"white"}
-                        border={"2px solid black"}
+                        border={"1px solid black"}
                         borderRadius={20}
-                        _hover={{ bg: "green.200", border: "2px solid black" }}
+                        _hover={{ bg: "green.200", border: "1px solid black" }}
                         onClick={() => handleShowMyTournaments()}
                       >
                         My tournaments
@@ -2150,55 +2156,88 @@ function App() {
                     </Flex>
                   )}
 
-                  <Flex paddingBottom={"4"} direction={"column"}>
+                  <Flex direction={"column"}>
                     <Button
                       m={2}
-                      border={"2px solid black"}
+                      border={"1px solid black"}
                       borderRadius={20}
-                      _hover={{ bg: "#", border: "2px solid black" }}
+                      _hover={{ bg: "green.200", border: "1px solid black" }}
                       onClick={() => handleShowOpenTournaments()}
                       bg={"white"}
                     >
                       Open tournaments
                     </Button>
+                    <Button
+                      m={2}
+                      border={"1px solid black"}
+                      borderRadius={20}
+                      _hover={{ bg: "green.200", border: "1px solid black" }}
+                      bg={"white"}
+                    >
+                      Ranking
+                    </Button>
                   </Flex>
                 </Flex>
+                {userLoggedIn == false && (
+                  <Box
+                    _hover={{ bg: "#1450A3", cursor: "pointer" }}
+                    p={"8px"}
+                    borderRadius={"20px"}
+                    bg={"#3182ce"}
+                    m={2}
+                    onClick={async () => await handleGoogleLogin()}
+                  >
+                    <Center>
+                      <FontAwesomeIcon color="white" icon={faGoogle} />
+                      <Text textColor={"white"} marginInline={"10px"}>
+                        Sign in with Google
+                      </Text>
+                    </Center>
+                  </Box>
+                )}
               </Box>
             )}
 
             {showMyTournaments && (
-
-              <Box >
+              <Box boxShadow={"md"}>
                 <Center>
-                <Heading m="8px"> My Tournaments</Heading>
+                  <Heading m="8px"> My Tournaments</Heading>
                 </Center>
-                <Box borderRadius={"5px"} boxShadow={"xl"} maxWidth="100vw">
-                
-                {myTournaments
-                  .filter((tournament) => tournament.uid === uid)
-                  .sort(
-                    (a, b) =>
-                      new Date(b.dateFrom!).getTime() -
-                      new Date(a.dateFrom!).getTime()
-                  )
+                <Flex
+                  p={"10px"}
+                  borderRadius={"5px"}
+                  boxShadow={"xl"}
+                  maxWidth="100vw"
+                >
+                  {myTournaments
+                    .filter((tournament) => tournament.uid === uid)
+                    .sort(
+                      (a, b) =>
+                        new Date(b.dateFrom!).getTime() -
+                        new Date(a.dateFrom!).getTime()
+                    )
 
-                  .map((tournament, index) => {
-                    return (
-                      <Box p={"8px"} m={"4px"} key={`${tournament.tournamentId}-${index}`}>
-                        
-                          <Box 
-                            
+                    .map((tournament, index) => {
+                      return (
+                        <Box
+                          p={"8px"}
+                          m={"4px"}
+                          key={`${tournament.tournamentId}-${index}`}
+                          shadow={"md"}
+                          borderRadius={"5px"}
+                        >
+                          <Box
                             onClick={() => {
                               handleTournamentOverview(tournament),
                                 setCurrentTournament(tournament);
                             }}
-                            _hover={{ bg: "#D8D9DA", cursor: "pointer" }}
+                            _hover={{ bg: "#C8E4B2", cursor: "pointer" }}
                             rounded="lg"
-                            
                             fontWeight={"bold"}
                             bg=""
                             width={"100%"}
                             minWidth={`${maxWidth}px`}
+                            p={2}
                           >
                             <Center>
                               <Tournament
@@ -2210,120 +2249,134 @@ function App() {
                               />
                             </Center>
                           </Box>
-                          
-                          <Flex direction={"column"} 
-                                >
-                            <Center>
-                            <Tooltip
-                              marginInline={"10px"}
-                              label={`Edit Tournament ${tournament.name}`}
-                              aria-label="edit-tooltip"
-                            >
-                              <Box  marginInline={6}>
-                              <EditIcon
-                                
-                               
-                                color="black"
-                                boxSize={4}
-                                _hover={{ cursor: "pointer" }}
-                                aria-label="Edit Tournament"
-                                onClick={() => handleEditTournament(tournament)}
-                              />
-                              </Box>
-                            </Tooltip>
 
-                            <Tooltip 
-                              label={`Delete Tournament ${tournament.name}`}
-                              aria-label="delete-tooltip"
-                            > 
-                            <Box marginInline={6}>
-                              <DeleteIcon
-                                color="black"
-                                boxSize={4}
-                                m={2}
-                                _hover={{ cursor: "pointer" }}
-                                aria-label="Delete Tournament"
-                                onClick={() => {
-                                  setCurrentTournament(tournament);
-                                  onOpenDeleteTournamentModal();
-                                  setShowDeleteTournamentConfirmation(true);
-                                }}
-                              />
-                              </Box>
-                            </Tooltip>
+                          <Flex borderRadius={"10px"} direction={"column"}>
+                            <Center>
+                              <Tooltip
+                                borderRadius={"4px"}
+                                marginInline={"10px"}
+                                label={`Edit Tournament ${tournament.name}`}
+                                aria-label="edit-tooltip"
+                              >
+                                <Box
+                                  onClick={() =>
+                                    handleEditTournament(tournament)
+                                  }
+                                  shadow={"md"}
+                                  borderRadius={"4px"}
+                                  p={"6px"}
+                                  _hover={{ bg: "blue.200", cursor: "pointer" }}
+                                  marginInline={6}
+                                >
+                                  <EditIcon
+                                    color="black"
+                                    boxSize={4}
+                                    _hover={{ cursor: "pointer" }}
+                                    aria-label="Edit Tournament"
+                                  />
+                                </Box>
+                              </Tooltip>
+
+                              <Tooltip
+                                label={`Delete Tournament ${tournament.name}`}
+                                aria-label="delete-tooltip"
+                                borderRadius={"4px"}
+                              >
+                                <Box
+                                  onClick={() => {
+                                    setCurrentTournament(tournament);
+                                    onOpenDeleteTournamentModal();
+                                    setShowDeleteTournamentConfirmation(true);
+                                  }}
+                                  shadow={"md"}
+                                  borderRadius={"4px"}
+                                  paddingBlock={"8px"}
+                                  p={"6px"}
+                                  _hover={{ bg: "red.200", cursor: "pointer" }}
+                                  marginInline={6}
+                                >
+                                  <DeleteIcon
+                                    color="black"
+                                    boxSize={4}
+                                    _hover={{ cursor: "pointer" }}
+                                    aria-label="Delete Tournament"
+                                  />
+                                </Box>
+                              </Tooltip>
                             </Center>
                           </Flex>
-                        
-                      </Box>
-                    );
-                  })}
-                {showDeleteTournamentConfirmation && currentTournament && (
-                  <Modal
-                    isOpen={isDeleteTournamentModal}
-                    onClose={onCloseDeleteTournamentModal}
-                  >
-                    <ModalOverlay />
-                    <ModalContent>
-                      <ModalHeader textColor="red.300">
-                        Delete Tournament {currentTournament.name}
-                      </ModalHeader>
-                      <ModalCloseButton />
-                      <ModalBody>
-                        <Input
-                          type="text"
-                          value={deleteInput}
-                          onChange={(e) => setDeleteInput(e.target.value)}
-                          placeholder={`Type "${currentTournament.name}" to confirm deletion`}
-                        />
-                      </ModalBody>
-                      <ModalFooter>
-                        <Button
-                          bg="red.300"
-                          onClick={() => {
-                            if (deleteInput === currentTournament.name) {
-                              handleDeleteTournament(currentTournament);
-                              handleDeleteClasses(currentTournament);
-                            } else {
-                              alert(
-                                "Tournament name does not match. Deletion aborted."
-                              );
-                            }
-                            setDeleteInput("");
-                            setCurrentTournament(undefined);
-                            onCloseDeleteTournamentModal();
-                          }}
-                        >
-                          Confirm deletion
-                        </Button>
-                      </ModalFooter>
-                    </ModalContent>
-                  </Modal>
-                )}
-                {loading && (
-                  <Center>
-                    <Text>Tournaments are loading, please be patient</Text>
-                    <Spinner marginLeft={2} size="xl" />
-                  </Center>
-                )}
-                {noTournaments && (
-                  <Box>
-                    <Text m="4" fontSize="40">
-                      You don't have any tournaments! Create one!
-                    </Text>
+                        </Box>
+                      );
+                    })}
+                  {showDeleteTournamentConfirmation && currentTournament && (
+                    <Modal
+                      isOpen={isDeleteTournamentModal}
+                      onClose={onCloseDeleteTournamentModal}
+                    >
+                      <ModalOverlay />
+                      <ModalContent>
+                        <ModalHeader textColor="red.300">
+                          Delete Tournament {currentTournament.name}
+                        </ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                          <Input
+                            type="text"
+                            value={deleteInput}
+                            
+                            onChange={(e) => setDeleteInput(e.target.value)}
+                            placeholder={`Type "${currentTournament.name}" to confirm deletion`}
+                          />
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            bg="red.300"
+                            textColor={"white"}
+                            onClick={() => {
+                              if (deleteInput === currentTournament.name) {
+                                handleDeleteTournament(currentTournament);
+                                handleDeleteClasses(currentTournament);
+                              } else {
+                                alert(
+                                  "Tournament name does not match. Deletion aborted."
+                                );
+                              }
+                              setDeleteInput("");
+                              setCurrentTournament(undefined);
+                              onCloseDeleteTournamentModal();
+                            }}
+                          >
+                            Confirm deletion
+                          </Button>
+                        </ModalFooter>
+                      </ModalContent>
+                    </Modal>
+                  )}
+                  {loading && (
                     <Center>
-                      <Button
-                        onClick={() => {
-                          resetStates();
-                          handleCreateTournament();
-                        }}
-                        bg="green.200"
-                      >
-                        New tournament
-                      </Button>
+                      <Text>Tournaments are loading, please be patient</Text>
+                      <Spinner marginLeft={2} size="xl" />
                     </Center>
-                  </Box>
-                )}
-                </Box>
+                  )}
+                  {noTournaments && (
+                    <Box>
+                      <Text m="4" fontSize="40">
+                        You don't have any tournaments! Create one!
+                      </Text>
+                      <Center>
+                        <Button
+                          onClick={() => {
+                            resetStates();
+                            handleCreateTournament();
+                          }}
+                          bg="green.200"
+                        >
+                          New tournament
+                        </Button>
+                      </Center>
+                    </Box>
+                  )}
+                </Flex>
               </Box>
             )}
 
@@ -2333,7 +2386,7 @@ function App() {
                   <Stack>
                     <FormControl>
                       <Center>
-                        <FormLabel m={"4px"}>
+                        <FormLabel fontSize={"20"} m={"4px"}>
                           {editTournament === true
                             ? "Edit Tournament " + currentTournament?.name
                             : "Create new Tournament"}
@@ -2347,11 +2400,7 @@ function App() {
                           bg={"white"}
                           value={tournamentName}
                           onChange={handleChange}
-                          placeholder={
-                            currentTournament?.name
-                              ? currentTournament?.name
-                              : "Name"
-                          }
+                          placeholder={"Tournament Name"}
                           size="lg"
                         />
                       </Box>
@@ -2383,11 +2432,7 @@ function App() {
                           bg={"white"}
                           value={tournamentLocation}
                           onChange={handleLocationChange}
-                          placeholder={
-                            currentTournament?.location
-                              ? currentTournament?.location
-                              : "Location"
-                          }
+                          placeholder={"Location"}
                           size="lg"
                         />
                       </Box>
@@ -2397,7 +2442,7 @@ function App() {
                           bg={"white"}
                           value={tournamentClub}
                           onChange={handleClubChange}
-                          placeholder={"Club name"}
+                          placeholder={"Club Name"}
                           size="lg"
                         />
                       </Box>
@@ -2442,7 +2487,7 @@ function App() {
             )}
 
             {showOpenTournaments && (
-              <Box maxWidth="100vw">
+              <Box  >
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
@@ -2450,12 +2495,15 @@ function App() {
                   </Center>
                 )}
                 {upcomingTournaments.length > 0 && (
-                  <>
+                  <Box  overflowX={"scroll"} maxWidth="100vw">
                     <Center>
                       <Heading size="lg">Upcoming Tournaments</Heading>
                     </Center>
+                  <Flex>
+                    <Center>
                     {upcomingTournaments.map((tournament) => (
                       <Box
+                        shadow={"lg"}
                         m={4}
                         borderRadius="md"
                         bg={"green.200"}
@@ -2507,18 +2555,25 @@ function App() {
                         </Center>
                       </Box>
                     ))}
-                  </>
+                    </Center>
+                  </Flex>
+                  </Box>
                 )}
                 {pastTournaments.length > 0 && (
-                  <>
-                    <Center>
-                      <Heading size="lg">Past Tournaments</Heading>
-                    </Center>
+                  <Box overflowX={"scroll"} maxWidth="100vw" >
+                  <Box>
+                  <Center>
+                  <Heading size="lg">Past Tournaments</Heading>
+                </Center>
+                </Box>
+                  <Flex>
+                    
                     {pastTournaments.map((tournament) => (
                       <Box
+                        shadow={"lg"}
                         m={4}
                         borderRadius="md"
-                        bg={"red.300"}
+                        bg={"#FF9B9B"}
                         key={tournament.tournamentId}
                         p={4}
                         minWidth={`${maxOpenWidth}px`}
@@ -2530,7 +2585,7 @@ function App() {
                                 <Heading size="lg">{tournament.name}</Heading>
                               </Center>
                               <Center>
-                                <Text> Location - {tournament.location}</Text>
+                                <Text>  {tournament.location}</Text>
                               </Center>
                               <Center>
                                 <Box>
@@ -2543,7 +2598,7 @@ function App() {
                                 <Box>
                                   <Text fontSize="sm">
                                     {" "}
-                                    Club - {tournament.club}
+                                    {tournament.club}
                                   </Text>
                                 </Box>
                               </Center>
@@ -2569,9 +2624,11 @@ function App() {
                         </Center>
                       </Box>
                     ))}
-                  </>
+                  </Flex>
+                  </Box>
                 )}
               </Box>
+              
             )}
 
             {showTournamentOverview && (

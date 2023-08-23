@@ -18,7 +18,7 @@ function Tournament(props: Tournament) {
     <Box>
       <Box>
         <Center>
-          <Heading size="md" m={1}>
+          <Heading fontWeight={"bold"} size="md" m={1}>
             {props.name}
           </Heading>
         </Center>
@@ -26,21 +26,30 @@ function Tournament(props: Tournament) {
       <Center>
       <Flex direction="column">
         {props.location && (
-          <Text color={"black"}  fontSize="10" ml={1} >
-            Location: {props.location}
-          </Text>
+           <Flex>
+           <Text color={"black"} fontSize="10" mr={2} >
+             Loca: 
+           </Text>
+           <Text color={"grey"} fontSize="10">{props.location}</Text>
+           </Flex>
         )}
 
         {props.dateFrom && props.dateTo && (
-          <Text color={"black"} fontSize="10" ml={1}>
-            Date: {props.dateFrom} / {props.dateTo}
+          <Flex>
+          <Text color={"black"} fontSize="10" mr={2} >
+            Date: 
           </Text>
+          <Text color={"grey"} fontSize="10">{props.dateFrom} / {props.dateTo}</Text>
+          </Flex>
         )}
 
         {props.club && (
-          <Text color={"black"} fontSize="10" ml={1} mb={1}>
-            Club: {props.club}
+          <Flex>
+          <Text color={"black"} fontSize="10" mr={2} mb={1}>
+            Club:   
           </Text>
+          <Text color={"grey"} fontSize={"10"}> {props.club}</Text>
+          </Flex>
         )}
       </Flex>
       </Center>
