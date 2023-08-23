@@ -12,7 +12,7 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
       width={"100%"}
       p={"1"}
       _hover={{ cursor: "pointer", bg: "green.100" }}
-      bg="bisque"
+      bg={"#FAF1E4"}
       rounded="lg"
     >
       <Stack>
@@ -20,7 +20,7 @@ function DisplayMatchScore(props: DisplayMatchScoreProps) {
         <Flex margin={"1"}>
           
           <Box>
-            <Text> Match ID {props.match.matchId}</Text>
+            <Text fontWeight={"bold"}> Match ID {props.match.matchId}</Text>
           </Box>
           
         </Flex>

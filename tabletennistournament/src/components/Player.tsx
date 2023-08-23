@@ -31,8 +31,8 @@ function Player(props: Player) {
     : isSentPlayer
     ? "green.200"
     : props.isTopPlayer
-    ? "#A0D8B3"
-    : "#F5F0BB";
+    ? "#FFFFFF"
+    : "#FFFFFF";
 
   const hoverStyle = isGroupPlayer ? {} : { bg: "blue.200", cursor: "pointer" };
 
@@ -44,6 +44,7 @@ function Player(props: Player) {
       borderRadius="md"
       _hover={hoverStyle}
       bg={backgroundColor}
+      shadow={isGroupPlayer ? "none" : "md"}
     >
       {props.score !== undefined && (
         <Flex alignItems="center">

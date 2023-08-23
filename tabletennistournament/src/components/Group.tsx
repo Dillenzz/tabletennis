@@ -18,13 +18,13 @@ function Group(props: Group) {
   const { name, players, seededPlayersIds } = props;
 
   return (
-    <Box bg="green.100" width="100%" height=""  rounded="lg">
+    <Box border="1px" shadow={"md"} width="100%"   rounded="lg">
       <Center>
         <Text style={{ fontWeight: "bold" }}>Group {name}</Text>
       </Center>
 
       {players && (
-        <Box>
+        <Box shadow={"md"}>
           {players?.map((player) => {
             if (seededPlayersIds?.includes(player.id)) {
               return (

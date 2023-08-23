@@ -751,7 +751,8 @@ function App() {
   }
   // save tournament to firebase
   async function saveTournament() {
-    console.log("saveTournament", currentClass?.classId);
+    console.log("saveTournament BEFORE SEND", currentClass?.classId);
+
     if (currentClass) {
       const newClass: Class = {
         ...currentClass,
@@ -768,12 +769,29 @@ function App() {
         uid: uid,
       };
 
-      await writeClass(newClass);
-      setCurrentClass(newClass);
+      const classIdAfterSend = await writeClass(newClass);
+
+      const newClassAfterSend: Class = {
+        ...currentClass,
+        classId: classIdAfterSend,
+        players: currentClass.players ? currentClass.players : [],
+        seededPlayersIds: currentClass.seededPlayersIds
+          ? currentClass.seededPlayersIds
+          : [],
+        started: false,
+        startBracket: false,
+
+        groups: currentClass.groups ? currentClass.groups : [],
+        matches: currentClass.matches ? currentClass.matches : [],
+        uid: uid,
+      };
+
+
+      setCurrentClass(newClassAfterSend);
 
       setTournamentClasses(
         tournamentClasses.map((c) =>
-          c.classId === newClass.classId ? newClass : c
+          c.classId === newClassAfterSend.classId ? newClassAfterSend : c
         )
       );
     }
@@ -1525,7 +1543,7 @@ function App() {
           console.log(remainingSet);
           if (
             remainingSet &&
-            remainingSet.player1Score !== 0 &&
+            remainingSet.player1Score !== 0 ||
             remainingSet.player2Score !== 0
           ) {
             throw new Error(
@@ -2311,6 +2329,7 @@ function App() {
                                     marginInline={6}
                                   >
                                     <DeleteIcon
+
                                       color="black"
                                       boxSize={4}
                                       _hover={{ cursor: "pointer" }}
@@ -2860,7 +2879,7 @@ function App() {
                     </Modal>
                   </FormControl>
 
-                  <Box  box-shadow={"xl"} borderRadius={"10px"} p={4}>
+                  <Box p={4}  box-shadow={"xl"} borderRadius={"10px"} >
                     <Flex
                       
                       borderRadius={"10px"}
@@ -2882,8 +2901,7 @@ function App() {
                                _hover={{ bg: "#FAF1E4" }}
                               bg="white"
                               shadow={"xl"}
-                              m={2}
-                              p={4}
+                             
                               borderRadius="md"
                               onClick={() => handleGoToClassInfo(myClass)}
                               display="flex"
@@ -3009,7 +3027,7 @@ function App() {
                       <ModalHeader>Add player</ModalHeader>
                       <ModalCloseButton />
                       <ModalBody>
-                        <Text mb="8px">Name {searchName}</Text>
+                        <Text fontWeight={"bold"} mb="8px">Name {searchName}</Text>
                         <Input
                           value={searchName}
                           onChange={handleNameSearch}
@@ -3017,7 +3035,7 @@ function App() {
                           borderRadius="md"
                           size="sm"
                         />
-                        <Text mb="8px">Club {searchClub}</Text>
+                        <Text fontWeight={"bold"} mb="8px">Club {searchClub}</Text>
                         <Flex>
                           <Input
                             borderRadius="md"
@@ -3174,7 +3192,8 @@ function App() {
                         size="lg"
                         fontSize="30"
                         m="2"
-                        bg="#C9F4AA"
+                        bg={"#FAF1E4"}
+                        borderRadius={"20px"}
                         onClick={() => handleStartClass()}
                       >
                         Start Class
@@ -3185,6 +3204,7 @@ function App() {
                       onClick={() => alert("Please draw class first")}
                       size="lg"
                       fontSize="30"
+                      borderRadius={"20px"}
                       bg="#FEA1A1"
                       m="2"
                     >
@@ -3215,6 +3235,7 @@ function App() {
                             <Box p={[0, 0.5]} key={player.id}>
                               <Flex>
                                 <IconButton
+                                  m={1}
                                   aria-label="Open chat"
                                   icon={<DeleteIcon />}
                                   colorScheme="red"
@@ -3299,9 +3320,11 @@ function App() {
                         m="2"
                         fontSize={"30"}
                         size={"lg"}
-                        textColor={"whiteAlpha.900"}
+                        
+                        borderRadius={"20px"}
                         // Color scheme for more colors use bg
-                        bg={"green.300"}
+                        bg={"#FAF1E4"}
+                        shadow={"md"}
                         onClick={() => {
                           setShowGroups(true);
                           setShowGroupResult(false);
@@ -3317,8 +3340,8 @@ function App() {
                         onClose={onCloseScoreModal}
                       >
                         <ModalOverlay />
-                        <ModalContent borderRadius={4} bg={"beige"}>
-                          <ModalHeader fontSize="20">
+                        <ModalContent bg={"#FAF1E4"} borderRadius={20} >
+                          <ModalHeader borderRadius={"20"} fontSize="20">
                             <Center>
                               <Text fontWeight={"bold"}>
                                 {" "}
@@ -3338,9 +3361,10 @@ function App() {
                                       maxLength={5}
                                       fontWeight="bold"
                                       id="matchid"
+                                      shadow={"md"}
                                       size="sm"
                                       width="40%"
-                                      borderRadius="4"
+                                      borderRadius="20"
                                       placeholder="Match ID"
                                       value={matchId}
                                       onChange={(e) =>
@@ -3350,8 +3374,9 @@ function App() {
                                   </Center>
                                 </Flex>
                                 <Button
-                                  bg="green.300"
-                                  textColor="white"
+                                  borderRadius={"20px"}
+                                  bg={"white"}
+                                  shadow={"md"}
                                   m="2"
                                   onClick={() => {
                                     console.log(matchId);
@@ -3448,7 +3473,7 @@ function App() {
                                                 </Text>
                                               </Box>
                                             </Box>
-                                            <Text m={2} fontSize="12">
+                                            <Text m={2} fontSize="14">
                                               Match {currentMatch.matchId}
                                             </Text>
                                             <Box flex="1">
@@ -3485,6 +3510,7 @@ function App() {
                                   <Flex>
                                     <Center>
                                       <Input
+                                        
                                         m={1}
                                         ref={inputSetRef}
                                         value={set1Player1}
@@ -3498,11 +3524,12 @@ function App() {
                                             setSet1Player1(0);
                                           }
                                         }}
+                                        borderRadius="80px"
                                         maxLength={2}
                                         bg="white"
                                         id="set1player1"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        
                                         size="sm"
                                         fontWeight={"bold"}
                                       />
@@ -3528,7 +3555,7 @@ function App() {
                                         bg={"white"}
                                         id="set1player2"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                     </Center>
@@ -3555,7 +3582,7 @@ function App() {
                                         bg={"white"}
                                         id="set2player1"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                       <Text fontSize={"30"} m={1}>
@@ -3581,7 +3608,7 @@ function App() {
                                         bg={"white"}
                                         id="set2player2"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                     </Center>
@@ -3608,7 +3635,7 @@ function App() {
                                         bg={"white"}
                                         id="set3player1"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                       <Text fontSize={"30"} m={1}>
@@ -3633,7 +3660,7 @@ function App() {
                                         bg={"white"}
                                         id="set3player2"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                     </Center>
@@ -3665,7 +3692,7 @@ function App() {
                                         bg={"white"}
                                         id="set4player1"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                       <Text fontSize={"30"} m={1}>
@@ -3690,7 +3717,7 @@ function App() {
                                         bg={"white"}
                                         id="set4player2"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                     </Center>
@@ -3717,7 +3744,7 @@ function App() {
                                         bg={"white"}
                                         id="set5player1"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                       <Text fontSize={"30"} m={1}>
@@ -3742,7 +3769,7 @@ function App() {
                                         bg={"white"}
                                         id="set5player2"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                     </Center>
@@ -3774,7 +3801,7 @@ function App() {
                                         bg={"white"}
                                         id="set6player1"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
 
@@ -3801,7 +3828,7 @@ function App() {
                                         bg={"white"}
                                         id="set6player2"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                     </Center>
@@ -3828,7 +3855,7 @@ function App() {
                                         bg={"white"}
                                         id="set7player1"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
 
@@ -3836,7 +3863,7 @@ function App() {
                                         {" "}
                                         -{" "}
                                       </Text>
-
+                                      
                                       <Input
                                         m={1}
                                         value={set7Player2}
@@ -3855,7 +3882,7 @@ function App() {
                                         bg={"white"}
                                         id="set7player2"
                                         maxWidth={"15%"}
-                                        borderRadius={4}
+                                        borderRadius="80px"
                                         size="sm"
                                       />
                                     </Center>
@@ -3872,8 +3899,10 @@ function App() {
                                 <Popover key={popoverKey}>
                                   <PopoverTrigger>
                                     <Button
-                                      bg={"orange.200"}
-                                      textColor="grey"
+                                      bg={"white"}
+                                      shadow={"md"}
+                                      borderRadius={"20px"}
+                                      
                                       margin={"4"}
                                       onClick={() =>
                                         handleCheckWinner(currentClass.bo!)
@@ -3894,7 +3923,7 @@ function App() {
                                     </PopoverContent>
                                   )}
                                   {checkWinner === 1 && (
-                                    <PopoverContent bg={"#F5F0BB"}>
+                                    <PopoverContent borderRadius={"20px"} bg={"beige"}>
                                       <PopoverArrow />
                                       <PopoverCloseButton />
                                       <PopoverBody
@@ -3921,7 +3950,9 @@ function App() {
                                             );
                                           setUnreportedMatches(updatedMatches);
                                         }}
-                                        bg={"#A0D8B3"}
+                                        borderRadius={"20px"}
+                                        bg={"green.300"}
+                                        textColor="white"
                                       >
                                         Correct
                                       </Button>
@@ -3942,7 +3973,9 @@ function App() {
                                     }
                                   }}
                                   bg="green.300"
+                                  borderRadius={"20px"}
                                   textColor="white"
+                                  shadow={"md"}
                                 >
                                   Done
                                 </Button>
@@ -3956,8 +3989,10 @@ function App() {
                         m={2}
                         size="lg"
                         fontSize={"30"}
-                        textColor={"white"}
-                        bg={"orange.300"}
+                        
+                        borderRadius={"20px"}
+                        bg={"#FAF1E4"}
+                        shadow={"md"}
                         onClick={() => {
                           setShowGroupResult(true);
                           setShowUnreportedMatches(false);
@@ -3970,22 +4005,27 @@ function App() {
                       <Button
                         fontSize={"30"}
                         m={2}
+                        borderRadius={"20px"}
                         size={"lg"}
-                        textColor={"whiteAlpha.900"}
+                       
                         onClick={() => {
                           onOpenScoreModal();
                         }}
-                        bg={"blue.200"}
+                        bg={"#FAF1E4"}
+                        shadow={"md"}
                       >
                         Report result
+
                       </Button>
 
                       <Button
                         m={2}
+                        borderRadius={"20px"}
                         fontSize={"30"}
                         size={"lg"}
-                        textColor={"whiteAlpha.900"}
-                        bg={"orange.300"}
+                        shadow={"md"}
+                        
+                        bg={"#FAF1E4"}
                         onClick={() => {
                           handleCheckGroupStatus();
                           console.log(unreportedMatches);
@@ -4005,8 +4045,9 @@ function App() {
                           // justifyContent={"flex-end"}
                           size="lg"
                           fontSize="30"
-                          textColor={"whiteAlpha.900"}
+                          borderRadius={"20px"}
                           bg={"green.300"}
+                          shadow={"md"}
                           m="2"
                         >
                           Start bracket
@@ -4025,7 +4066,8 @@ function App() {
                           // justifyContent={"flex-end"}
                           size="lg"
                           fontSize="30"
-                          textColor={"whiteAlpha.900"}
+                          shadow={"md"}
+                          borderRadius={"20px"}
                           bg={"red.300"}
                           m="2"
                         >
@@ -4057,6 +4099,8 @@ function App() {
                           fontWeight={"bold"}
                           placeholder="Search for MatchID or Name"
                           width={"40%"}
+                          borderRadius={"20px"}
+                          border={"1px solid black"}
                           size="md"
                           m="2"
                         ></Input>
@@ -4116,7 +4160,7 @@ function App() {
                         blockScrollOnMount={false}
                       >
                         <ModalOverlay opacity={0.6} bg={"#"} />
-                        <ModalContent bg="beige">
+                        <ModalContent >
                           {currentPlayer && currentPlayer.name && (
                             <ModalHeader>
                               Matches for {currentPlayer.name}
@@ -4162,6 +4206,7 @@ function App() {
                           <ModalFooter>
                             <Button
                               colorScheme="blue"
+                              borderRadius={"20px"}
                               mr={3}
                               onClick={onCloseMatchesModal}
                             >

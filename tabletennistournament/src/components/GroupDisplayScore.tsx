@@ -19,13 +19,15 @@ function GroupDisplayScore(props: GroupDisplayScore) {
   const { groupName, players, seededPlayersIds } = props;
 
   return (
-    <Box    width="100%"   bg="#F5F0BB" rounded="lg">
-      <Center>
-        <Text fontSize={20} style={{ fontWeight: "bold" }}>Group {groupName}</Text>
+    <Box>
+    <Center>
+        <Text p={2}   borderRadius={"10"}  fontSize={20} style={{ fontWeight: "bold" }}>Group {groupName}</Text>
       </Center>
+    <Box padding={2} shadow={"md"}    width="100%"   rounded="lg">
+      
 
       {players && (
-        <Box>
+        <Box m={2}>
           {players?.map((player) => {
             if (seededPlayersIds?.includes(player.id)) {
               return (
@@ -54,6 +56,7 @@ function GroupDisplayScore(props: GroupDisplayScore) {
         </Box>
       )}
        
+    </Box>
     </Box>
   );
 }

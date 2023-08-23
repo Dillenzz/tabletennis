@@ -27,7 +27,7 @@ interface   Match {
 function Match(props: Match){
     return (
       
-      <Box width={"100%"} p="1" _hover={{ cursor:"pointer", bg: "green.300" }} bg="#F7E1AE" rounded="lg">
+      <Box shadow={"md"} width={"100%"} p="1" _hover={{ cursor:"pointer", bg: "green.200" }} rounded="lg">
         <Center>
         <Text fontSize="18">#{props.matchId} {props.player1?.name} - {props.player2?.name}</Text>
         </Center>

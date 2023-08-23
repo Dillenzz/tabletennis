@@ -20,7 +20,7 @@ interface Player {
 function SeededPlayer(props: Player) {
   const isGroupPlayer = props.css === "group-player";
 
-  const backgroundColor = isGroupPlayer ? "transparent" : "#F5F0BB";
+  const backgroundColor = isGroupPlayer ? "transparent" : "#FFFFFF";
   const hoverStyle = isGroupPlayer
     ? {}
     : { bg: "green.100", cursor: "pointer" };
@@ -33,6 +33,7 @@ function SeededPlayer(props: Player) {
       _hover={hoverStyle}
       bg={backgroundColor}
       rounded="lg"
+      shadow={isGroupPlayer ? "none" : "md"}
     >
       <Text fontWeight="bold">
         {props.name} - {props.club} ({props.class}) {props.points}
