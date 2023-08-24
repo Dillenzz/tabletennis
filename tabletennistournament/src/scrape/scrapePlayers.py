@@ -55,11 +55,11 @@ def scrapePlayers():
             }
             players.append(player)
 
-    with open('players.json', 'w') as f:
+    with open('players.json', 'w', encoding="utf-8") as f:
         json.dump(players, f, indent=2)
 
     # Write results to CSV file
-    with open('players.csv', 'w', newline='') as f:
+    with open('players.csv', 'w', newline='',  encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["WorldRanking", "National Ranking", "Past Ranking", "Name", "Birth Year", "Club", "Points", "Points Change", "Gender"])
         for player in players:

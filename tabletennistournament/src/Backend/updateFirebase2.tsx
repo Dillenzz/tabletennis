@@ -156,23 +156,44 @@ async function createClass(
 }
 
 async function updateClass(classRef: any, classs: Class): Promise<void> {
-  console.log(classs, "inside updateClass")
-  await update(classRef, {
+  console.log(classs, "inside updateClass");
+  console.log(classRef, "inside updateClass");
+
+  // Handle default values for intraSetScore and intraPointScore
+  if (classs.groups) {
+    classs.groups.forEach(group => {
+      if (group.players) {
+        group.players.forEach(player => {
+          if (player.intraSetScore === undefined) {
+            player.intraSetScore = "0/0";
+          }
+          if (player.intraPointScore === undefined) {
+            player.intraPointScore = "0/0";
+          }
+        });
+      }
+    });
+  }
+
+  // Create the updatedData object including all properties
+  const updatedData = {
     name: classs.name,
     format: classs.format,
     numberInGroup: classs.numberInGroup,
     threeOrFive: classs.threeOrFive,
-    players: classs.players? classs.players : [],
-    seededPlayersIds: classs.seededPlayersIds? classs.seededPlayersIds : [],
-    groups: classs.groups? classs.groups : [],
+    players: classs.players ? classs.players : [],
+    seededPlayersIds: classs.seededPlayersIds ? classs.seededPlayersIds : [],
+    groups: classs.groups ? classs.groups : [],
     started: classs.started,
-    matches: classs.matches ? classs.matches : [],
     classDrawn: classs.classDrawn,
     startBracket: classs.startBracket,
     bo: classs.bo,
     public: classs.public,
-    advancingPlayers: classs.advancingPlayers? classs.advancingPlayers : [],
-  });
+    advancingPlayers: classs.advancingPlayers ? classs.advancingPlayers : [],
+  };
+
+  // Perform the update using the modified and filtered data
+  await update(classRef, updatedData);
 }
 
 export async function loadTournamentClasses(

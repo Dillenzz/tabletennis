@@ -1,8 +1,7 @@
 import { useState, ChangeEvent, useRef, useEffect } from "react";
 import realPlayers from "./scrape/players_with_ids.json";
-import logo from "./assets/ft11.svg";
+//import logo from "./assets/ft11.svg";
 import calculateGroupAdvancement from "./functions/CalculatedGroupadvancement";
-
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
@@ -35,6 +34,7 @@ import SeededPlayer from "./components/SeededPlayer";
 import Match from "./components/Match";
 import Group from "./components/Group";
 import Class from "./components/Class";
+import PlayerRanking from "./components/PlayerRanking";
 
 import DisplayMatchScore from "./components/DisplayMatchScore";
 
@@ -84,13 +84,10 @@ import {
   PopoverCloseButton,
   Tooltip,
   Spinner,
+  
 } from "@chakra-ui/react";
 
-import {
- 
-  DeleteIcon,
-  EditIcon,
-} from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
 
 function App() {
@@ -215,6 +212,11 @@ function App() {
   const [displayedPlayersFrom, setDisplayedPlayersFrom] = useState(0);
   const [displayedPlayersTo, setDisplayedPlayersTo] = useState(10);
 
+  const [searchAge, setSearchAge] = useState("");
+  const [searchGender, setSearchGender] = useState("female");
+  const [surnameSearch, setSearchSurname] = useState("");
+  const [firstNameSearch, setSearchFirstName] = useState("");
+
   // define set score variables
 
   const [matchId, setMatchId] = useState("");
@@ -284,6 +286,8 @@ function App() {
     useState(false);
   // State for when groups are done
 
+  const [showRanking, setShowRanking] = useState(false);
+
   // save or update the tournament to Firebase
 
   useEffect(() => {
@@ -325,7 +329,6 @@ function App() {
   const createTournament = () => {
     setShowStartMenu(true);
     setShowCreateTournament(false);
-   
 
     const newTournament: Tournament = {
       uid: uid,
@@ -448,6 +451,23 @@ function App() {
     setSearchName(event.target.value);
   };
 
+  const handleFirstNameSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchFirstName(event.target.value);
+  };
+
+  const handleSurnameSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchSurname(event.target.value);
+  };
+
+  const handleAgeSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchAge(event.target.value);
+  };
+
+  const handleGenderSearch = (value: string) => {
+
+    setSearchGender(value);
+  };
+
   const handleClubSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchClub(event.target.value);
   };
@@ -554,6 +574,7 @@ function App() {
     setShowTournamentOverview(false);
     setShowGroupsResultsAndUnreportedMatches(false);
     setEditTournament(false);
+    setShowRanking(false);
 
     setShowGroupResult(false);
     setShowGroups(false);
@@ -679,6 +700,30 @@ function App() {
     return nameMatch && clubMatch;
   });
 
+
+  const filteredPlayersRanking = realPlayers.filter((player) => {
+    const lastNameRanking = player.lastName.toLowerCase().includes(surnameSearch.toLowerCase());
+    const clubRanking = player.club.toLowerCase().includes(searchClub.toLowerCase());
+    const firstNameRanking = player.firstName.toLowerCase().includes(firstNameSearch.toLowerCase());
+  
+    let ageRanking = true;
+    if (searchAge) {
+      const currentYear = new Date().getFullYear();
+      ageRanking = currentYear - parseInt(player.birthYear) >= parseInt(searchAge);
+      console.log(ageRanking)
+    }
+  
+    // Assuming you have a gender filter as well
+    let genderRanking = true;
+  if (searchGender !== null) {
+    genderRanking = player.gender === searchGender;
+  }
+
+    
+    return lastNameRanking && clubRanking && firstNameRanking && ageRanking && genderRanking;
+  });
+  
+
   const filteredMatches = unreportedMatches.filter((match) => {
     const namePlayer1 = match
       .player1!.name!.toLowerCase()
@@ -718,7 +763,7 @@ function App() {
     setShowMyTournament(false);
     setShowClassInfo(false);
     setShowTournamentButtons(false);
-    
+
     const newTournamentClasses = await loadTournamentClasses(
       tournament.tournamentId!
     );
@@ -786,7 +831,6 @@ function App() {
         uid: uid,
       };
 
-
       setCurrentClass(newClassAfterSend);
 
       setTournamentClasses(
@@ -852,6 +896,11 @@ function App() {
         )
       );
     }
+  }
+
+  function handleShowRanking() {
+    setShowRanking(true);
+    setShowStartMenu(false);
   }
 
   // sets states to display the drawn groups
@@ -1542,8 +1591,7 @@ function App() {
           const remainingSet = sets[j];
           console.log(remainingSet);
           if (
-            remainingSet &&
-            remainingSet.player1Score !== 0 ||
+            (remainingSet && remainingSet.player1Score !== 0) ||
             remainingSet.player2Score !== 0
           ) {
             throw new Error(
@@ -2019,10 +2067,17 @@ function App() {
         <ChakraProvider>
           <Flex direction="column" align="center">
             <Center>
-              <Box shadow={"md"} border={"1px"} borderRadius={"40px"} m={2}>
+              <Box
+                p={"2"}
+                bg="#FAF1E4"
+                shadow={"md"}
+                border={"1px"}
+                borderRadius={"40px"}
+                m={2}
+              >
                 <Box>
                   <Center>
-                    <img src={logo} alt="SVG Image" style={{ width: "5%" }} />
+                    {/*<img src={logo} alt="SVG Image" style={{ width: "5%" }} /> */}
                     {/* Logo positioned in the top-left corner */}
                     <Box display="flex" alignItems="center">
                       <Tooltip
@@ -2033,8 +2088,8 @@ function App() {
                       >
                         <Box
                           onClick={() => handlegoToHome()}
-                          borderRadius={"4px"}
-                          _hover={{ bg: "#F5F5F5", cursor: "pointer" }}
+                          borderRadius={"80px"}
+                          _hover={{ bg: "#B9B4C7", cursor: "pointer" }}
                           p={4}
                           marginInline={"5px"}
                         >
@@ -2056,9 +2111,9 @@ function App() {
                             aria-aria-label="Sign out"
                           >
                             <Box
-                              borderRadius={"4px"}
+                              borderRadius={"30px"}
                               marginInline={"5px"}
-                              _hover={{ bg: "#F5F5F5", cursor: "pointer" }}
+                              _hover={{ bg: "#B9B4C7", cursor: "pointer" }}
                               p={4}
                               onClick={() =>
                                 alert("This feature is not yet implemented")
@@ -2078,9 +2133,9 @@ function App() {
                             aria-label="Sign out"
                           >
                             <Box
-                              borderRadius={"4px"}
+                              borderRadius={"80px"}
                               marginInline={"5px"}
-                              _hover={{ bg: "#F5F5F5", cursor: "pointer" }}
+                              _hover={{ bg: "#B9B4C7", cursor: "pointer" }}
                               p={4}
                             >
                               <FontAwesomeIcon
@@ -2110,14 +2165,20 @@ function App() {
                             label="Classes"
                             aria-label="Classes"
                           >
-                          <Box _hover={{ bg: "#F5F5F5", cursor: "pointer" }} p={4} onClick={() =>
-                            handleTournamentOverview(currentTournament)
-                          }
-                        >
-                            <FontAwesomeIcon color="#D8D9DA"
-                                size={"2xl"} icon={faCalendarDays}></FontAwesomeIcon>
-                          
-                          </Box>
+                            <Box
+                              borderRadius={"40px"}
+                              _hover={{ bg: "#B9B4C7", cursor: "pointer" }}
+                              p={4}
+                              onClick={() =>
+                                handleTournamentOverview(currentTournament)
+                              }
+                            >
+                              <FontAwesomeIcon
+                                color="#D8D9DA"
+                                size={"2xl"}
+                                icon={faCalendarDays}
+                              ></FontAwesomeIcon>
+                            </Box>
                           </Tooltip>
                         )}
                     </Box>
@@ -2156,7 +2217,7 @@ function App() {
                     <Flex direction={"column"}>
                       <Button
                         m={2}
-                        bg={"white"}
+                        bg="#FAF1E4"
                         border={"1px solid black"}
                         textColor="black"
                         borderRadius={20}
@@ -2168,7 +2229,7 @@ function App() {
 
                       <Button
                         m={2}
-                        bg={"white"}
+                        bg="#FAF1E4"
                         border={"1px solid black"}
                         borderRadius={20}
                         _hover={{ bg: "green.200", border: "1px solid black" }}
@@ -2186,7 +2247,7 @@ function App() {
                       borderRadius={20}
                       _hover={{ bg: "green.200", border: "1px solid black" }}
                       onClick={() => handleShowOpenTournaments()}
-                      bg={"white"}
+                      bg="#FAF1E4"
                     >
                       Open tournaments
                     </Button>
@@ -2195,7 +2256,8 @@ function App() {
                       border={"1px solid black"}
                       borderRadius={20}
                       _hover={{ bg: "green.200", border: "1px solid black" }}
-                      bg={"white"}
+                      bg="#FAF1E4"
+                      onClick={() => handleShowRanking()}
                     >
                       Ranking
                     </Button>
@@ -2221,198 +2283,283 @@ function App() {
               </Box>
             )}
 
-            {showMyTournaments && (
-              <Box >
-              <Center>
-              <Heading m="8px"> My Tournaments</Heading>
-            </Center>
-              <Box maxW={"100vw"} shadow="md" >
-                
-                <Box>
-                  <Box
-                    p={"10px"}
-                    borderRadius={"5px"}
-                    boxShadow={"xl"}
-                    maxWidth="100vw"
-                  >
-                    {myTournaments
-                      .filter((tournament) => tournament.uid === uid)
-                      .sort(
-                        (a, b) =>
-                          new Date(b.dateFrom!).getTime() -
-                          new Date(a.dateFrom!).getTime()
-                      )
+            {showRanking && (
+              <Box m={4}>
+                <Center>
+                  <Flex>
+                    <Box m={2}>
+                      <Text fontWeight="bold">Name</Text>
+                      <Input
+                        value={firstNameSearch}
+                        onChange={handleFirstNameSearch}
+                        placeholder=""
+                        borderRadius="20px"
+                        size="sm"
+                      />
+                    </Box>
+                    <Box m={2}>
+                      <Text fontWeight="bold">Surname</Text>
+                      <Input
+                        borderRadius="20px"
+                        value={surnameSearch}
+                        onChange={handleSurnameSearch}
+                        placeholder=""
+                        size="sm"
+                      />
+                    </Box>
 
-                      .map((tournament, index) => {
-                        return (
-                          <Box  
-                            _hover={{ bg: "#FAF1E4", cursor: "pointer" }}
-                            p={"8px"}
-                            m={"8px"}
-                            key={`${tournament.tournamentId}-${index}`}
-                            shadow={"md"}
-                            borderRadius={"5px"}
-                          >
-                            <Box
-                              onClick={() => {
-                                handleTournamentOverview(tournament),
-                                  setCurrentTournament(tournament);
-                              }}
-                              _hover={{  cursor: "pointer" }}
-                              rounded="lg"
-                              fontWeight={"bold"}
-                              bg=""
-                              width={"100%"}
-                              minWidth={`${maxWidth}px`}
-                              p={2}
-                            >
-                              <Center>
-                                <Tournament
-                                  name={tournament.name}
-                                  dateFrom={tournament.dateFrom}
-                                  dateTo={tournament.dateTo}
-                                  location={tournament.location}
-                                  club={tournament.club}
-                                />
-                              </Center>
-                            </Box>
+                    <Box m={2}>
+                      <Text fontWeight="bold">Club</Text>
+                      <Input
+                        borderRadius="20px"
+                        value={searchClub}
+                        onChange={handleClubSearch}
+                        placeholder=""
+                        size="sm"
+                      />
+                    </Box>
+                    <Box m={2}>
+                      <Text fontWeight="bold">Age</Text>
+                      <Input value={searchAge} onChange={handleAgeSearch} borderRadius="20px" size="sm" />
+                    
+                    </Box>
+                    <Box>
+                      
+                    <RadioGroup
+                          onChange={handleGenderSearch}
+                          value={searchGender}
+                          defaultValue="female"
+                        >
+                          <Stack spacing="24px">
+                            <Radio value="female">Female</Radio>
+                            <Radio value="male">Male</Radio>
+                          </Stack>
+                        </RadioGroup>
+                      
+                    </Box>
+                  </Flex>
+                </Center>
 
-                            <Flex borderRadius={"10px"} direction={"column"}>
-                              <Center>
-                                <Tooltip
-                                  borderRadius={"4px"}
-                                  marginInline={"10px"}
-                                  label={`Edit Tournament ${tournament.name}`}
-                                  aria-label="edit-tooltip"
-                                >
-                                  <Box
-                                    onClick={() =>
-                                      handleEditTournament(tournament)
-                                    }
-                                    
-                                    borderRadius={"4px"}
-                                    p={"6px"}
-                                    _hover={{
-                                      
-                                      cursor: "pointer",
-                                    }}
-                                    marginInline={6}
-                                  >
-                                    <EditIcon
-                                      color="black"
-                                      boxSize={4}
-                                      _hover={{ cursor: "pointer" }}
-                                      aria-label="Edit Tournament"
-                                    />
-                                  </Box>
-                                </Tooltip>
-
-                                <Tooltip
-                                  label={`Delete Tournament ${tournament.name}`}
-                                  aria-label="delete-tooltip"
-                                  borderRadius={"4px"}
-                                >
-                                  <Box
-                                    onClick={() => {
-                                      setCurrentTournament(tournament);
-                                      onOpenDeleteTournamentModal();
-                                      setShowDeleteTournamentConfirmation(true);
-                                    }}
-                                    
-                                    borderRadius={"4px"}
-                                    paddingBlock={"8px"}
-                                    p={"6px"}
-                                    _hover={{
-                                      
-                                      cursor: "pointer",
-                                    }}
-                                    marginInline={6}
-                                  >
-                                    <DeleteIcon
-
-                                      color="black"
-                                      boxSize={4}
-                                      _hover={{ cursor: "pointer" }}
-                                      aria-label="Delete Tournament"
-                                    />
-                                  </Box>
-                                </Tooltip>
-                              </Center>
-                            </Flex>
-                          </Box>
-                        );
-                      })}
-                    {showDeleteTournamentConfirmation && currentTournament && (
-                      <Modal
-                        isOpen={isDeleteTournamentModal}
-                        onClose={onCloseDeleteTournamentModal}
-                      >
-                        <ModalOverlay />
-                        <ModalContent>
-                          <ModalHeader textColor="red.300">
-                            Delete Tournament {currentTournament.name}
-                          </ModalHeader>
-                          <ModalCloseButton />
-                          <ModalBody>
-                            <Input
-                              type="text"
-                              value={deleteInput}
-                              onChange={(e) => setDeleteInput(e.target.value)}
-                              placeholder={`Type "${currentTournament.name}" to confirm deletion`}
-                            />
-                          </ModalBody>
-                          <ModalFooter>
-                            <Button
-                              bg="red.300"
-                              textColor={"white"}
-                              borderRadius={"20px"}
-                              onClick={() => {
-                                if (deleteInput === currentTournament.name) {
-                                  handleDeleteTournament(currentTournament);
-                                  handleDeleteClasses(currentTournament);
-                                } else {
-                                  alert(
-                                    "Tournament name does not match. Deletion aborted."
-                                  );
-                                }
-                                setDeleteInput("");
-                                setCurrentTournament(undefined);
-                                onCloseDeleteTournamentModal();
-                              }}
-                            >
-                              Confirm deletion
-                            </Button>
-                          </ModalFooter>
-                        </ModalContent>
-                      </Modal>
-                    )}
-                    {loading && (
-                      <Center>
-                        <Text>Tournaments are loading, please be patient</Text>
-                        <Spinner marginLeft={2} size="xl" />
-                      </Center>
-                    )}
-                    {noTournaments && (
-                      <Box>
-                        <Text m="4" fontSize="40">
-                          You don't have any tournaments! Create one!
-                        </Text>
-                        <Center>
-                          <Button
-                            onClick={() => {
-                              resetStates();
-                              handleCreateTournament();
-                            }}
-                            bg="green.200"
-                          >
-                            New tournament
-                          </Button>
-                        </Center>
+                <Box  >
+                  {filteredPlayersRanking.slice(0, 100).map((player, index) => {
+                    return (
+                      <Box  width="100%" mt={1} key={player.id}>
+                        <PlayerRanking
+                          nationalRanking={player.nationalRanking}
+                          firstName={player.firstName}
+                          lastName={player.lastName}
+                          class={player.class}
+                          id={player.id}
+                          name={player.name}
+                          club={player.club}
+                          points={player.points}
+                          pointsChange={player.pointsChange}
+                          birthYear={player.birthYear}
+                          index={index}
+                        />
                       </Box>
-                    )}
-                  </Box>
+                    );
+                  })}
                 </Box>
               </Box>
+            )}
+
+            {showMyTournaments && (
+              <Box>
+                <Center>
+                  <Heading m="8px"> My Tournaments</Heading>
+                </Center>
+                <Box maxW={"100vw"} shadow="md">
+                  <Box>
+                    <Box
+                      p={"10px"}
+                      borderRadius={"5px"}
+                      boxShadow={"xl"}
+                      maxWidth="100vw"
+                    >
+                      {myTournaments
+                        .filter((tournament) => tournament.uid === uid)
+                        .sort(
+                          (a, b) =>
+                            new Date(b.dateFrom!).getTime() -
+                            new Date(a.dateFrom!).getTime()
+                        )
+
+                        .map((tournament, index) => {
+                          return (
+                            <Box
+                              _hover={{ bg: "green.200", cursor: "pointer" }}
+                              bg="#FAF1E4"
+                              p={"8px"}
+                              m={"8px"}
+                              key={`${tournament.tournamentId}-${index}`}
+                              shadow={"md"}
+                              borderRadius={"5px"}
+                            >
+                              <Box
+                                onClick={() => {
+                                  handleTournamentOverview(tournament),
+                                    setCurrentTournament(tournament);
+                                }}
+                                _hover={{ cursor: "pointer" }}
+                                rounded="lg"
+                                fontWeight={"bold"}
+                                bg=""
+                                width={"100%"}
+                                minWidth={`${maxWidth}px`}
+                                p={2}
+                              >
+                                <Center>
+                                  <Tournament
+                                    name={tournament.name}
+                                    dateFrom={tournament.dateFrom}
+                                    dateTo={tournament.dateTo}
+                                    location={tournament.location}
+                                    club={tournament.club}
+                                  />
+                                </Center>
+                              </Box>
+
+                              <Flex borderRadius={"10px"} direction={"column"}>
+                                <Center>
+                                  <Tooltip
+                                    borderRadius={"4px"}
+                                    marginInline={"10px"}
+                                    label={`Edit Tournament ${tournament.name}`}
+                                    aria-label="edit-tooltip"
+                                  >
+                                    <Box
+                                      onClick={() =>
+                                        handleEditTournament(tournament)
+                                      }
+                                      borderRadius={"4px"}
+                                      p={"6px"}
+                                      _hover={{
+                                        cursor: "pointer",
+                                      }}
+                                      marginInline={6}
+                                    >
+                                      <EditIcon
+                                        color="black"
+                                        boxSize={4}
+                                        _hover={{ cursor: "pointer" }}
+                                        aria-label="Edit Tournament"
+                                      />
+                                    </Box>
+                                  </Tooltip>
+
+                                  <Tooltip
+                                    label={`Delete Tournament ${tournament.name}`}
+                                    aria-label="delete-tooltip"
+                                    borderRadius={"4px"}
+                                  >
+                                    <Box
+                                      onClick={() => {
+                                        setCurrentTournament(tournament);
+                                        onOpenDeleteTournamentModal();
+                                        setShowDeleteTournamentConfirmation(
+                                          true
+                                        );
+                                      }}
+                                      borderRadius={"4px"}
+                                      paddingBlock={"8px"}
+                                      p={"6px"}
+                                      _hover={{
+                                        cursor: "pointer",
+                                      }}
+                                      marginInline={6}
+                                    >
+                                      <DeleteIcon
+                                        color="black"
+                                        boxSize={4}
+                                        _hover={{ cursor: "pointer" }}
+                                        aria-label="Delete Tournament"
+                                      />
+                                    </Box>
+                                  </Tooltip>
+                                </Center>
+                              </Flex>
+                            </Box>
+                          );
+                        })}
+                      {showDeleteTournamentConfirmation &&
+                        currentTournament && (
+                          <Modal
+                            isOpen={isDeleteTournamentModal}
+                            onClose={onCloseDeleteTournamentModal}
+                          >
+                            <ModalOverlay />
+                            <ModalContent>
+                              <ModalHeader textColor="red.300">
+                                Delete Tournament {currentTournament.name}
+                              </ModalHeader>
+                              <ModalCloseButton />
+                              <ModalBody>
+                                <Input
+                                  type="text"
+                                  value={deleteInput}
+                                  onChange={(e) =>
+                                    setDeleteInput(e.target.value)
+                                  }
+                                  placeholder={`Type "${currentTournament.name}" to confirm deletion`}
+                                />
+                              </ModalBody>
+                              <ModalFooter>
+                                <Button
+                                  bg="red.300"
+                                  textColor={"white"}
+                                  borderRadius={"20px"}
+                                  onClick={() => {
+                                    if (
+                                      deleteInput === currentTournament.name
+                                    ) {
+                                      handleDeleteTournament(currentTournament);
+                                      handleDeleteClasses(currentTournament);
+                                    } else {
+                                      alert(
+                                        "Tournament name does not match. Deletion aborted."
+                                      );
+                                    }
+                                    setDeleteInput("");
+                                    setCurrentTournament(undefined);
+                                    onCloseDeleteTournamentModal();
+                                  }}
+                                >
+                                  Confirm deletion
+                                </Button>
+                              </ModalFooter>
+                            </ModalContent>
+                          </Modal>
+                        )}
+                      {loading && (
+                        <Center>
+                          <Text>
+                            Tournaments are loading, please be patient
+                          </Text>
+                          <Spinner marginLeft={2} size="xl" />
+                        </Center>
+                      )}
+                      {noTournaments && (
+                        <Box>
+                          <Text m="4" fontSize="40">
+                            You don't have any tournaments! Create one!
+                          </Text>
+                          <Center>
+                            <Button
+                              onClick={() => {
+                                resetStates();
+                                handleCreateTournament();
+                              }}
+                              bg="#FAF1E4"
+                            >
+                              New tournament
+                            </Button>
+                          </Center>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                </Box>
               </Box>
             )}
 
@@ -2879,9 +3026,8 @@ function App() {
                     </Modal>
                   </FormControl>
 
-                  <Box p={4}  box-shadow={"xl"} borderRadius={"10px"} >
+                  <Box p={4} box-shadow={"xl"} borderRadius={"10px"}>
                     <Flex
-                      
                       borderRadius={"10px"}
                       display="flex"
                       flexWrap="wrap"
@@ -2891,17 +3037,16 @@ function App() {
                         .sort((a, b) => a.name!.localeCompare(b.name!))
                         .map((myClass: Class, index) => (
                           <Box
-                            
-                            
+                            p={4}
                             borderRadius={"5px"}
                             shadow={"xl"}
                             key={`${myClass.classId}-${index}`}
                           >
                             <Box
-                               _hover={{ bg: "#FAF1E4" }}
-                              bg="white"
+                              _hover={{ bg: "green.200", cursor: "pointer" }}
+                              bg="#FAF1E4"
                               shadow={"xl"}
-                             
+                              p="2"
                               borderRadius="md"
                               onClick={() => handleGoToClassInfo(myClass)}
                               display="flex"
@@ -3010,7 +3155,12 @@ function App() {
                   <Box>
                     {currentTournament && (
                       <Center>
-                        <Heading p={"20px"}  m={"8px"} size="lg" fontWeight={"bold"}>
+                        <Heading
+                          p={"20px"}
+                          m={"8px"}
+                          size="lg"
+                          fontWeight={"bold"}
+                        >
                           {currentTournament.name} -{" "}
                           {currentClass?.name ? currentClass.name : ""}
                         </Heading>
@@ -3027,7 +3177,9 @@ function App() {
                       <ModalHeader>Add player</ModalHeader>
                       <ModalCloseButton />
                       <ModalBody>
-                        <Text fontWeight={"bold"} mb="8px">Name {searchName}</Text>
+                        <Text fontWeight={"bold"} mb="8px">
+                          Name {searchName}
+                        </Text>
                         <Input
                           value={searchName}
                           onChange={handleNameSearch}
@@ -3035,7 +3187,9 @@ function App() {
                           borderRadius="md"
                           size="sm"
                         />
-                        <Text fontWeight={"bold"} mb="8px">Club {searchClub}</Text>
+                        <Text fontWeight={"bold"} mb="8px">
+                          Club {searchClub}
+                        </Text>
                         <Flex>
                           <Input
                             borderRadius="md"
@@ -3076,46 +3230,45 @@ function App() {
                         <ModalFooter>
                           <Center>
                             <Box _hover={{ cursor: "pointer" }} m="10px">
-                            <FontAwesomeIcon
-                              
-                              aria-label="Arrow Back"
-                              icon={faArrowLeft}
-                              
-                              color="black"
-                              onClick={() => {
-                                setDisplayedPlayersFrom(
-                                  displayedPlayersFrom - 10
-                                );
-                                setDisplayedPlayersTo(displayedPlayersTo - 10);
-                              }}
-                              size={"2xl"}
-                            />
+                              <FontAwesomeIcon
+                                aria-label="Arrow Back"
+                                icon={faArrowLeft}
+                                color="black"
+                                onClick={() => {
+                                  setDisplayedPlayersFrom(
+                                    displayedPlayersFrom - 10
+                                  );
+                                  setDisplayedPlayersTo(
+                                    displayedPlayersTo - 10
+                                  );
+                                }}
+                                size={"2xl"}
+                              />
                             </Box>
-                            
 
                             <Button
                               borderRadius={"20px"}
                               onClick={onCloseAddPlayersModal}
                               colorScheme="blue"
-                              
                             >
                               Done
                             </Button>
 
-                            <Box _hover={{ cursor: "pointer" }} m={"10px"} >
-                            <FontAwesomeIcon
-                              
-                              aria-label="Arrow Back"
-                              icon={faArrowRight}
-                              color="black"
-                              onClick={() => {
-                                setDisplayedPlayersFrom(
-                                  displayedPlayersFrom + 10
-                                );
-                                setDisplayedPlayersTo(displayedPlayersTo + 10);
-                              }}
-                              size={"2xl"}
-                            />
+                            <Box _hover={{ cursor: "pointer" }} m={"10px"}>
+                              <FontAwesomeIcon
+                                aria-label="Arrow Back"
+                                icon={faArrowRight}
+                                color="black"
+                                onClick={() => {
+                                  setDisplayedPlayersFrom(
+                                    displayedPlayersFrom + 10
+                                  );
+                                  setDisplayedPlayersTo(
+                                    displayedPlayersTo + 10
+                                  );
+                                }}
+                                size={"2xl"}
+                              />
                             </Box>
                           </Center>
                         </ModalFooter>
@@ -3193,6 +3346,7 @@ function App() {
                         fontSize="30"
                         m="2"
                         bg={"#FAF1E4"}
+                        _hover={{ bg: "green.200", border: "1px solid black" }}
                         borderRadius={"20px"}
                         onClick={() => handleStartClass()}
                       >
@@ -3320,7 +3474,6 @@ function App() {
                         m="2"
                         fontSize={"30"}
                         size={"lg"}
-                        
                         borderRadius={"20px"}
                         // Color scheme for more colors use bg
                         bg={"#FAF1E4"}
@@ -3340,7 +3493,7 @@ function App() {
                         onClose={onCloseScoreModal}
                       >
                         <ModalOverlay />
-                        <ModalContent bg={"#FAF1E4"} borderRadius={20} >
+                        <ModalContent bg={"#FAF1E4"} borderRadius={20}>
                           <ModalHeader borderRadius={"20"} fontSize="20">
                             <Center>
                               <Text fontWeight={"bold"}>
@@ -3510,7 +3663,6 @@ function App() {
                                   <Flex>
                                     <Center>
                                       <Input
-                                        
                                         m={1}
                                         ref={inputSetRef}
                                         value={set1Player1}
@@ -3529,7 +3681,6 @@ function App() {
                                         bg="white"
                                         id="set1player1"
                                         maxWidth={"15%"}
-                                        
                                         size="sm"
                                         fontWeight={"bold"}
                                       />
@@ -3863,7 +4014,7 @@ function App() {
                                         {" "}
                                         -{" "}
                                       </Text>
-                                      
+
                                       <Input
                                         m={1}
                                         value={set7Player2}
@@ -3902,7 +4053,6 @@ function App() {
                                       bg={"white"}
                                       shadow={"md"}
                                       borderRadius={"20px"}
-                                      
                                       margin={"4"}
                                       onClick={() =>
                                         handleCheckWinner(currentClass.bo!)
@@ -3923,7 +4073,10 @@ function App() {
                                     </PopoverContent>
                                   )}
                                   {checkWinner === 1 && (
-                                    <PopoverContent borderRadius={"20px"} bg={"beige"}>
+                                    <PopoverContent
+                                      borderRadius={"20px"}
+                                      bg={"beige"}
+                                    >
                                       <PopoverArrow />
                                       <PopoverCloseButton />
                                       <PopoverBody
@@ -3989,7 +4142,6 @@ function App() {
                         m={2}
                         size="lg"
                         fontSize={"30"}
-                        
                         borderRadius={"20px"}
                         bg={"#FAF1E4"}
                         shadow={"md"}
@@ -4007,7 +4159,6 @@ function App() {
                         m={2}
                         borderRadius={"20px"}
                         size={"lg"}
-                       
                         onClick={() => {
                           onOpenScoreModal();
                         }}
@@ -4015,7 +4166,6 @@ function App() {
                         shadow={"md"}
                       >
                         Report result
-
                       </Button>
 
                       <Button
@@ -4024,7 +4174,6 @@ function App() {
                         fontSize={"30"}
                         size={"lg"}
                         shadow={"md"}
-                        
                         bg={"#FAF1E4"}
                         onClick={() => {
                           handleCheckGroupStatus();
@@ -4160,7 +4309,7 @@ function App() {
                         blockScrollOnMount={false}
                       >
                         <ModalOverlay opacity={0.6} bg={"#"} />
-                        <ModalContent >
+                        <ModalContent>
                           {currentPlayer && currentPlayer.name && (
                             <ModalHeader>
                               Matches for {currentPlayer.name}

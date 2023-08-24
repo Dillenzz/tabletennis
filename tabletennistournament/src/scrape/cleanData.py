@@ -1,4 +1,5 @@
 import json
+import csv
 
 from scrapePlayers import scrapePlayers
 from removeComma import removeComma
@@ -57,6 +58,31 @@ def add_player_class(json_file_path, output_file_path):
 
 # Example usage
 
+def add_name_attributes(input_file, output_file):
+    with open(input_file, 'r', encoding='utf-8') as input_f:
+        data = json.load(input_f)
+
+    for item in data:
+        full_name = item["name"]
+        name_parts = full_name.split()
+
+        if len(name_parts) >= 2:
+            first_name = name_parts[-1]
+            last_name = " ".join(name_parts[:-1])
+        else:
+            first_name = name_parts[-1]
+            last_name = ""
+
+        item["firstName"] = first_name
+        item["lastName"] = last_name
+
+    with open(output_file, 'w', encoding='utf-8') as output_f:
+        json.dump(data, output_f, indent=2)
+
+
+
+
+
 
 def run_script():
     scrapePlayers()
@@ -65,5 +91,6 @@ def run_script():
     pointToNumber('./players_with_ids.json', './players_with_ids.json')
     add_player_class('./players_with_ids.json', './players_with_ids.json')
     addIntra()
+    add_name_attributes('./players_with_ids.json', './players_with_ids.json')
 
 run_script()

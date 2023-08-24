@@ -84,13 +84,13 @@ function checkIntraMatches(
 
   function resetIntraSetScores(players: Player[]) {
     for (const player of players) {
-      player.intraSetScore = undefined;
+      player.intraSetScore = "0/0";
     }
   }
 
   function resetIntraPointScores(players: Player[]) {
     for (const player of players) {
-      player.intraPointScore = undefined;
+      player.intraPointScore = "0/0";
     }
   }
 
@@ -439,8 +439,8 @@ function GroupResult(props: Group) {
         let playerOrder = checkIntraMatches(sameScore, matches, props.players!);
        // console.log("playerOrder", playerOrder)
         const intrasets = checkIntraSets(playerOrder, matches, props.players!);
-        if (intrasets.length >= 2) {
-       //   console.log("intrasetsFlat", intrasets)
+        if (intrasets.length >= 2 && intrasets.every(subArray => Array.isArray(subArray) && subArray.length === 1 && subArray[0] !== undefined)) {
+          console.log("intrasetsFlat", intrasets)
           const intraP = checkIntraPoints(playerOrder, matches, props.players!);
           if (intraP[0].length !== 1 || intraP[1].length !== 1) {
             //randomize position
@@ -525,10 +525,10 @@ function GroupResult(props: Group) {
               score={player.score}
               class={player.player!.class}
               isTopPlayer={topPlayers.includes(player)}
-              intraMatchScore={player.player!.intraMatchScore || 0}
+              intraMatchScore={player.player?.intraMatchScore || 0}
               
-              intraSetScore={player.player!.intraSetScore || "0/0"}
-              intraPointScore={player.player!.intraPointScore || "00/00"}
+              intraSetScore={player.player?.intraSetScore || "0/0"}
+              intraPointScore={player.player?.intraPointScore || "00/00"}
             />
           ))}
         </Box>
