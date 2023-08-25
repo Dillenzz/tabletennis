@@ -84,7 +84,6 @@ import {
   PopoverCloseButton,
   Tooltip,
   Spinner,
-  
 } from "@chakra-ui/react";
 
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
@@ -213,6 +212,9 @@ function App() {
   const [displayedPlayersFrom, setDisplayedPlayersFrom] = useState(0);
   const [displayedPlayersTo, setDisplayedPlayersTo] = useState(10);
 
+  const [displayedRankingFrom, setDisplayedRankingFrom] = useState(0);
+  const [displayedRankingTo, setDisplayedRankingTo] = useState(100);
+
   const [searchAge, setSearchAge] = useState("");
   const [searchGender, setSearchGender] = useState("female");
   const [surnameSearch, setSearchSurname] = useState("");
@@ -314,12 +316,14 @@ function App() {
   const currentDate = new Date();
 
   const onGogingTournaments = openTournaments
-  .filter(
-    (tournament) =>
-      tournament.dateFrom && new Date(tournament.dateFrom) < currentDate && tournament.dateTo && new Date(tournament.dateTo) > currentDate
-  )
-  .sort((a, b) => a.dateFrom!.localeCompare(b.dateFrom!));
-
+    .filter(
+      (tournament) =>
+        tournament.dateFrom &&
+        new Date(tournament.dateFrom) < currentDate &&
+        tournament.dateTo &&
+        new Date(tournament.dateTo) > currentDate
+    )
+    .sort((a, b) => a.dateFrom!.localeCompare(b.dateFrom!));
 
   const upcomingTournaments = openTournaments
     .filter(
@@ -470,12 +474,7 @@ function App() {
     setSearchSurname(event.target.value);
   };
 
-  const handleAgeSearch = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchAge(event.target.value);
-  };
-
   const handleGenderSearch = (value: string) => {
-
     setSearchGender(value);
   };
 
@@ -508,7 +507,6 @@ function App() {
 
   const handleArenaChange = (event: ChangeEvent<HTMLInputElement>) =>
     setTournamentArena(event.target.value);
-
 
   const handleCreateTournament = async () => {
     const user = await getUsernameAndSessionDuration();
@@ -715,29 +713,46 @@ function App() {
     return nameMatch && clubMatch;
   });
 
-
   const filteredPlayersRanking = realPlayers.filter((player) => {
-    const lastNameRanking = player.lastName.toLowerCase().includes(surnameSearch.toLowerCase());
-    const clubRanking = player.club.toLowerCase().includes(searchClub.toLowerCase());
-    const firstNameRanking = player.firstName.toLowerCase().includes(firstNameSearch.toLowerCase());
-  
+    const lastNameRanking = player.lastName
+      .toLowerCase()
+      .includes(surnameSearch.toLowerCase());
+    const clubRanking = player.club
+      .toLowerCase()
+      .includes(searchClub.toLowerCase());
+    const firstNameRanking = player.firstName
+      .toLowerCase()
+      .includes(firstNameSearch.toLowerCase());
+
     let ageRanking = true;
     if (searchAge) {
       const currentYear = new Date().getFullYear();
-      ageRanking = currentYear - parseInt(player.birthYear) <= parseInt(searchAge);
-      console.log(ageRanking)
+
+      ageRanking =
+        currentYear - parseInt(player.birthYear) <= parseInt(searchAge);
+      console.log(
+        currentYear - parseInt(player.birthYear),
+        "age",
+        parseInt(searchAge),
+        "search age"
+      );
+      console.log(ageRanking, "age ranking");
     }
-  
+
     // Assuming you have a gender filter as well
     let genderRanking = true;
-  if (searchGender !== null) {
-    genderRanking = player.gender === searchGender;
-  }
+    if (searchGender !== null) {
+      genderRanking = player.gender === searchGender;
+    }
 
-    
-    return lastNameRanking && clubRanking && firstNameRanking && ageRanking && genderRanking;
+    return (
+      lastNameRanking &&
+      clubRanking &&
+      firstNameRanking &&
+      ageRanking &&
+      genderRanking
+    );
   });
-  
 
   const filteredMatches = unreportedMatches.filter((match) => {
     const namePlayer1 = match
@@ -788,6 +803,8 @@ function App() {
 
     setLoadingClasses(false);
   }
+
+  setSearchAge("200")
 
   // add player to tournament
   async function addPlayerToTournament(player: Player) {
@@ -2335,49 +2352,108 @@ function App() {
                         size="sm"
                       />
                     </Box>
-                    <Box m={2}>
-                      <Text fontWeight="bold">Age</Text>
-                      <Input value={searchAge} onChange={handleAgeSearch} borderRadius="20px" size="sm" />
-                    
-                    </Box>
+
                     <Box>
-                      
-                    <RadioGroup
-                          onChange={handleGenderSearch}
-                          value={searchGender}
-                          defaultValue="female"
-                        >
-                          <Stack spacing="24px">
-                            <Radio value="female">Female</Radio>
-                            <Radio value="male">Male</Radio>
-                          </Stack>
-                        </RadioGroup>
-                      
+                      <RadioGroup
+                        onChange={handleGenderSearch}
+                        value={searchGender}
+                        defaultValue="female"
+                      >
+                        <Stack spacing="24px">
+                          <Radio value="female">Female</Radio>
+                          <Radio value="male">Male</Radio>
+                        </Stack>
+                      </RadioGroup>
                     </Box>
                   </Flex>
                 </Center>
+                <Center>
+                  <Box _hover={{ cursor: "pointer" }} m="10px">
+                    <FontAwesomeIcon
+                      aria-label="Arrow Back"
+                      icon={faArrowLeft}
+                      color="black"
+                      onClick={() => {
+                        if(displayedRankingFrom === 0){
+                          setDisplayedRankingFrom(displayedRankingFrom );
+                        setDisplayedRankingTo(displayedRankingTo);
+                        }
+                        else {
+                        setDisplayedRankingFrom(displayedRankingFrom - 100);
+                        setDisplayedRankingTo(displayedRankingTo - 100);
+                        }
 
-                <Box  >
-                  {filteredPlayersRanking.slice(0, 100).map((player, index) => {
-                    return (
-                      <Box  width="100%" mt={1} key={player.id}>
-                        <PlayerRanking
-                          nationalRanking={player.nationalRanking}
-                          firstName={player.firstName}
-                          lastName={player.lastName}
-                          class={player.class}
-                          id={player.id}
-                          name={player.name}
-                          club={player.club}
-                          points={player.points}
-                          pointsChange={player.pointsChange}
-                          birthYear={player.birthYear}
-                          index={index}
-                        />
-                      </Box>
-                    );
-                  })}
+                      }}
+                      size={"2xl"}
+                    />
+                  </Box>
+
+                  <Box _hover={{ cursor: "pointer" }} m={"10px"}>
+                    <FontAwesomeIcon
+                      aria-label="Arrow Back"
+                      icon={faArrowRight}
+                      color="black"
+                      onClick={() => {
+                        
+                        setDisplayedRankingFrom(displayedRankingFrom + 100);
+                        setDisplayedRankingTo(displayedRankingTo + 100);
+                        }
+                      }
+                      size={"2xl"}
+                    />
+                  </Box>
+                </Center>
+
+                <Box>
+                  {filteredPlayersRanking
+                    .slice(displayedRankingFrom, displayedRankingTo)
+                    .map((player, index) => {
+                      return (
+                        <Box width="100%" mt={1} key={player.id}>
+                          <PlayerRanking
+                            nationalRanking={player.nationalRanking}
+                            firstName={player.firstName}
+                            lastName={player.lastName}
+                            class={player.class}
+                            id={player.id}
+                            name={player.name}
+                            club={player.club}
+                            points={player.points}
+                            pointsChange={player.pointsChange}
+                            birthYear={player.birthYear}
+                            index={index}
+                          />
+                        </Box>
+                      );
+                    })}
                 </Box>
+                <Center>
+                  <Box _hover={{ cursor: "pointer" }} m="10px">
+                    <FontAwesomeIcon
+                      aria-label="Arrow Back"
+                      icon={faArrowLeft}
+                      color="black"
+                      onClick={() => {
+                        setDisplayedRankingFrom(displayedRankingFrom - 100);
+                        setDisplayedRankingTo(displayedRankingTo - 100);
+                      }}
+                      size={"2xl"}
+                    />
+                  </Box>
+
+                  <Box _hover={{ cursor: "pointer" }} m={"10px"}>
+                    <FontAwesomeIcon
+                      aria-label="Arrow Back"
+                      icon={faArrowRight}
+                      color="black"
+                      onClick={() => {
+                        setDisplayedRankingFrom(displayedRankingFrom + 100);
+                        setDisplayedRankingTo(displayedRankingTo + 100);
+                      }}
+                      size={"2xl"}
+                    />
+                  </Box>
+                </Center>
               </Box>
             )}
 
@@ -2598,7 +2674,6 @@ function App() {
                         <Input
                           isRequired
                           borderRadius="30px"
-                          
                           bg={"white"}
                           value={tournamentName}
                           onChange={handleChange}
@@ -2616,7 +2691,6 @@ function App() {
                           borderRadius="30px"
                           onChange={(e) =>
                             setTournamentDateFrom(e.target.value)
-
                           }
                         ></Input>
                       </Box>
@@ -2660,7 +2734,6 @@ function App() {
                           placeholder={"Arena"}
                           size="lg"
                         />
-
                       </Box>
                       <Center>
                         <RadioGroup
@@ -2711,12 +2784,12 @@ function App() {
                   </Center>
                 )}
                 {onGogingTournaments.length > 0 && (
-                  <Box overflow={"auto"}  maxWidth={"100vw"}>
+                  <Box overflow={"auto"} maxWidth={"100vw"}>
                     <Center>
                       <Heading size="lg">Ongoing Tournaments</Heading>
                     </Center>
-                    <Box shadow="md" >
-                      <Flex overflowX={"auto"}   m={4}  >
+                    <Box shadow="md">
+                      <Flex overflowX={"auto"} m={4}>
                         <Center>
                           {onGogingTournaments.map((tournament) => (
                             <Center>
@@ -2728,7 +2801,6 @@ function App() {
                                 key={tournament.tournamentId}
                                 minWidth={`${maxOpenWidth}px`}
                                 p={4}
-                                
                               >
                                 <Center>
                                   <Stack>
@@ -2739,7 +2811,9 @@ function App() {
                                         </Heading>
                                       </Center>
                                       <Center>
-                                        <Text fontSize={"sm"}>{tournament.city} - {tournament.arena}</Text>
+                                        <Text fontSize={"sm"}>
+                                          {tournament.city} - {tournament.arena}
+                                        </Text>
                                       </Center>
                                       <Center>
                                         <Box>
@@ -2787,78 +2861,79 @@ function App() {
                 )}
 
                 {upcomingTournaments.length > 0 && (
-                  <Box  overflow={"auto"}  maxWidth={"100vw"}>
+                  <Box overflow={"auto"} maxWidth={"100vw"}>
                     <Center>
                       <Heading size="lg">Upcoming Tournaments</Heading>
                     </Center>
-                    
-                    <Flex shadow={"md"} >
-                      <Flex  overflowX={"auto"}   m={4}  >
+
+                    <Flex shadow={"md"}>
+                      <Flex overflowX={"auto"} m={4}>
                         <Center>
-                        <HStack >
-                          {upcomingTournaments.map((tournament) => (
-                            <Center>
-                              <Box
-                                shadow={"lg"}
-                                m={2}
-                                borderRadius="md"
-                                bg={"yellow.400"}
-                                key={tournament.tournamentId}
-                                p={4}
-                                minWidth={`${maxOpenWidth}px`}
-                                
-                              >
-                                <Center>
-                                  <Box>
-                                    <Box >
-                                      <Center>
-                                        <Heading size="lg">
-                                          {tournament.name}
-                                        </Heading>
-                                      </Center>
-                                      <Center>
-                                      <Text fontSize={"sm"}>{tournament.city} - {tournament.arena}</Text>
-                                      </Center>
+                          <HStack>
+                            {upcomingTournaments.map((tournament) => (
+                              <Center>
+                                <Box
+                                  shadow={"lg"}
+                                  m={2}
+                                  borderRadius="md"
+                                  bg={"yellow.400"}
+                                  key={tournament.tournamentId}
+                                  p={4}
+                                  minWidth={`${maxOpenWidth}px`}
+                                >
+                                  <Center>
+                                    <Box>
+                                      <Box>
+                                        <Center>
+                                          <Heading size="lg">
+                                            {tournament.name}
+                                          </Heading>
+                                        </Center>
+                                        <Center>
+                                          <Text fontSize={"sm"}>
+                                            {tournament.city} -{" "}
+                                            {tournament.arena}
+                                          </Text>
+                                        </Center>
+                                        <Center>
+                                          <Box>
+                                            <Text fontSize="sm">
+                                              {tournament.dateFrom} /{" "}
+                                              {tournament.dateTo}
+                                            </Text>
+                                          </Box>
+                                        </Center>
+                                        <Center>
+                                          <Box>
+                                            <Text fontSize="sm">
+                                              {tournament.club}
+                                            </Text>
+                                          </Box>
+                                        </Center>
+                                      </Box>
                                       <Center>
                                         <Box>
-                                          <Text fontSize="sm">
-                                            {tournament.dateFrom} /{" "}
-                                            {tournament.dateTo}
-                                          </Text>
-                                        </Box>
-                                      </Center>
-                                      <Center>
-                                        <Box>
-                                          <Text fontSize="sm">
-                                            {tournament.club}
-                                          </Text>
+                                          <Button
+                                            size="md"
+                                            fontSize="20"
+                                            m={2}
+                                            textColor={"white"}
+                                            borderRadius={"20px"}
+                                            bg={"blue.400"}
+                                            onClick={() => {
+                                              handleJoinTournament(tournament);
+                                              alert("Not yet implemented");
+                                            }}
+                                          >
+                                            Info
+                                          </Button>
                                         </Box>
                                       </Center>
                                     </Box>
-                                    <Center>
-                                      <Box>
-                                        <Button
-                                          
-                                          size="md"
-                                          fontSize="20"
-                                          m={2}
-                                          textColor={"white"}
-                                          borderRadius={"20px"}
-                                          bg={"blue.400"}
-                                          onClick={() => {
-                                            handleJoinTournament(tournament);
-                                            alert("Not yet implemented");
-                                          }}
-                                        >
-                                          Info
-                                        </Button>
-                                      </Box>
-                                    </Center>
-                                  </Box>
-                                </Center>
-                              </Box>
-                            </Center>
-                          ))}
+                                  </Center>
+                                </Box>
+                              </Center>
+                            ))}
                           </HStack>
                         </Center>
                       </Flex>
@@ -2866,74 +2941,75 @@ function App() {
                   </Box>
                 )}
                 {pastTournaments.length > 0 && (
-                  <Box marginBottom={"10"}  overflow={"auto"}  maxWidth={"100vw"} >
+                  <Box marginBottom={"10"} overflow={"auto"} maxWidth={"100vw"}>
                     <Center>
                       <Heading size="lg">Past Tournaments</Heading>
                     </Center>
 
                     <Box shadow="md">
-                      <Flex overflowX={"auto"}  m={4} >
+                      <Flex overflowX={"auto"} m={4}>
                         <Center>
-                        {pastTournaments.map((tournament) => (
-                          <Box
-                            shadow={"lg"}
-                            m={2}
-                            borderRadius="md"
-                            bg={"red.400"}
-                            key={tournament.tournamentId}
-                            p={4}
-                            minWidth={`${maxOpenWidth}px`}
-                          >
-                            <Center>
-                              <Stack>
-                                <Flex direction="column">
-                                  <Center>
-                                    <Heading size="lg">
-                                      {tournament.name}
-                                    </Heading>
-                                  </Center>
-                                  <Center>
-                                  <Text fontSize={"sm"}>{tournament.city} - {tournament.arena}</Text>
-                                  </Center>
-                                  <Center>
-                                    <Box>
-                                      <Text fontSize="sm">
-                                        {tournament.dateFrom} /{" "}
-                                        {tournament.dateTo}
+                          {pastTournaments.map((tournament) => (
+                            <Box
+                              shadow={"lg"}
+                              m={2}
+                              borderRadius="md"
+                              bg={"red.400"}
+                              key={tournament.tournamentId}
+                              p={4}
+                              minWidth={`${maxOpenWidth}px`}
+                            >
+                              <Center>
+                                <Stack>
+                                  <Flex direction="column">
+                                    <Center>
+                                      <Heading size="lg">
+                                        {tournament.name}
+                                      </Heading>
+                                    </Center>
+                                    <Center>
+                                      <Text fontSize={"sm"}>
+                                        {tournament.city} - {tournament.arena}
                                       </Text>
-                                    </Box>
-                                  </Center>
-                                  <Center>
-                                    <Box>
-                                      <Text fontSize="sm">
-                                        {" "}
-                                        {tournament.club}
-                                      </Text>
-                                    </Box>
-                                  </Center>
-                                </Flex>
-                                <Center>
-                                  <Flex>
-                                    <Button
-                                     
-                                      size="md"
-                                      borderRadius={"20px"}
-                                      fontSize="20"
-                                      textColor={"white"}
-                                      bg="blue.400"
-                                      onClick={() => {
-                                        handleJoinTournament(tournament);
-                                        alert("Not yet implemented");
-                                      }}
-                                    >
-                                      View Result
-                                    </Button>
+                                    </Center>
+                                    <Center>
+                                      <Box>
+                                        <Text fontSize="sm">
+                                          {tournament.dateFrom} /{" "}
+                                          {tournament.dateTo}
+                                        </Text>
+                                      </Box>
+                                    </Center>
+                                    <Center>
+                                      <Box>
+                                        <Text fontSize="sm">
+                                          {" "}
+                                          {tournament.club}
+                                        </Text>
+                                      </Box>
+                                    </Center>
                                   </Flex>
-                                </Center>
-                              </Stack>
-                            </Center>
-                          </Box>
-                        ))}
+                                  <Center>
+                                    <Flex>
+                                      <Button
+                                        size="md"
+                                        borderRadius={"20px"}
+                                        fontSize="20"
+                                        textColor={"white"}
+                                        bg="blue.400"
+                                        onClick={() => {
+                                          handleJoinTournament(tournament);
+                                          alert("Not yet implemented");
+                                        }}
+                                      >
+                                        View Result
+                                      </Button>
+                                    </Flex>
+                                  </Center>
+                                </Stack>
+                              </Center>
+                            </Box>
+                          ))}
                         </Center>
                       </Flex>
                     </Box>
