@@ -54,10 +54,11 @@ async function updateTournament(
     name: tournament.name,
     dateFrom: tournament.dateFrom,
     dateTo: tournament.dateTo,
-    location: tournament.location,
+    location: tournament.city,
     uid: tournament.uid,
     public: tournament.public,
     club: tournament.club,
+    arena: tournament.arena,
     // other properties to update
   });
 }
@@ -72,10 +73,11 @@ async function createTournament(
     name: tournament.name,
     dateFrom: tournament.dateFrom,
     dateTo: tournament.dateTo,
-    location: tournament.location,
+    city: tournament.city,
     uid: tournament.uid,
     public: tournament.public,
     club: tournament.club,
+    arena: tournament.arena,
     // other properties to create
   });
 }

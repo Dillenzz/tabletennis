@@ -6,11 +6,12 @@ interface Tournament {
   name?: string;
   dateFrom?: string;
   dateTo?: string;
-  location?: string;
+  city?: string;
   tournamentId?: number;
   classes?: Class[];
   public?: string;
   club?: string;
+  arena?: string;
 }
 
 function Tournament(props: Tournament) {
@@ -25,12 +26,12 @@ function Tournament(props: Tournament) {
       </Box>
       <Center>
       <Flex direction="column">
-        {props.location && (
+        {props.city && (
            <Flex>
            <Text color={"black"} fontSize="10" mr={2} >
              Loca: 
            </Text>
-           <Text color={"grey"} fontSize="10">{props.location}</Text>
+           <Text color={"grey"} fontSize="10">{props.city}</Text>
            </Flex>
         )}
 

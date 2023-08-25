@@ -101,11 +101,12 @@ function App() {
   // define state variables
   const [tournamentDateFrom, setTournamentDateFrom] = useState("");
   const [tournamentDateTo, setTournamentDateTo] = useState("");
-  const [tournamentLocation, setTournamentLocation] = useState("");
+  const [tournamentCity, setTournamentCity] = useState("");
   const [publicOrPrivate, setPublicOrPrivate] = useState("Private");
   const [tournamentName, setTournamentName] = useState("");
   const [tournamentId, setTournamentId] = useState(-1);
   const [tournamentClub, setTournamentClub] = useState("");
+  const [tournamentArena, setTournamentArena] = useState("");
 
   // states for clarity
   const [editTournament, setEditTournament] = useState(false);
@@ -312,6 +313,14 @@ function App() {
 
   const currentDate = new Date();
 
+  const onGogingTournaments = openTournaments
+  .filter(
+    (tournament) =>
+      tournament.dateFrom && new Date(tournament.dateFrom) < currentDate && tournament.dateTo && new Date(tournament.dateTo) > currentDate
+  )
+  .sort((a, b) => a.dateFrom!.localeCompare(b.dateFrom!));
+
+
   const upcomingTournaments = openTournaments
     .filter(
       (tournament) =>
@@ -322,9 +331,9 @@ function App() {
   const pastTournaments = openTournaments
     .filter(
       (tournament) =>
-        tournament.dateFrom && new Date(tournament.dateFrom) < currentDate
+        tournament.dateTo && new Date(tournament.dateTo) < currentDate
     )
-    .sort((a, b) => b.dateFrom!.localeCompare(a.dateFrom!));
+    .sort((a, b) => b.dateTo!.localeCompare(a.dateTo!));
 
   const createTournament = () => {
     setShowStartMenu(true);
@@ -335,7 +344,8 @@ function App() {
       name: tournamentName,
       dateFrom: tournamentDateFrom,
       dateTo: tournamentDateTo,
-      location: tournamentLocation,
+      city: tournamentCity,
+      arena: tournamentArena,
       public: publicOrPrivate,
       tournamentId: tournamentId,
       club: tournamentClub,
@@ -353,8 +363,9 @@ function App() {
     setTournamentName("");
     setTournamentDateFrom("");
     setTournamentDateTo("");
-    setTournamentLocation("");
+    setTournamentCity("");
     setTournamentClub("");
+    setTournamentArena("");
     setTournamentType("");
   }
 
@@ -488,12 +499,16 @@ function App() {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) =>
     setTournamentName(event.target.value);
 
-  const handleLocationChange = (event: ChangeEvent<HTMLInputElement>) =>
-    setTournamentLocation(event.target.value);
+  const handleCityChange = (event: ChangeEvent<HTMLInputElement>) =>
+    setTournamentCity(event.target.value);
   // changes view to tournament info
 
   const handleClubChange = (event: ChangeEvent<HTMLInputElement>) =>
     setTournamentClub(event.target.value);
+
+  const handleArenaChange = (event: ChangeEvent<HTMLInputElement>) =>
+    setTournamentArena(event.target.value);
+
 
   const handleCreateTournament = async () => {
     const user = await getUsernameAndSessionDuration();
@@ -709,7 +724,7 @@ function App() {
     let ageRanking = true;
     if (searchAge) {
       const currentYear = new Date().getFullYear();
-      ageRanking = currentYear - parseInt(player.birthYear) >= parseInt(searchAge);
+      ageRanking = currentYear - parseInt(player.birthYear) <= parseInt(searchAge);
       console.log(ageRanking)
     }
   
@@ -1762,8 +1777,9 @@ function App() {
     setTournamentName("");
     setTournamentDateFrom("");
     setTournamentDateTo("");
-    setTournamentLocation("");
+    setTournamentCity("");
     setTournamentClub("");
+    setTournamentArena("");
     setTournamentType("");
     setShowUnreportedMatches(false);
     setShowUserName(false);
@@ -1976,8 +1992,9 @@ function App() {
     setTournamentDateFrom(tournament.dateFrom ? tournament.dateFrom : "");
     setTournamentDateTo(tournament.dateTo ? tournament.dateTo : "");
     setTournamentName(tournament.name ? tournament.name : "");
-    setTournamentLocation(tournament.location ? tournament.location : "");
+    setTournamentCity(tournament.city ? tournament.city : "");
     setTournamentClub(tournament.club ? tournament.club : "");
+    setTournamentArena(tournament.arena ? tournament.arena : "");
     setTournamentId(tournament.tournamentId ? tournament.tournamentId : -1);
     setPublicOrPrivate(tournament.public ? tournament.public : "Public");
     setEditTournament(true);
@@ -2414,7 +2431,7 @@ function App() {
                                     name={tournament.name}
                                     dateFrom={tournament.dateFrom}
                                     dateTo={tournament.dateTo}
-                                    location={tournament.location}
+                                    city={tournament.city}
                                     club={tournament.club}
                                   />
                                 </Center>
@@ -2579,7 +2596,8 @@ function App() {
                       <Box p={2}>
                         <Input
                           isRequired
-                          borderRadius="md"
+                          borderRadius="30px"
+                          
                           bg={"white"}
                           value={tournamentName}
                           onChange={handleChange}
@@ -2594,8 +2612,10 @@ function App() {
                           placeholder="Select Date"
                           size="lg"
                           type="date"
+                          borderRadius="30px"
                           onChange={(e) =>
                             setTournamentDateFrom(e.target.value)
+
                           }
                         ></Input>
                       </Box>
@@ -2607,27 +2627,39 @@ function App() {
                           size="lg"
                           type="date"
                           onChange={(e) => setTournamentDateTo(e.target.value)}
+                          borderRadius="30px"
                         ></Input>
                       </Box>
                       <Box p={2}>
                         <Input
-                          borderRadius="md"
+                          borderRadius="30px"
                           bg={"white"}
-                          value={tournamentLocation}
-                          onChange={handleLocationChange}
-                          placeholder={"Location"}
+                          value={tournamentCity}
+                          onChange={handleCityChange}
+                          placeholder={"City"}
                           size="lg"
                         />
                       </Box>
                       <Box p={2}>
                         <Input
-                          borderRadius="md"
+                          borderRadius="30px"
                           bg={"white"}
                           value={tournamentClub}
                           onChange={handleClubChange}
                           placeholder={"Club Name"}
                           size="lg"
                         />
+                      </Box>
+                      <Box p={2}>
+                        <Input
+                          borderRadius="30px"
+                          bg={"white"}
+                          value={tournamentArena}
+                          onChange={handleArenaChange}
+                          placeholder={"Arena"}
+                          size="lg"
+                        />
+
                       </Box>
                       <Center>
                         <RadioGroup
@@ -2670,31 +2702,32 @@ function App() {
             )}
 
             {showOpenTournaments && (
-              <Box>
+              <Box maxWidth={"100vw"}>
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
                     <Spinner size="xl" />
                   </Center>
                 )}
-                {upcomingTournaments.length > 0 && (
-                  <Box>
+                {onGogingTournaments.length > 0 && (
+                  <Box overflow={"auto"}  maxWidth={"100vw"}>
                     <Center>
-                      <Heading size="lg">Upcoming Tournaments</Heading>
+                      <Heading size="lg">Ongoing Tournaments</Heading>
                     </Center>
-                    <Box maxWidth="100vw">
-                      <Flex m={4} overflowX={"auto"} justifyContent={"center"}>
+                    <Box shadow="md" >
+                      <Flex overflowX={"auto"}   m={4}  >
                         <Center>
-                          {upcomingTournaments.map((tournament) => (
+                          {onGogingTournaments.map((tournament) => (
                             <Center>
                               <Box
                                 shadow={"lg"}
-                                m={4}
+                                m={2}
                                 borderRadius="md"
                                 bg={"green.200"}
                                 key={tournament.tournamentId}
-                                p={4}
                                 minWidth={`${maxOpenWidth}px`}
+                                p={4}
+                                
                               >
                                 <Center>
                                   <Stack>
@@ -2705,7 +2738,7 @@ function App() {
                                         </Heading>
                                       </Center>
                                       <Center>
-                                        <Text>{tournament.location}</Text>
+                                        <Text fontSize={"sm"}>{tournament.city} - {tournament.arena}</Text>
                                       </Center>
                                       <Center>
                                         <Box>
@@ -2726,7 +2759,7 @@ function App() {
                                     <Center>
                                       <Flex>
                                         <Button
-                                          m={1}
+                                          borderRadius={"20px"}
                                           size="md"
                                           fontSize="20"
                                           mr={2}
@@ -2751,20 +2784,101 @@ function App() {
                     </Box>
                   </Box>
                 )}
+
+                {upcomingTournaments.length > 0 && (
+                  <Box  overflow={"auto"}  maxWidth={"100vw"}>
+                    <Center>
+                      <Heading size="lg">Upcoming Tournaments</Heading>
+                    </Center>
+                    
+                    <Flex shadow={"md"} >
+                      <Flex  overflowX={"auto"}   m={4}  >
+                        <Center>
+                        <HStack >
+                          {upcomingTournaments.map((tournament) => (
+                            <Center>
+                              <Box
+                                shadow={"lg"}
+                                m={2}
+                                borderRadius="md"
+                                bg={"yellow.400"}
+                                key={tournament.tournamentId}
+                                p={4}
+                                minWidth={`${maxOpenWidth}px`}
+                                
+                              >
+                                <Center>
+                                  <Box>
+                                    <Box >
+                                      <Center>
+                                        <Heading size="lg">
+                                          {tournament.name}
+                                        </Heading>
+                                      </Center>
+                                      <Center>
+                                      <Text fontSize={"sm"}>{tournament.city} - {tournament.arena}</Text>
+                                      </Center>
+                                      <Center>
+                                        <Box>
+                                          <Text fontSize="sm">
+                                            {tournament.dateFrom} /{" "}
+                                            {tournament.dateTo}
+                                          </Text>
+                                        </Box>
+                                      </Center>
+                                      <Center>
+                                        <Box>
+                                          <Text fontSize="sm">
+                                            {tournament.club}
+                                          </Text>
+                                        </Box>
+                                      </Center>
+                                    </Box>
+                                    <Center>
+                                      <Box>
+                                        <Button
+                                          
+                                          size="md"
+                                          fontSize="20"
+                                          mr={2}
+                                          textColor={"white"}
+                                          borderRadius={"20px"}
+                                          bg={"blue.400"}
+                                          onClick={() => {
+                                            handleJoinTournament(tournament);
+                                            alert("Not yet implemented");
+                                          }}
+                                        >
+                                          Info
+                                        </Button>
+                                      </Box>
+                                    </Center>
+                                  </Box>
+                                </Center>
+                              </Box>
+                            </Center>
+                          ))}
+                          </HStack>
+                        </Center>
+                      </Flex>
+                    </Flex>
+                  </Box>
+                )}
                 {pastTournaments.length > 0 && (
-                  <Box>
+                  <Box  overflow={"auto"}  maxWidth={"100vw"} >
                     <Center>
                       <Heading size="lg">Past Tournaments</Heading>
                     </Center>
 
-                    <Box maxWidth="100vw">
-                      <Flex m={4} overflowX={"auto"}>
+                    <Box shadow="md">
+                      <Flex overflowX={"auto"}  m={4} >
+                        <Center>
                         {pastTournaments.map((tournament) => (
                           <Box
                             shadow={"lg"}
-                            m={4}
+                            m={2}
                             borderRadius="md"
-                            bg={"#FF9B9B"}
+                            bg={"red.400"}
                             key={tournament.tournamentId}
                             p={4}
                             minWidth={`${maxOpenWidth}px`}
@@ -2778,7 +2892,7 @@ function App() {
                                     </Heading>
                                   </Center>
                                   <Center>
-                                    <Text> {tournament.location}</Text>
+                                  <Text fontSize={"sm"}>{tournament.city} - {tournament.arena}</Text>
                                   </Center>
                                   <Center>
                                     <Box>
@@ -2800,8 +2914,9 @@ function App() {
                                 <Center>
                                   <Flex>
                                     <Button
-                                      m={1}
+                                     
                                       size="md"
+                                      borderRadius={"20px"}
                                       fontSize="20"
                                       textColor={"white"}
                                       bg="blue.400"
@@ -2818,6 +2933,7 @@ function App() {
                             </Center>
                           </Box>
                         ))}
+                        </Center>
                       </Flex>
                     </Box>
                   </Box>
