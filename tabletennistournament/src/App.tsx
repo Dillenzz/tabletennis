@@ -215,7 +215,7 @@ function App() {
   const [displayedRankingFrom, setDisplayedRankingFrom] = useState(0);
   const [displayedRankingTo, setDisplayedRankingTo] = useState(100);
 
-  const [searchAge, setSearchAge] = useState("");
+  //const [searchAge, setSearchAge] = useState("");
   const [searchGender, setSearchGender] = useState("female");
   const [surnameSearch, setSearchSurname] = useState("");
   const [firstNameSearch, setSearchFirstName] = useState("");
@@ -724,8 +724,8 @@ function App() {
       .toLowerCase()
       .includes(firstNameSearch.toLowerCase());
 
-    let ageRanking = true;
-    if (searchAge) {
+    //let ageRanking = true;
+    /*if (searchAge) {
       const currentYear = new Date().getFullYear();
 
       ageRanking =
@@ -737,7 +737,7 @@ function App() {
         "search age"
       );
       console.log(ageRanking, "age ranking");
-    }
+    }*/
 
     // Assuming you have a gender filter as well
     let genderRanking = true;
@@ -749,7 +749,7 @@ function App() {
       lastNameRanking &&
       clubRanking &&
       firstNameRanking &&
-      ageRanking &&
+      //ageRanking &&
       genderRanking
     );
   });
@@ -804,7 +804,7 @@ function App() {
     setLoadingClasses(false);
   }
 
-  setSearchAge("200")
+
 
   // add player to tournament
   async function addPlayerToTournament(player: Player) {
@@ -2321,6 +2321,7 @@ function App() {
               <Box m={4}>
                 <Center>
                   <Flex>
+                    
                     <Box m={2}>
                       <Text fontWeight="bold">Name</Text>
                       <Input
