@@ -1992,7 +1992,7 @@ function App() {
     const lengths = tournaments
       .filter((tournament) => tournament.uid === uid)
       .map((tournament) => tournament.name?.length || 0);
-    setMaxWidth(Math.max(...lengths) * 18);
+    setMaxWidth(Math.max(...lengths) * 10);
   }
 
   function calculatePublicTournamentLength(tournaments: Tournament[]) {
@@ -2000,7 +2000,7 @@ function App() {
       .filter((tournament) => tournament.public === "Public")
       .map((tournament) => tournament.name?.length || 0);
     3;
-    setMaxOpenWidth(Math.max(...lengths) * 18);
+    setMaxOpenWidth(Math.max(...lengths) * 17);
   }
 
   function handleEditTournament(tournament: Tournament) {
@@ -2463,7 +2463,7 @@ function App() {
                 <Center>
                   <Heading m="8px"> My Tournaments</Heading>
                 </Center>
-                <Box maxW={"100vw"} shadow="md">
+                <Flex maxW={"100vw"} shadow="md">
                   <Box>
                     <Box
                       p={"10px"}
@@ -2654,7 +2654,7 @@ function App() {
                       )}
                     </Box>
                   </Box>
-                </Box>
+                </Flex>
               </Box>
             )}
 
