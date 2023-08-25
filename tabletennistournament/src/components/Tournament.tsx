@@ -28,29 +28,37 @@ function Tournament(props: Tournament) {
       <Flex direction="column">
         {props.city && (
            <Flex>
-           <Text color={"black"} fontSize="10" mr={2} >
-             Loca: 
-           </Text>
-           <Text color={"grey"} fontSize="10">{props.city}</Text>
+           
+           <Box >
+           <Text color={"grey"} fontSize="12">{props.city}</Text>
+           </Box>
            </Flex>
         )}
 
         {props.dateFrom && props.dateTo && (
           <Flex>
-          <Text color={"black"} fontSize="10" mr={2} >
-            Date: 
-          </Text>
-          <Text color={"grey"} fontSize="10">{props.dateFrom} / {props.dateTo}</Text>
+          
+          <Box >
+          <Text color={"grey"} fontSize="12">{props.dateFrom} / {props.dateTo}</Text>
+          </Box>
           </Flex>
         )}
 
         {props.club && (
           <Flex>
-          <Text color={"black"} fontSize="10" mr={2} mb={1}>
-            Club:   
-          </Text>
-          <Text color={"grey"} fontSize={"10"}> {props.club}</Text>
+          
+          <Box >
+          <Text color={"grey"} fontSize={"12"}> {props.club}</Text>
+          </Box>
           </Flex>
+        )}
+
+        {props.arena && (
+          <Flex>
+          
+          <Text color={"grey"} fontSize={"12"}> {props.arena}</Text>
+
+      </Flex>
         )}
       </Flex>
       </Center>

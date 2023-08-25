@@ -2433,6 +2433,7 @@ function App() {
                                     dateTo={tournament.dateTo}
                                     city={tournament.city}
                                     club={tournament.club}
+                                    arena={tournament.arena}
                                   />
                                 </Center>
                               </Box>
@@ -2458,7 +2459,7 @@ function App() {
                                     >
                                       <EditIcon
                                         color="black"
-                                        boxSize={4}
+                                        boxSize={8}
                                         _hover={{ cursor: "pointer" }}
                                         aria-label="Edit Tournament"
                                       />
@@ -2488,7 +2489,7 @@ function App() {
                                     >
                                       <DeleteIcon
                                         color="black"
-                                        boxSize={4}
+                                        boxSize={8}
                                         _hover={{ cursor: "pointer" }}
                                         aria-label="Delete Tournament"
                                       />
@@ -2770,7 +2771,7 @@ function App() {
                                             alert("Not yet implemented");
                                           }}
                                         >
-                                          Info
+                                          Live score
                                         </Button>
                                       </Flex>
                                     </Center>
@@ -2840,7 +2841,7 @@ function App() {
                                           
                                           size="md"
                                           fontSize="20"
-                                          mr={2}
+                                          m={2}
                                           textColor={"white"}
                                           borderRadius={"20px"}
                                           bg={"blue.400"}
@@ -2865,7 +2866,7 @@ function App() {
                   </Box>
                 )}
                 {pastTournaments.length > 0 && (
-                  <Box  overflow={"auto"}  maxWidth={"100vw"} >
+                  <Box marginBottom={"10"}  overflow={"auto"}  maxWidth={"100vw"} >
                     <Center>
                       <Heading size="lg">Past Tournaments</Heading>
                     </Center>
