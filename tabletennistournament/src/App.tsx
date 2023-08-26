@@ -11,6 +11,8 @@ import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { faCalendarDays } from "@fortawesome/free-solid-svg-icons";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 import Player from "./components/Player";
 import { getTournamentsByUid } from "./Backend/updateFirebase2";
@@ -2534,10 +2536,11 @@ function App() {
                                       }}
                                       marginInline={6}
                                     >
-                                      <EditIcon
-                                        color="black"
-                                        boxSize={8}
-                                        _hover={{ cursor: "pointer" }}
+                                      <FontAwesomeIcon
+                                        size={"2xl"}
+                                        icon={faPenToSquare}
+                                        color="#183153"
+                                        
                                         aria-label="Edit Tournament"
                                       />
                                     </Box>
@@ -2564,10 +2567,10 @@ function App() {
                                       }}
                                       marginInline={6}
                                     >
-                                      <DeleteIcon
-                                        color="black"
-                                        boxSize={8}
-                                        _hover={{ cursor: "pointer" }}
+                                      <FontAwesomeIcon
+                                        color="#183153"
+                                        icon={faTrash}
+                                        size="2xl"
                                         aria-label="Delete Tournament"
                                       />
                                     </Box>
