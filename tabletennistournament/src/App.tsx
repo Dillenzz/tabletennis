@@ -88,7 +88,7 @@ import {
   Spinner,
 } from "@chakra-ui/react";
 
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { DeleteIcon } from "@chakra-ui/icons";
 import { set } from "firebase/database";
 
 function App() {
@@ -466,22 +466,32 @@ function App() {
   // function to load players in search
   const handleNameSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchName(event.target.value);
+    setDisplayedRankingFrom(0);
+    setDisplayedRankingTo(100);
   };
 
   const handleFirstNameSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchFirstName(event.target.value);
+    setDisplayedRankingFrom(0);
+    setDisplayedRankingTo(100);
   };
 
   const handleSurnameSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchSurname(event.target.value);
+    setDisplayedRankingFrom(0);
+    setDisplayedRankingTo(100);
   };
 
   const handleGenderSearch = (value: string) => {
     setSearchGender(value);
+    setDisplayedRankingFrom(0);
+    setDisplayedRankingTo(100);
   };
 
   const handleClubSearch = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchClub(event.target.value);
+    setDisplayedRankingFrom(0);
+    setDisplayedRankingTo(100);
   };
 
   const handleUnreportedMatchSearch = (
@@ -805,8 +815,6 @@ function App() {
 
     setLoadingClasses(false);
   }
-
-
 
   // add player to tournament
   async function addPlayerToTournament(player: Player) {
@@ -2092,7 +2100,7 @@ function App() {
 
   // App start
   return (
-    <Box maxHeight="100vh" overflowY={"auto"} minWidth="100vw">
+    <Box maxHeight="100vh" minWidth="100vw">
       <Flex
         bg="white"
         minHeight="100vh"
@@ -2323,7 +2331,6 @@ function App() {
               <Box m={4}>
                 <Center>
                   <Flex>
-                    
                     <Box m={2}>
                       <Text fontWeight="bold">Name</Text>
                       <Input
@@ -2377,15 +2384,14 @@ function App() {
                       icon={faArrowLeft}
                       color="black"
                       onClick={() => {
-                        if(displayedRankingFrom === 0){
-                          setDisplayedRankingFrom(displayedRankingFrom );
-                        setDisplayedRankingTo(displayedRankingTo);
+                        if (displayedRankingFrom === 0) {
+                          setDisplayedRankingFrom(displayedRankingFrom);
+                          setDisplayedRankingTo(displayedRankingTo);
+                          
+                        } else {
+                          setDisplayedRankingFrom(displayedRankingFrom - 100);
+                          setDisplayedRankingTo(displayedRankingTo - 100);
                         }
-                        else {
-                        setDisplayedRankingFrom(displayedRankingFrom - 100);
-                        setDisplayedRankingTo(displayedRankingTo - 100);
-                        }
-
                       }}
                       size={"2xl"}
                     />
@@ -2397,15 +2403,24 @@ function App() {
                       icon={faArrowRight}
                       color="black"
                       onClick={() => {
-                        
+                         if (displayedRankingTo > filteredPlayersRanking.length ) {
+                        setDisplayedRankingFrom(displayedRankingFrom);
+                        setDisplayedRankingTo(displayedRankingTo);
+                         }
+                         else {
                         setDisplayedRankingFrom(displayedRankingFrom + 100);
                         setDisplayedRankingTo(displayedRankingTo + 100);
-                        }
-                      }
+                          }
+                      }}
                       size={"2xl"}
                     />
                   </Box>
                 </Center>
+                {filteredPlayersRanking.length === 0 ? (
+                  <Center>
+                  <Text fontWeight={"bold"} fontSize={"24px"}>No players found!</Text>
+                  </Center>
+                ) : null}
 
                 <Box>
                   {filteredPlayersRanking
@@ -2463,7 +2478,10 @@ function App() {
             {showMyTournaments && (
               <Box>
                 <Center>
-                  <Heading m="8px"> My Tournaments</Heading>
+                  <Heading fontSize={"24px"} m="8px">
+                    {" "}
+                    My Tournaments
+                  </Heading>
                 </Center>
                 <Flex maxW={"100vw"} shadow="md">
                   <Box>
@@ -2537,10 +2555,9 @@ function App() {
                                       marginInline={6}
                                     >
                                       <FontAwesomeIcon
-                                        size={"2xl"}
+                                        size={"xl"}
                                         icon={faPenToSquare}
                                         color="#183153"
-                                        
                                         aria-label="Edit Tournament"
                                       />
                                     </Box>
@@ -2570,7 +2587,7 @@ function App() {
                                       <FontAwesomeIcon
                                         color="#183153"
                                         icon={faTrash}
-                                        size="2xl"
+                                        size="xl"
                                         aria-label="Delete Tournament"
                                       />
                                     </Box>
@@ -2780,7 +2797,7 @@ function App() {
             )}
 
             {showOpenTournaments && (
-              <Box maxWidth={"100vw"}>
+              <Box>
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
@@ -2788,7 +2805,7 @@ function App() {
                   </Center>
                 )}
                 {onGogingTournaments.length > 0 && (
-                  <Box overflow={"auto"} maxWidth={"100vw"}>
+                  <Box maxWidth={"100vw"}>
                     <Center>
                       <Heading size="lg">Ongoing Tournaments</Heading>
                     </Center>
@@ -2865,7 +2882,7 @@ function App() {
                 )}
 
                 {upcomingTournaments.length > 0 && (
-                  <Box overflow={"auto"} maxWidth={"100vw"}>
+                  <Box maxWidth={"100vw"}>
                     <Center>
                       <Heading size="lg">Upcoming Tournaments</Heading>
                     </Center>
@@ -2945,7 +2962,7 @@ function App() {
                   </Box>
                 )}
                 {pastTournaments.length > 0 && (
-                  <Box marginBottom={"10"} overflow={"auto"} maxWidth={"100vw"}>
+                  <Box marginBottom={"10"} maxWidth={"100vw"}>
                     <Center>
                       <Heading size="lg">Past Tournaments</Heading>
                     </Center>
@@ -3028,7 +3045,7 @@ function App() {
                   {currentTournament && (
                     <Center>
                       <Box>
-                        <Heading m={2} fontWeight="bold">
+                        <Heading fontSize={"24px"} m={2} fontWeight="bold">
                           {currentTournament.name}
                         </Heading>
                       </Box>
@@ -3256,38 +3273,39 @@ function App() {
 
                             <Box>
                               <Center>
-                                <Tooltip
-                                  label={`Edit Class ${myClass.name}`}
-                                  aria-label="edit-tooltip"
-                                >
-                                  <EditIcon
-                                    margin={4}
-                                    color="black"
-                                    boxSize={4}
-                                    _hover={{ cursor: "pointer" }}
-                                    aria-label="Edit Tournament"
-                                    onClick={() => handleEditClass(myClass)}
-                                  />
-                                </Tooltip>
-
-                                <Tooltip
-                                  label={`Delete class ${myClass.name}`}
-                                  aria-label="delete-tooltip"
-                                >
-                                  <DeleteIcon
-                                    color="black"
-                                    boxSize={4}
-                                    margin={4}
-                                    _hover={{ cursor: "pointer" }}
-                                    aria-label="Delete Tournament"
-                                    onClick={() => {
-                                      setCurrentClass(myClass);
-                                      setShowDeleteClassConfirmation(true);
-                                      onOpenDeleteClassModal();
-                                      // Add your delete logic here
-                                    }}
-                                  />
-                                </Tooltip>
+                                <Box m="2">
+                                  <Tooltip
+                                    label={`Edit Class ${myClass.name}`}
+                                    aria-label="edit-tooltip"
+                                  >
+                                    <FontAwesomeIcon
+                                      size="xl"
+                                      color="#183153"
+                                      icon={faPenToSquare}
+                                      aria-label="Edit Tournament"
+                                      onClick={() => handleEditClass(myClass)}
+                                    />
+                                  </Tooltip>
+                                </Box>
+                                <Box m="2">
+                                  <Tooltip
+                                    label={`Delete class ${myClass.name}`}
+                                    aria-label="delete-tooltip"
+                                  >
+                                    <FontAwesomeIcon
+                                      size="xl"
+                                      color="#183153"
+                                      icon={faTrash}
+                                      aria-label="Delete Tournament"
+                                      onClick={() => {
+                                        setCurrentClass(myClass);
+                                        setShowDeleteClassConfirmation(true);
+                                        onOpenDeleteClassModal();
+                                        // Add your delete logic here
+                                      }}
+                                    />
+                                  </Tooltip>
+                                </Box>
                               </Center>
                             </Box>
                           </Box>

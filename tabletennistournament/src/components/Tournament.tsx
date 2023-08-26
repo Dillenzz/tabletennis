@@ -19,7 +19,7 @@ function Tournament(props: Tournament) {
     <Box>
       <Box>
         <Center>
-          <Heading fontWeight={"bold"} size="lg" m={1}>
+          <Heading fontSize={"24px"} fontWeight={"bold"} size="lg" m={1}>
             {props.name}
           </Heading>
         </Center>
