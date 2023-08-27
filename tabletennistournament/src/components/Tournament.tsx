@@ -30,7 +30,7 @@ function Tournament(props: Tournament) {
            <Flex>
            
            <Box >
-           <Text color={"grey"} fontSize="12">{props.city}</Text>
+           <Text color={"#183153"} fontSize="12">{props.city}</Text>
            </Box>
            </Flex>
         )}
@@ -39,7 +39,7 @@ function Tournament(props: Tournament) {
           <Flex>
           
           <Box >
-          <Text color={"grey"} fontSize="12">{props.dateFrom} / {props.dateTo}</Text>
+          <Text color={"#183153"} fontSize="12">{props.dateFrom} / {props.dateTo}</Text>
           </Box>
           </Flex>
         )}
@@ -48,7 +48,7 @@ function Tournament(props: Tournament) {
           <Flex>
           
           <Box >
-          <Text color={"grey"} fontSize={"12"}> {props.club}</Text>
+          <Text color={"#183153"} fontSize={"12"}> {props.club}</Text>
           </Box>
           </Flex>
         )}
@@ -56,7 +56,7 @@ function Tournament(props: Tournament) {
         {props.arena && (
           <Flex>
           
-          <Text color={"grey"} fontSize={"12"}> {props.arena}</Text>
+          <Text color={"#183153"} fontSize={"12"}> {props.arena}</Text>
 
       </Flex>
         )}

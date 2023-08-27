@@ -37,6 +37,8 @@ import Match from "./components/Match";
 import Group from "./components/Group";
 import Class from "./components/Class";
 import PlayerRanking from "./components/PlayerRanking";
+import ClassBracket from "./components/ClassBracket";
+import ClassBracketNode from "./components/ClassBracketNode";
 
 import DisplayMatchScore from "./components/DisplayMatchScore";
 
@@ -225,6 +227,7 @@ function App() {
   // define set score variables
 
   const [matchId, setMatchId] = useState("");
+  const [maxMatchId, setMaxMatchId] = useState(0);
   const [currentMatch, setCurrentMatch] = useState<Match>();
 
   // set score for each set and player
@@ -293,6 +296,14 @@ function App() {
 
   const [showRanking, setShowRanking] = useState(false);
 
+  // BRACKET
+
+  const [bracketMatchesGlobal, setBracketMatchesGlobal] = useState<Match[]>([]);
+ // const [bracketPlayers, setBracketPlayersGlobal] = useState<Player[]>([]);
+  const [classBracketNode, setClassBracketNode] =
+    useState<ClassBracketNode>();
+  const [classBracket, setClassBracket] = useState<ClassBracket>();
+
   // save or update the tournament to Firebase
 
   useEffect(() => {
@@ -315,7 +326,7 @@ function App() {
     fetchData();
   }, []);
 
-  const currentDate = new Date();
+  let currentDate = new Date();
 
   const onGogingTournaments = openTournaments
     .filter(
@@ -325,6 +336,7 @@ function App() {
         tournament.dateTo &&
         new Date(tournament.dateTo) > currentDate
     )
+
     .sort((a, b) => a.dateFrom!.localeCompare(b.dateFrom!));
 
   const upcomingTournaments = openTournaments
@@ -1448,9 +1460,11 @@ function App() {
         for (const group of myClass.groups) {
           console.log("myClass.groups", myClass.groups);
           const newMatches = createMatchesForGroup(group, matchIdCounter);
+
           matchIdCounter += newMatches.length; // Update the match ID counter
           matches.push(...newMatches);
           group.matches = newMatches; // Add matches to the group
+          setMaxMatchId(matchIdCounter);
         }
       }
       console.log("matches", matches);
@@ -1673,8 +1687,9 @@ function App() {
       } else {
         winner = currentMatch?.player2;
       }
-
-      setWinner(winner);
+      if (winner !== null) {
+        setWinner(winner);
+      }
       setCheckWinner(1);
       setWonSetsPlayer1(wonSetsPlayer1);
       setWonSetsPlayer2(wonSetsPlayer2);
@@ -2091,11 +2106,115 @@ function App() {
   function handleShowAdvancingPlayers() {
     setShowBracketAdvancingPlayers(true);
     setShowBracket(false);
+    setShowGroupResult(false);
   }
 
   function handleShowDrawBracket() {
     setShowBracketAdvancingPlayers(false);
     setShowBracket(true);
+    setShowGroupResult(false);
+    generateBracket();
+  }
+
+  function handleShowGroupResult() {
+    setShowBracketAdvancingPlayers(false);
+    setShowBracket(false);
+    setShowGroupResult(true);
+  }
+
+  function generateBracketNodes(matches: Match[]) {
+    /*const bracketNode: ClassBracketNode = {
+      match: bracketMatches[bracketMatches.length - 1],
+      parent: null,
+      up: bracketMatches[bracketMatches.length - 3],
+      down: bracketMatches[bracketMatches.length - 2],
+    };
+    
+
+    const classBracket: ClassBracket = {
+      root: bracketNode,
+      matches: bracketMatches,
+      players: [], // Replace with actual player data
+      classId: currentClass?.classId,
+      tournamentId: currentTournament?.tournamentId,
+    }*/
+    const nodeList: ClassBracketNode[] = [];
+    for (let i = 0; i < matches.length; i++) {
+      const match = matches[i];
+      const bracketNode: ClassBracketNode = {
+        match: match,
+        parent: null,
+        up: null,
+        down: null,
+      };
+      nodeList.push(bracketNode);
+    }
+    
+    linkBracketNodes(nodeList);
+  }
+
+  function linkBracketNodes(nodes: ClassBracketNode[]) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+
+      if (i === 0) {
+        node.parent = null;
+      } else {
+        node.parent = nodes[Math.floor((i - 1) / 2)];
+      }
+
+      if (2 * i + 1 < nodes.length) {
+        node.up = nodes[2 * i + 1];
+      }
+
+      if (2 * i + 2 < nodes.length) {
+        node.down = nodes[2 * i + 2];
+      }
+    }
+    console.log(nodes);
+
+    const classBracket: ClassBracket = {
+      root: nodes[0]!,
+      matches: bracketMatchesGlobal,
+      players: currentClass?.advancingPlayers,
+      classId: currentClass?.classId,
+      tournamentId: currentTournament?.tournamentId,
+    };
+    setClassBracket(classBracket);
+    setClassBracketNode(nodes[0]);
+  }
+
+  function generateBracketDraw() {
+   
+  }
+
+  function generateBracket() {
+    console.log(currentClass?.advancingPlayers?.length, "length adv players");
+    const numberOfPlayers = currentClass!.advancingPlayers!.length * 2;
+
+    console.log(numberOfPlayers, "number of players");
+    const numberOfRounds = Math.ceil(Math.log2(8));
+    console.log(numberOfRounds, "number of rounds");
+
+    const numberOfMatches = Math.pow(2, numberOfRounds) - 1;
+    console.log(numberOfMatches, "number of matches");
+
+    console.log(maxMatchId, "max match id");
+    const bracketMatches: Match[] = [];
+    for (let i = 0; i < numberOfMatches; i++) {
+      const matchId = maxMatchId + i + 1;
+      const match: Match = {
+        player1: null,
+        player2: null,
+        matchId: matchId,
+        tournamentId: currentTournament?.tournamentId,
+      };
+      bracketMatches.push(match);
+    }
+    setBracketMatchesGlobal(bracketMatches);
+
+    generateBracketNodes(bracketMatches);
+    console.log(currentClass?.advancingPlayers, "advancing players");
   }
 
   // App start
@@ -2387,7 +2506,6 @@ function App() {
                         if (displayedRankingFrom === 0) {
                           setDisplayedRankingFrom(displayedRankingFrom);
                           setDisplayedRankingTo(displayedRankingTo);
-                          
                         } else {
                           setDisplayedRankingFrom(displayedRankingFrom - 100);
                           setDisplayedRankingTo(displayedRankingTo - 100);
@@ -2403,14 +2521,15 @@ function App() {
                       icon={faArrowRight}
                       color="black"
                       onClick={() => {
-                         if (displayedRankingTo > filteredPlayersRanking.length ) {
-                        setDisplayedRankingFrom(displayedRankingFrom);
-                        setDisplayedRankingTo(displayedRankingTo);
-                         }
-                         else {
-                        setDisplayedRankingFrom(displayedRankingFrom + 100);
-                        setDisplayedRankingTo(displayedRankingTo + 100);
-                          }
+                        if (
+                          displayedRankingTo > filteredPlayersRanking.length
+                        ) {
+                          setDisplayedRankingFrom(displayedRankingFrom);
+                          setDisplayedRankingTo(displayedRankingTo);
+                        } else {
+                          setDisplayedRankingFrom(displayedRankingFrom + 100);
+                          setDisplayedRankingTo(displayedRankingTo + 100);
+                        }
                       }}
                       size={"2xl"}
                     />
@@ -2418,7 +2537,9 @@ function App() {
                 </Center>
                 {filteredPlayersRanking.length === 0 ? (
                   <Center>
-                  <Text fontWeight={"bold"} fontSize={"24px"}>No players found!</Text>
+                    <Text fontWeight={"bold"} fontSize={"24px"}>
+                      No players found!
+                    </Text>
                   </Center>
                 ) : null}
 
@@ -4591,8 +4712,49 @@ function App() {
                 </Flex>
               )}
 
+              {showBracketOverview && (
+                <Box maxWidth="100vw">
+                  <Center>
+                    <Text>
+                      {currentTournament?.name} - {currentClass?.name}
+                    </Text>
+                  </Center>
+                  <Center>
+                    <Button
+                      onClick={() => handleShowAdvancingPlayers()}
+                      bg="#FAF1E4"
+                      shadow={"md"}
+                      borderRadius={"20px"}
+                    >
+                      Advancing Players
+                    </Button>
+
+                    <Button
+                      m={2}
+                      borderRadius={"20px"}
+                      bg={"#FAF1E4"}
+                      shadow={"md"}
+                      onClick={() => {
+                        handleShowGroupResult();
+                      }}
+                    >
+                      Results
+                    </Button>
+                    <Button
+                      onClick={() => handleShowDrawBracket()}
+                      bg="green.200"
+                      borderRadius={"20px"}
+                      shadow={"md"}
+                      textColor={"white.200"}
+                    >
+                      Draw Bracket
+                    </Button>
+                  </Center>
+                </Box>
+              )}
+
               {showGroupResult && (
-                <Box flexWrap="wrap" justifyContent="center" maxWidth="100vw">
+                <Flex justifyContent="center" maxWidth="100vw">
                   <Flex
                     flexWrap="wrap"
                     justifyContent="center"
@@ -4602,7 +4764,7 @@ function App() {
                       <Box
                         margin={2}
                         minWidth="300"
-                        width={"40%"}
+                        width={"50%"}
                         key={group.name}
                       >
                         <GroupResult
@@ -4613,32 +4775,7 @@ function App() {
                       </Box>
                     ))}
                   </Flex>
-                </Box>
-              )}
-
-              {showBracketOverview && (
-                <Box>
-                  <Center>
-                    <Text>
-                      {currentTournament?.name} - {currentClass?.name}
-                    </Text>
-                  </Center>
-                  <Button
-                    onClick={() => handleShowAdvancingPlayers()}
-                    textColor={"white"}
-                    bg="blue.400"
-                    m={2}
-                  >
-                    Players
-                  </Button>
-                  <Button
-                    onClick={() => handleShowDrawBracket()}
-                    bg="orange.200"
-                    textColor={"white.200"}
-                  >
-                    Draw Bracket
-                  </Button>
-                </Box>
+                </Flex>
               )}
 
               {showBracketAdvancingPlayers && (
@@ -4646,6 +4783,7 @@ function App() {
                   {currentClass?.advancingPlayers?.map(
                     (playerList, listIndex) => (
                       <Box
+                        p={2}
                         borderRadius={4}
                         m={2}
                         bg="green.200"
@@ -4656,9 +4794,11 @@ function App() {
                         </Center>
                         {playerList.map((player, playerIndex: number) => (
                           <Box key={player.id}>
-                            <Text>
-                              {player.name} - {playerIndex + 1}{" "}
-                            </Text>
+                            <Center>
+                              <Text>
+                                {player.name} - {playerIndex + 1}{" "}
+                              </Text>
+                            </Center>
                           </Box>
                         ))}
                       </Box>
@@ -4667,7 +4807,16 @@ function App() {
                 </Box>
               )}
 
-              {showBracket && <Text>Draw bracket here</Text>}
+              {showBracket && (
+              <Box>
+                <ClassBracket
+                root={classBracketNode}
+                matches={bracketMatchesGlobal}
+              />
+                
+              </Box>
+
+              )}
             </Flex>
           </Flex>
         </ChakraProvider>

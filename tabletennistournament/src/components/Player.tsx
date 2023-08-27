@@ -47,15 +47,17 @@ function Player(props: Player) {
       shadow={isGroupPlayer ? "none" : "md"}
     >
       {props.score !== undefined && (
-        <Flex alignItems="center">
-          <Text
+        <Flex p={"2"} borderRadius={"10px"} bg={props.isTopPlayer ? "green.200" : "transparent"} alignItems="center">
+          <Text 
             fontSize={14}
             fontWeight={props.isTopPlayer ? "bold" : "normal"}
+            
           >
             {props.name} - {props.club} {props.points} ({props.class})
           </Text>
 
           <Spacer />
+          
           <Grid templateColumns="repeat(4, 1fr)" gap={4}>
             <Box textAlign="center">
               <Text>P</Text>

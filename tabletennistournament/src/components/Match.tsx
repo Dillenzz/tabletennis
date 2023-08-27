@@ -3,13 +3,13 @@ import CustomSet from './CustomSet';
 import { Box, Text, Center } from "@chakra-ui/react";
 interface   Match {
     matchId?: number;
-    player1?: Player;
-    player2?: Player;
+    player1?: Player | null | undefined;
+    player2?: Player | null | undefined;
     sets?: CustomSet[];
     tournamentId?: number;
     round?: string;
     group?: number;
-    winner?: Player;
+    winner?: Player | null;
     loser?: Player;
     date?: string;
     reported?: boolean;

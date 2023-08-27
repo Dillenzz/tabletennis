@@ -1,9 +1,11 @@
 import Player from "./Player";
 import Group from "./Group";
 import Match from "./Match";
+import ClassBracket from "./ClassBracket";
 
 
 interface Class {
+  classBracket?: ClassBracket | null;
   uid?: string;
   classId: number;
   tournamentId: number;
