@@ -299,9 +299,8 @@ function App() {
   // BRACKET
 
   const [bracketMatchesGlobal, setBracketMatchesGlobal] = useState<Match[]>([]);
- // const [bracketPlayers, setBracketPlayersGlobal] = useState<Player[]>([]);
-  const [classBracketNode, setClassBracketNode] =
-    useState<ClassBracketNode>();
+  // const [bracketPlayers, setBracketPlayersGlobal] = useState<Player[]>([]);
+  const [classBracketNode, setClassBracketNode] = useState<ClassBracketNode>();
   const [classBracket, setClassBracket] = useState<ClassBracket>();
 
   // save or update the tournament to Firebase
@@ -326,7 +325,16 @@ function App() {
     fetchData();
   }, []);
 
-  let currentDate = new Date();
+  let targetDate = new Date();
+  console.log(targetDate, "targetDate")
+  let currentDay = targetDate.getDate();
+  console.log(currentDay, "currentDay")
+  let currentMonth = targetDate.getMonth();
+  let currentYear = targetDate.getFullYear();
+
+
+
+  let currentDate = new Date(currentYear, currentMonth, currentDay);
 
   const onGogingTournaments = openTournaments
     .filter(
@@ -334,10 +342,13 @@ function App() {
         tournament.dateFrom &&
         new Date(tournament.dateFrom) < currentDate &&
         tournament.dateTo &&
-        new Date(tournament.dateTo) > currentDate
+        new Date(tournament.dateTo) >= currentDate
     )
 
     .sort((a, b) => a.dateFrom!.localeCompare(b.dateFrom!));
+
+   {{/*console.log(currentDate, tournamentDateFrom, tournamentDateTo, "currentDate, tournamentDateFrom, tournamentDateTo")*/}}
+    console.log(currentDate)
 
   const upcomingTournaments = openTournaments
     .filter(
@@ -2149,7 +2160,7 @@ function App() {
       };
       nodeList.push(bracketNode);
     }
-    
+
     linkBracketNodes(nodeList);
   }
 
@@ -2184,9 +2195,7 @@ function App() {
     setClassBracketNode(nodes[0]);
   }
 
-  function generateBracketDraw() {
-   
-  }
+  function generateBracketDraw() {}
 
   function generateBracket() {
     console.log(currentClass?.advancingPlayers?.length, "length adv players");
@@ -4808,14 +4817,12 @@ function App() {
               )}
 
               {showBracket && (
-              <Box>
-                <ClassBracket
-                root={classBracketNode}
-                matches={bracketMatchesGlobal}
-              />
-                
-              </Box>
-
+                <Box>
+                  <ClassBracket
+                    root={classBracketNode}
+                    matches={bracketMatchesGlobal}
+                  />
+                </Box>
               )}
             </Flex>
           </Flex>
