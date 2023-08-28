@@ -2193,6 +2193,7 @@ function App() {
     };
     setClassBracketGlobal(classBracket);
     setClassBracketNode(nodes[0]);
+    console.log(classBracketNode);
     console.log(classBracketGlobal);
 
 
@@ -4822,8 +4823,8 @@ function App() {
               {showBracket && (
                 <Box>
                   <ClassBracket
-                    root={classBracketNode}
-                    matches={bracketMatchesGlobal}
+                    
+                   
                   />
                 </Box>
               )}
