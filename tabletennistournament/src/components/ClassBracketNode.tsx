@@ -10,8 +10,8 @@ interface ClassBracketNode {
 }
 
 
-function ClassBracketNode(props:) {
-    const { match, up, down, parent } = props.node;
+function ClassBracketNode(props: { node: ClassBracketNode }) {
+    const { match, up, down } = props.node;
 
     return (
         <Box>

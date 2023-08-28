@@ -1,7 +1,7 @@
 import  Match  from "./Match";
 import  Player  from "./Player";
 import ClassBracketNode from "./ClassBracketNode";
-import { Box, Text} from "@chakra-ui/react";
+import { Box} from "@chakra-ui/react";
 
 interface ClassBracket {
     root?: ClassBracketNode;
@@ -11,7 +11,7 @@ interface ClassBracket {
     classId?: number;
 }
 
-function ClassBracket(props: ClassBracket) {
+function ClassBracket() {
     return (
         <Box>
             
