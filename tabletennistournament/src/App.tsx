@@ -326,9 +326,7 @@ function App() {
   }, []);
 
   let targetDate = new Date();
-  console.log(targetDate, "targetDate")
   let currentDay = targetDate.getDate();
-  console.log(currentDay, "currentDay")
   let currentMonth = targetDate.getMonth();
   let currentYear = targetDate.getFullYear();
 
@@ -348,7 +346,7 @@ function App() {
     .sort((a, b) => a.dateFrom!.localeCompare(b.dateFrom!));
 
    {{/*console.log(currentDate, tournamentDateFrom, tournamentDateTo, "currentDate, tournamentDateFrom, tournamentDateTo")*/}}
-    console.log(currentDate)
+    
 
   const upcomingTournaments = openTournaments
     .filter(
@@ -2134,34 +2132,31 @@ function App() {
   }
 
   function generateBracketNodes(matches: Match[]) {
-    /*const bracketNode: ClassBracketNode = {
-      match: bracketMatches[bracketMatches.length - 1],
-      parent: null,
-      up: bracketMatches[bracketMatches.length - 3],
-      down: bracketMatches[bracketMatches.length - 2],
-    };
-    
-
-    const classBracket: ClassBracket = {
-      root: bracketNode,
-      matches: bracketMatches,
-      players: [], // Replace with actual player data
-      classId: currentClass?.classId,
-      tournamentId: currentTournament?.tournamentId,
-    }*/
     const nodeList: ClassBracketNode[] = [];
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];
+      const level = Math.floor(Math.log2(i + 1)); // Calculate the level based on the index
       const bracketNode: ClassBracketNode = {
         match: match,
         parent: null,
         up: null,
         down: null,
+        level: level,
+        
       };
       nodeList.push(bracketNode);
     }
-
+  
     linkBracketNodes(nodeList);
+  }
+
+  function assingSeededPlayersToBracket() {
+    
+    let players = currentClass?.advancingPlayers;
+    console.log("assingSeededPlayersToBracket");
+    for (let i = 0; i < currentClass!.advancingPlayers!.length; i++){
+      
+    }
   }
 
   function linkBracketNodes(nodes: ClassBracketNode[]) {
@@ -2182,7 +2177,7 @@ function App() {
         node.down = nodes[2 * i + 2];
       }
     }
-    console.log(nodes);
+   // console.log(nodes);
 
     const classBracket: ClassBracket = {
       root: nodes[0]!,
@@ -2193,27 +2188,22 @@ function App() {
     };
     setClassBracketGlobal(classBracket);
     setClassBracketNode(nodes[0]);
-    console.log(classBracketNode);
-    console.log(classBracketGlobal);
-    console.log(classBracketGlobal?.root?.match?.player1?.name);
+    //console.log(classBracketNode);
+    //console.log(classBracketGlobal);
+    //console.log(classBracketGlobal?.root?.match?.player1?.name);
 
 
   }
-
-  
-
   function generateBracket() {
-    console.log(currentClass?.advancingPlayers?.length, "length adv players");
+   
     const numberOfPlayers = currentClass!.advancingPlayers!.length * 2;
 
-    console.log(numberOfPlayers, "number of players");
-    const numberOfRounds = Math.ceil(Math.log2(8));
-    console.log(numberOfRounds, "number of rounds");
+   
+    const numberOfRounds = Math.ceil(Math.log2(8)); {/**TODO */}
+  
 
     const numberOfMatches = Math.pow(2, numberOfRounds) - 1;
-    console.log(numberOfMatches, "number of matches");
-
-    console.log(maxMatchId, "max match id");
+   
     const bracketMatches: Match[] = [];
     for (let i = 0; i < numberOfMatches; i++) {
       const matchId = maxMatchId + i + 1;
@@ -2228,7 +2218,7 @@ function App() {
     setBracketMatchesGlobal(bracketMatches);
 
     generateBracketNodes(bracketMatches);
-    console.log(currentClass?.advancingPlayers, "advancing players");
+    
   }
 
   // App start
@@ -2932,7 +2922,7 @@ function App() {
             )}
 
             {showOpenTournaments && (
-              <Box>
+              <Box  >
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
@@ -4823,10 +4813,8 @@ function App() {
 
               {showBracket && (
                 <Box>
-                  <ClassBracket
-                    
-                   
-                  />
+                  <ClassBracket root={classBracketNode}  matches={bracketMatchesGlobal} />
+                  
                 </Box>
               )}
             </Flex>

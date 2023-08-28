@@ -1,30 +1,74 @@
-import Match from "./Match";
+  import Match from "./Match";
+  import { Box, Text } from "@chakra-ui/react";
 
-import { Box, Text} from "@chakra-ui/react";
-
-interface ClassBracketNode {
+  interface ClassBracketNode {
     match?: Match;
+    up?: ClassBracketNode | null;
+    down?: ClassBracketNode | null;
     parent?: ClassBracketNode | null;
-    up?: ClassBracketNode | null; // Child representing one path of advancement
-    down?: ClassBracketNode | null; // Child representing another path of advancement
-}
+    level?: number;
+    matchNumber?: number;
+  }
+
+ 
+  
+  
 
 
-function ClassBracketNode(props: { node: ClassBracketNode }) {
-    const { match, up, down } = props.node;
+  function ClassBracketNode(props: ClassBracketNode) {
+    const { match, up, down, level, matchNumber } = props;
+    const currentUpMatch = up?.match;
+    const currentDownMatch = down?.match;
 
+    
+    
+
+    if (!match) {
+      return null; // Terminate the recursion if there's no match
+    }
+
+    const getRoundLabel = (level: number) => {
+      if (level === 0) return "Finals";
+      if (level === 1) return "Semifinal";
+      if (level === 2) return "Quarterfinal";
+      if (level >= 3 && level <= 10) return `Round of ${Math.pow(2, 8 - level)}`;
+      return ""; // Return empty string for other levels
+    };
+    
     return (
-        <Box>
-            {match && (
-                <Text>
-                    {match.player1?.name} - {match.player2?.name}
-                </Text>
-            )}
-            {up && <ClassBracketNode node={up} />}
-            {down && <ClassBracketNode node={down} />}
-        </Box>
+      <Box>
+        
+        {match !== undefined && (
+          <Text>
+
+              {getRoundLabel(level!)}
+          </Text>
+        )}
+        {currentUpMatch && (
+          <Box>
+            <ClassBracketNode
+              match={currentUpMatch}
+              up={up?.up}
+              level={level! + 1} // Corrected
+              down={up?.down}
+              
+            />
+          </Box>
+        )}
+        {currentDownMatch && (
+          <Box>
+            
+            <ClassBracketNode
+              match={currentDownMatch}
+              up={down?.up}
+              level={level! + 1}
+              down={down?.down}
+              
+            />
+          </Box>
+        )}
+      </Box>
     );
-}
+  }
 
-
-export default ClassBracketNode;
+  export default ClassBracketNode;
