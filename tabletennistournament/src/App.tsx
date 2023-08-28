@@ -301,7 +301,7 @@ function App() {
   const [bracketMatchesGlobal, setBracketMatchesGlobal] = useState<Match[]>([]);
   // const [bracketPlayers, setBracketPlayersGlobal] = useState<Player[]>([]);
   const [classBracketNode, setClassBracketNode] = useState<ClassBracketNode>();
-  const [classBracket, setClassBracket] = useState<ClassBracket>();
+  const [classBracketGlobal, setClassBracketGlobal] = useState<ClassBracket>();
 
   // save or update the tournament to Firebase
 
@@ -2191,11 +2191,14 @@ function App() {
       classId: currentClass?.classId,
       tournamentId: currentTournament?.tournamentId,
     };
-    setClassBracket(classBracket);
+    setClassBracketGlobal(classBracket);
     setClassBracketNode(nodes[0]);
+    console.log(classBracketGlobal);
+
+
   }
 
-  function generateBracketDraw() {}
+  
 
   function generateBracket() {
     console.log(currentClass?.advancingPlayers?.length, "length adv players");
