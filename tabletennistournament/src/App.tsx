@@ -2195,6 +2195,7 @@ function App() {
     setClassBracketNode(nodes[0]);
     console.log(classBracketNode);
     console.log(classBracketGlobal);
+    console.log(classBracketGlobal?.root?.match?.player1?.name);
 
 
   }
