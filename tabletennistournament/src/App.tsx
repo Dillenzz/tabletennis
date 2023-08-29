@@ -2199,7 +2199,7 @@ function App() {
     const numberOfPlayers = currentClass!.advancingPlayers!.length * 2;
 
    
-    const numberOfRounds = Math.ceil(Math.log2(8)); {/**TODO */}
+    const numberOfRounds = Math.ceil(Math.log2(12)); {/**TODO */}
   
 
     const numberOfMatches = Math.pow(2, numberOfRounds) - 1;
