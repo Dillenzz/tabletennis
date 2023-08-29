@@ -1,10 +1,13 @@
 import Match from "./Match";
 import Player from "./Player";
 import ClassBracketNode from "./ClassBracketNode";
-import { Box, Grid } from "@chakra-ui/react";
+import BracketMatch from "./BracketMatch";
+import { Box, Center, Flex } from "@chakra-ui/react";
+import "./ClassBracket.css";
 
 interface ClassBracket {
   root?: ClassBracketNode;
+  rootList?: ClassBracketNode[];
   matches?: Match[];
   players?: Player[][];
   tournamentId?: number;
@@ -27,7 +30,6 @@ function ClassBracket(props: ClassBracket | undefined) {
       isFullBracket = true;
       // never enters this loop because we alays generate whole bracket even though it is not full
       break;
-      
     }
   }
 
@@ -49,41 +51,83 @@ function ClassBracket(props: ClassBracket | undefined) {
       }
     }
     for (let i = 0; i < matchesPerRound.length; i++) {
-        if (matchesLength >= matchesPerRound[i]) {
-          matchesEachRound.push(matchesPerRound[i]);
-          matchesLength = matchesLength - matchesPerRound[i];
-        }
+      if (matchesLength >= matchesPerRound[i]) {
+        matchesEachRound.push(matchesPerRound[i]);
+        matchesLength = matchesLength - matchesPerRound[i];
       }
-
+    }
   }
 
   function renderMatches(matches: number) {
     // Replace this function with your own logic to render match components
     // based on the number of matches in each round
     return new Array(matches).fill(null).map((_, index) => (
-        <Box key={index} p={2} borderWidth="1px" borderRadius="md">
-            Match {index + 1}
-        </Box>
+      <Box key={index} p={2} borderWidth="1px" borderRadius="md">
+        Match {index + 1}
+      </Box>
     ));
-}
-
+  }
+  console.log(props?.rootList, "rootList");
   //console.log(matchesEachRound, "matchesEachRound");
-    
-  
+  const numColumns = matchesEachRound.length;
+
   return (
-    <Box>
-      <Grid>
-      </Grid>
-       {/*} <ClassBracketNode
-          up={props?.root?.up}
-          down={props?.root?.down}
-          match={props?.root?.match}
-          level={props?.root?.level}
-          matchNumber={props?.root?.level}
-        />
-  */}
-      
-    </Box>
+    <Flex>
+      <Flex
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${numColumns}, 1fr)`,
+          gap: "10px",
+        }}
+      >
+        {matchesEachRound.map((count, columnIndex) => (
+          <Flex
+            key={columnIndex}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {Array.from({ length: count }).map((_, index) => (
+              <Center key={index}>
+                <Flex
+                  style={{
+                    marginTop: `${
+                      count === 8
+                        ? "5px"
+                        : count === 4
+                        ? "20px"
+                        : count === 2
+                        ? "50px"
+                        : count === 1
+                        ? "30px"
+                        : "30px"
+                    }`,
+                    marginBottom: `${
+                      count === 8
+                        ? "5px"
+                        : count === 4
+                        ? "20px"
+                        : count === 2
+                        ? "50px"
+                        : count === 1
+                        ? "30px"
+                        : "30px"
+                    }`
+                  }}
+                >
+                  {/*Column {columnIndex + 1}, Item {index + 1}*/}
+                  <BracketMatch></BracketMatch>
+                </Flex>
+              </Center>
+            ))}
+          </Flex>
+        ))}
+      </Flex>
+    </Flex>
   );
 }
+
 export default ClassBracket;

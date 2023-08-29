@@ -302,6 +302,7 @@ function App() {
   // const [bracketPlayers, setBracketPlayersGlobal] = useState<Player[]>([]);
   const [classBracketNode, setClassBracketNode] = useState<ClassBracketNode>();
   const [classBracketGlobal, setClassBracketGlobal] = useState<ClassBracket>();
+  const [classBracketNodeList, setClassBracketNodeList] = useState<ClassBracketNode[]>([]);
 
   // save or update the tournament to Firebase
 
@@ -2188,6 +2189,7 @@ function App() {
     };
     setClassBracketGlobal(classBracket);
     setClassBracketNode(nodes[0]);
+    setClassBracketNodeList(nodes.reverse());
     //console.log(classBracketNode);
     //console.log(classBracketGlobal);
     //console.log(classBracketGlobal?.root?.match?.player1?.name);
@@ -2199,7 +2201,7 @@ function App() {
     const numberOfPlayers = currentClass!.advancingPlayers!.length * 2;
 
    
-    const numberOfRounds = Math.ceil(Math.log2(12)); {/**TODO */}
+    const numberOfRounds = Math.ceil(Math.log2(8)); {/**TODO */}
   
 
     const numberOfMatches = Math.pow(2, numberOfRounds) - 1;
@@ -4811,13 +4813,16 @@ function App() {
                 </Box>
               )}
 
-              {showBracket && (
-                <Box>
-                  <ClassBracket root={classBracketNode}  matches={bracketMatchesGlobal} />
-                  
-                </Box>
-              )}
+              
             </Flex>
+            <Flex>          
+            {showBracket && (
+                <Flex>
+                  <ClassBracket rootList={classBracketNodeList} root={classBracketNode}  matches={bracketMatchesGlobal} />
+                  
+                </Flex>
+              )}
+              </Flex>    
           </Flex>
         </ChakraProvider>
       </Flex>
