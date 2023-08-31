@@ -15,11 +15,11 @@ interface ClassBracket {
 }
 
 function ClassBracket(props: ClassBracket | undefined) {
-  console.log(props?.matches, "matches1");
+  //console.log(props?.matches, "matches1");
 
-  let matchesReversed = props?.matches ? [...props.matches].reverse() : [];
+  let matchesReversed = props?.matches ? [...props.matches] : [];
 
-  console.log(matchesReversed, "matches2");
+ // console.log(matchesReversed, "matches2");
   let matchesPerRound = [512, 256, 128, 64, 32, 16, 8, 4, 2, 1];
   let matchesEachRound = [];
 
@@ -38,7 +38,7 @@ function ClassBracket(props: ClassBracket | undefined) {
       if (matchesLength >= matchesPerRound[i]) {
         matchesEachRound.push(matchesPerRound[i]);
         matchesLength = matchesLength - matchesPerRound[i];
-        console.log(matchesEachRound, "matchesEachRound");
+       // console.log(matchesEachRound, "matchesEachRound");
       }
     }
   } else {
@@ -67,9 +67,11 @@ function ClassBracket(props: ClassBracket | undefined) {
       </Box>
     ));
   }
-  console.log(props?.rootList, "rootList");
+ // console.log(props?.rootList, "rootList");
   //console.log(matchesEachRound, "matchesEachRound");
   const numColumns = matchesEachRound.length;
+
+  let totalMatchesRendered = 0;
 
   return (
     <Flex>
@@ -91,27 +93,40 @@ function ClassBracket(props: ClassBracket | undefined) {
             }}
           >
             {Array.from({ length: count }).map((_, index) => (
+              totalMatchesRendered++,
               <Center key={index}>
                 <Flex
                   style={{
                     marginTop: `${
-                      count === 8
+                      count === 64
+                      ? "5px" 
+                      : count === 32
                         ? "5px"
+                     : count === 16
+                      ? "28px" 
+                      : count === 8
+                        ? "74px"
                         : count === 4
-                        ? "20px"
+                        ? "165px"
                         : count === 2
-                        ? "50px"
+                        ? "340px"
                         : count === 1
                         ? "30px"
                         : "30px"
                     }`,
                     marginBottom: `${
-                      count === 8
+                      count === 64
+                      ? "5px" 
+                      : count === 32
                         ? "5px"
+                     : count === 16
+                      ? "28px" 
+                      : count === 8
+                        ? "74px"
                         : count === 4
-                        ? "20px"
+                        ? "165px"
                         : count === 2
-                        ? "50px"
+                        ? "340px"
                         : count === 1
                         ? "30px"
                         : "30px"
@@ -119,7 +134,7 @@ function ClassBracket(props: ClassBracket | undefined) {
                   }}
                 >
                   {/*Column {columnIndex + 1}, Item {index + 1}*/}
-                  <BracketMatch></BracketMatch>
+                  <BracketMatch match={matchesReversed[totalMatchesRendered-1]} ></BracketMatch>
                 </Flex>
               </Center>
             ))}

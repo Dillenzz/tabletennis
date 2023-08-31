@@ -1,7 +1,9 @@
 import Player from "./Player";
+import Match from "./Match";
 import CustomSet from "./CustomSet";
 import { Box, Text, Center, Stack, Flex } from "@chakra-ui/react";
 interface BracketMatch {
+  match: Match;
   matchId?: number;
   player1?: Player | null | undefined;
   player2?: Player | null | undefined;
@@ -32,11 +34,11 @@ function BracketMatch(props: BracketMatch) {
     >
       <Stack>
         <Box>
-          <Text fontSize="8">Dillström J {props.player1?.name}</Text>
+          <Text fontSize="12">  {props.match.player1?.name}</Text>
 
           
 
-          <Text fontSize="8">Daniselsson D {props.player2?.name}</Text>
+          <Text fontSize="12">{props.match.player2?.name}</Text>
         </Box>
       </Stack>
     </Flex>

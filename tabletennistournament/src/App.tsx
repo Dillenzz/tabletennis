@@ -302,7 +302,9 @@ function App() {
   // const [bracketPlayers, setBracketPlayersGlobal] = useState<Player[]>([]);
   const [classBracketNode, setClassBracketNode] = useState<ClassBracketNode>();
   const [classBracketGlobal, setClassBracketGlobal] = useState<ClassBracket>();
-  const [classBracketNodeList, setClassBracketNodeList] = useState<ClassBracketNode[]>([]);
+  const [classBracketNodeList, setClassBracketNodeList] = useState<
+    ClassBracketNode[]
+  >([]);
 
   // save or update the tournament to Firebase
 
@@ -331,8 +333,6 @@ function App() {
   let currentMonth = targetDate.getMonth();
   let currentYear = targetDate.getFullYear();
 
-
-
   let currentDate = new Date(currentYear, currentMonth, currentDay);
 
   const onGogingTournaments = openTournaments
@@ -346,8 +346,11 @@ function App() {
 
     .sort((a, b) => a.dateFrom!.localeCompare(b.dateFrom!));
 
-   {{/*console.log(currentDate, tournamentDateFrom, tournamentDateTo, "currentDate, tournamentDateFrom, tournamentDateTo")*/}}
-    
+  {
+    {
+      /*console.log(currentDate, tournamentDateFrom, tournamentDateTo, "currentDate, tournamentDateFrom, tournamentDateTo")*/
+    }
+  }
 
   const upcomingTournaments = openTournaments
     .filter(
@@ -2143,21 +2146,11 @@ function App() {
         up: null,
         down: null,
         level: level,
-        
       };
       nodeList.push(bracketNode);
     }
-  
-    linkBracketNodes(nodeList);
-  }
 
-  function assingSeededPlayersToBracket() {
-    
-    let players = currentClass?.advancingPlayers;
-    console.log("assingSeededPlayersToBracket");
-    for (let i = 0; i < currentClass!.advancingPlayers!.length; i++){
-      
-    }
+    linkBracketNodes(nodeList);
   }
 
   function linkBracketNodes(nodes: ClassBracketNode[]) {
@@ -2178,7 +2171,7 @@ function App() {
         node.down = nodes[2 * i + 2];
       }
     }
-   // console.log(nodes);
+    // console.log(nodes);
 
     const classBracket: ClassBracket = {
       root: nodes[0]!,
@@ -2189,23 +2182,125 @@ function App() {
     };
     setClassBracketGlobal(classBracket);
     setClassBracketNode(nodes[0]);
-    setClassBracketNodeList(nodes.reverse());
+    assignSeededPlayersToBracket(classBracket, nodes);
+
     //console.log(classBracketNode);
     //console.log(classBracketGlobal);
     //console.log(classBracketGlobal?.root?.match?.player1?.name);
-
-
   }
+
+  function assignSeededPlayersToBracket(classBracketInput: ClassBracket, classBracketNodeListInput: ClassBracketNode[]) {
+    let players = currentClass?.advancingPlayers;
+    let semiSeed: boolean | null = null;
+    console.log("assignSeededPlayersToBracket", classBracketNodeListInput);
+    let topNode = classBracketNodeListInput[0];
+    let newNodeListBU = classBracketNodeListInput.reverse();
+
+    for (let i = 0; i < currentClass!.advancingPlayers!.length; i++) {
+      const player = players![i][0];
+      console.log(player, "player");
+      let currentNode = topNode;
+
+      if (i === 0) {
+        // Traverse up the hierarchy until reaching the top node
+        console.log("here")
+       
+        while (currentNode?.up !== null) {
+          
+          currentNode = currentNode.up!;
+         
+        }
+        currentNode.match!.player1 = player;
+        newNodeListBU[i] = currentNode;
+        while (currentNode?.parent !== null ) {
+          currentNode.parent!.up = currentNode;
+          currentNode = currentNode.parent!;
+        }
+        topNode = currentNode;
+      } else if (i === 1) {
+        console.log("i == 1")
+        // Traverse down the hierarchy until reaching the bottom node
+        while (currentNode?.down !== null ) {
+          currentNode = currentNode.down!;
+        }
+
+        currentNode.match!.player2 = player;
+        newNodeListBU[3] = currentNode;
+        while (currentNode?.parent !== null) {
+          currentNode.parent!.down = currentNode;
+          currentNode = currentNode.parent!;
+        }
+        topNode = currentNode;
+        
+      } else if (i === 2 && semiSeed === null) {
+        console.log("i == 2")
+        const random = Math.random() >= 0.5;
+        console.log(random, "random")
+        // Traverse down the hierarchy until reaching the bottom node
+        if (random) {
+          semiSeed = true;
+          console.log(currentNode, "currentNode")
+          currentNode = currentNode.up!;
+          
+          while (currentNode?.down !== null ) {
+            currentNode = currentNode.down!;
+            console.log(currentNode, "currentNode inside while")
+          }
+          console.log("after while")
+          currentNode.match!.player2 = player;
+          newNodeListBU[i-1] = currentNode;
+          
+        } else {
+          currentNode = currentNode.down!;
+          semiSeed = false;
+          while (currentNode?.up !== null ) {
+            currentNode = currentNode.up!;
+          }
+          currentNode.match!.player1 = player;
+          newNodeListBU[i] = currentNode;
+        }
+      } else if (i === 3) {
+        if (semiSeed === true) {
+          currentNode = currentNode.down!;
+          while (currentNode?.up !== null)  {
+            currentNode = currentNode.up!;
+          }
+          currentNode.match!.player1 = player;
+          newNodeListBU[i-1] = currentNode;
+        } else {
+          currentNode = currentNode.up!;
+          while (currentNode?.down !== null) {
+            currentNode = currentNode.down!;
+          }
+          currentNode.match!.player2 = player;
+          newNodeListBU[i-2] = currentNode;
+        }
+      }
+    }
+
+    console.log(newNodeListBU, "newNodeListBU")
+    setClassBracketNodeList(newNodeListBU);
+    setClassBracketNode(topNode);
+    updateMatchesInBracket(newNodeListBU);
+  }
+
+  function updateMatchesInBracket(nodeList: ClassBracketNode[]) {
+    const matches = nodeList.map((node) => node.match!);
+    console.log(matches, "matches")
+    setBracketMatchesGlobal(matches);
+  }
+
+
   function generateBracket() {
-   
     const numberOfPlayers = currentClass!.advancingPlayers!.length * 2;
 
-   
-    const numberOfRounds = Math.ceil(Math.log2(8)); {/**TODO */}
-  
+    const numberOfRounds = Math.ceil(Math.log2(numberOfPlayers));
+    {
+      /**TODO */
+    }
 
     const numberOfMatches = Math.pow(2, numberOfRounds) - 1;
-   
+
     const bracketMatches: Match[] = [];
     for (let i = 0; i < numberOfMatches; i++) {
       const matchId = maxMatchId + i + 1;
@@ -2220,7 +2315,6 @@ function App() {
     setBracketMatchesGlobal(bracketMatches);
 
     generateBracketNodes(bracketMatches);
-    
   }
 
   // App start
@@ -2924,7 +3018,7 @@ function App() {
             )}
 
             {showOpenTournaments && (
-              <Box  >
+              <Box>
                 {loadingOpenTournaments && (
                   <Center>
                     <Text>Tournaments are loading, please be patient</Text>
@@ -4812,17 +4906,18 @@ function App() {
                   )}
                 </Box>
               )}
-
-              
             </Flex>
-            <Flex>          
-            {showBracket && (
+            <Flex>
+              {showBracket && (
                 <Flex>
-                  <ClassBracket rootList={classBracketNodeList} root={classBracketNode}  matches={bracketMatchesGlobal} />
-                  
+                  <ClassBracket
+                    rootList={classBracketNodeList}
+                    root={classBracketNode}
+                    matches={bracketMatchesGlobal}
+                  />
                 </Flex>
               )}
-              </Flex>    
+            </Flex>
           </Flex>
         </ChakraProvider>
       </Flex>
