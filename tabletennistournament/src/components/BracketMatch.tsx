@@ -34,11 +34,12 @@ function BracketMatch(props: BracketMatch) {
     >
       <Stack>
         <Box>
-          <Text fontSize="12">  {props.match.player1?.name}</Text>
+        <Text fontSize={12}>{props.match.player1?.name ? props.match.player1?.name : "Laban"}</Text>
 
           
 
-          <Text fontSize="12">{props.match.player2?.name}</Text>
+          <Text fontSize={12}>{props.match.player2?.name ? props.match.player2?.name : "Laban"}</Text>
+
         </Box>
       </Stack>
     </Flex>

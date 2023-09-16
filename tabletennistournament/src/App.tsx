@@ -305,6 +305,7 @@ function App() {
   const [classBracketNodeList, setClassBracketNodeList] = useState<
     ClassBracketNode[]
   >([]);
+  const [matchesEachRoundGlobal, setMatchesEachRoundGlobal] = useState<number[]>([]);
 
   // save or update the tournament to Firebase
 
@@ -2182,19 +2183,21 @@ function App() {
     };
     setClassBracketGlobal(classBracket);
     setClassBracketNode(nodes[0]);
-    assignSeededPlayersToBracket(classBracket, nodes);
+    assignSeededPlayersToBracket(matchesEachRoundGlobal, nodes);
 
     //console.log(classBracketNode);
     //console.log(classBracketGlobal);
     //console.log(classBracketGlobal?.root?.match?.player1?.name);
   }
 
-  function assignSeededPlayersToBracket(classBracketInput: ClassBracket, classBracketNodeListInput: ClassBracketNode[]) {
+  function assignSeededPlayersToBracket(matchesEachRound: number[], classBracketNodeListInput: ClassBracketNode[]) {
     let players = currentClass?.advancingPlayers;
     let semiSeed: boolean | null = null;
+    let matchesFirstRound = matchesEachRound[0];
     console.log("assignSeededPlayersToBracket", classBracketNodeListInput);
     let topNode = classBracketNodeListInput[0];
     let newNodeListBU = classBracketNodeListInput.reverse();
+    let playerSide = new Set();
 
     for (let i = 0; i < currentClass!.advancingPlayers!.length; i++) {
       const player = players![i][0];
@@ -2211,12 +2214,13 @@ function App() {
          
         }
         currentNode.match!.player1 = player;
-        newNodeListBU[i] = currentNode;
+        newNodeListBU[0] = currentNode;
         while (currentNode?.parent !== null ) {
           currentNode.parent!.up = currentNode;
           currentNode = currentNode.parent!;
         }
         topNode = currentNode;
+        playerSide.add([player, 0]);
       } else if (i === 1) {
         console.log("i == 1")
         // Traverse down the hierarchy until reaching the bottom node
@@ -2225,14 +2229,15 @@ function App() {
         }
 
         currentNode.match!.player2 = player;
-        newNodeListBU[3] = currentNode;
+        newNodeListBU[matchesFirstRound-1] = currentNode;
         while (currentNode?.parent !== null) {
           currentNode.parent!.down = currentNode;
           currentNode = currentNode.parent!;
         }
         topNode = currentNode;
+        playerSide.add([player, 1]);
         
-      } else if (i === 2 && semiSeed === null) {
+      } else if (i === 2  && semiSeed === null) {
         console.log("i == 2")
         const random = Math.random() >= 0.5;
         console.log(random, "random")
@@ -2248,7 +2253,14 @@ function App() {
           }
           console.log("after while")
           currentNode.match!.player2 = player;
-          newNodeListBU[i-1] = currentNode;
+          newNodeListBU[(matchesFirstRound/2)-1] = currentNode;
+          playerSide.add([player, 0]);
+          {/** position 1 and 2 need to be assigned so we do matchesFirstRound/2 = 4/2 2   ----  matchesFirstRound = 8 --> 8/2 = 4 0,1,2,3*
+          
+          What happens with 16 people? 16/2 = 8 0,1,2,3,4,5,6,7 works!
+
+          
+        */}
           
         } else {
           currentNode = currentNode.down!;
@@ -2257,7 +2269,8 @@ function App() {
             currentNode = currentNode.up!;
           }
           currentNode.match!.player1 = player;
-          newNodeListBU[i] = currentNode;
+          newNodeListBU[matchesFirstRound/2] = currentNode;
+          playerSide.add([player, 1]);
         }
       } else if (i === 3) {
         if (semiSeed === true) {
@@ -2266,16 +2279,22 @@ function App() {
             currentNode = currentNode.up!;
           }
           currentNode.match!.player1 = player;
-          newNodeListBU[i-1] = currentNode;
+          newNodeListBU[(matchesFirstRound/2)] = currentNode;
+          playerSide.add([player, 1]);
         } else {
           currentNode = currentNode.up!;
           while (currentNode?.down !== null) {
             currentNode = currentNode.down!;
           }
           currentNode.match!.player2 = player;
-          newNodeListBU[i-2] = currentNode;
+          newNodeListBU[(matchesFirstRound/2)-1] = currentNode;
+          playerSide.add([player, 0]);
         }
       }
+    }
+
+    for (let i = 0; i < currentClass!.advancingPlayers!.length; i++){
+      let player = players![i][1];
     }
 
     console.log(newNodeListBU, "newNodeListBU")
@@ -2283,6 +2302,8 @@ function App() {
     setClassBracketNode(topNode);
     updateMatchesInBracket(newNodeListBU);
   }
+
+  
 
   function updateMatchesInBracket(nodeList: ClassBracketNode[]) {
     const matches = nodeList.map((node) => node.match!);
@@ -2315,7 +2336,54 @@ function App() {
     setBracketMatchesGlobal(bracketMatches);
 
     generateBracketNodes(bracketMatches);
+    const matchesEachRound = calculateMatchesEachRounnd(bracketMatches);
+    console.log(matchesEachRound, "matchesEachRound");
+    setMatchesEachRoundGlobal(matchesEachRound);
   }
+
+  function calculateMatchesEachRounnd(matches: Match[]) {
+    let matchesReversed = matches.reverse();
+
+ // console.log(matchesReversed, "matches2");
+  let matchesPerRound = [512, 256, 128, 64, 32, 16, 8, 4, 2, 1];
+  let matchesEachRound = [];
+
+  let matchesLength = matchesReversed.length;
+  let isFullBracket = false;
+  for (let i = 0; i < matchesPerRound.length; i++) {
+    if (matchesLength === matchesPerRound[i] - 1) {
+      isFullBracket = true;
+      // never enters this loop because we alays generate whole bracket even though it is not full
+      break;
+    }
+  }
+
+  if (isFullBracket) {
+    for (let i = 0; i < matchesPerRound.length; i++) {
+      if (matchesLength >= matchesPerRound[i]) {
+        matchesEachRound.push(matchesPerRound[i]);
+        matchesLength = matchesLength - matchesPerRound[i];
+       // console.log(matchesEachRound, "matchesEachRound");
+      }
+    }
+  } else {
+    console.log("should not else");
+    for (let i = 0; i < matchesPerRound.length; i++) {
+      if (matchesLength >= matchesPerRound[i]) {
+        matchesLength = matchesLength - (matchesLength - matchesPerRound[i]);
+        matchesEachRound.push(matchesLength);
+        break;
+      }
+    }
+    for (let i = 0; i < matchesPerRound.length; i++) {
+      if (matchesLength >= matchesPerRound[i]) {
+        matchesEachRound.push(matchesPerRound[i]);
+        matchesLength = matchesLength - matchesPerRound[i];
+      }
+    }
+  }
+  return matchesEachRound;
+}
 
   // App start
   return (
