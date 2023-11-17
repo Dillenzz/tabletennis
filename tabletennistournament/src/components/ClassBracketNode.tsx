@@ -8,15 +8,14 @@
     parent?: ClassBracketNode | null;
     level?: number;
     matchNumber?: number;
+    leftRight?: string | null;
+    id?: number;
   }
 
  
   
-  
-
-
   function ClassBracketNode(props: ClassBracketNode) {
-    const { match, up, down, level, matchNumber } = props;
+    const { match, up, down, level } = props;
     const currentUpMatch = up?.match;
     const currentDownMatch = down?.match;
 
