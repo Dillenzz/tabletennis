@@ -56,6 +56,7 @@ function ClassBracket(props: ClassBracket | undefined) {
         matchesLength = matchesLength - matchesPerRound[i];
       }
     }
+    renderMatches(matchesLength);
   }
 
   function renderMatches(matches: number) {
