@@ -1,7 +1,7 @@
 import Player from "./Player";
 import Match from "./Match";
 import CustomSet from "./CustomSet";
-import { Box, Text, Center, Stack, Flex } from "@chakra-ui/react";
+import { Box, Text,  Stack, Flex } from "@chakra-ui/react";
 interface BracketMatch {
   match: Match;
   matchId?: number;
