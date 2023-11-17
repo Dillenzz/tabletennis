@@ -220,7 +220,7 @@ function App() {
   const [displayedRankingTo, setDisplayedRankingTo] = useState(100);
 
   //const [searchAge, setSearchAge] = useState("");
-  const [searchGender, setSearchGender] = useState("female");
+  const [searchGender, setSearchGender] = useState("");
   const [surnameSearch, setSearchSurname] = useState("");
   const [firstNameSearch, setSearchFirstName] = useState("");
 
@@ -305,7 +305,9 @@ function App() {
   const [classBracketNodeList, setClassBracketNodeList] = useState<
     ClassBracketNode[]
   >([]);
-  const [matchesEachRoundGlobal, setMatchesEachRoundGlobal] = useState<number[]>([]);
+  const [matchesEachRoundGlobal, setMatchesEachRoundGlobal] = useState<
+    number[]
+  >([]);
 
   // save or update the tournament to Firebase
 
@@ -431,7 +433,7 @@ function App() {
 
     const updatedClass = { ...newClass, classId: classID };
     setCurrentClass(updatedClass);
-    console.log("updatedClass", updatedClass);
+    //console.log("updatedClass", updatedClass);
     setClassPlayers([]);
     setClassName("");
     setNumberInGroup(4);
@@ -569,7 +571,7 @@ function App() {
   const handleSetMyTournaments = async (uid: string) => {
     if (uid !== null) {
       const loadTournaments = await getTournamentsByUid(uid);
-      console.log(loadTournaments);
+      // console.log(loadTournaments);
       setMyTournaments(loadTournaments);
       if (loadTournaments.length === 0) {
         setNoTournaments(true);
@@ -844,7 +846,7 @@ function App() {
 
   // add player to tournament
   async function addPlayerToTournament(player: Player) {
-    console.log(player);
+    // console.log(player);
     const playerId = typeof player.id === "number" ? player.id : -1; // Use a default value if id is undefined
 
     if (sentPlayerIds.includes(playerId)) {
@@ -864,7 +866,7 @@ function App() {
   }
   // save tournament to firebase
   async function saveTournament() {
-    console.log("saveTournament BEFORE SEND", currentClass?.classId);
+    // console.log("saveTournament BEFORE SEND", currentClass?.classId);
 
     if (currentClass) {
       const newClass: Class = {
@@ -980,7 +982,7 @@ function App() {
         return;
       } else if (currentClass.players?.length < 2) {
         alert("Please add atleast 2 players to the tournament");
-        console.log(currentClass);
+        //console.log(currentClass);
         return;
       }
     } else {
@@ -1000,9 +1002,9 @@ function App() {
           started: false,
           startBracket: false,
         };
-        console.log("before error");
+        // console.log("before error");
         await writeClass(newClass);
-        console.log("after error");
+        // console.log("after error");
         setCurrentTournament(newClass);
         drawTournament(newClass);
       }
@@ -1018,7 +1020,7 @@ function App() {
   // it uses 3 aux functions to determine if the draw is legal otherwise it draws again
   // infinite loop should be fixed if it hangs then call me
   async function drawTournament(myClass: Class): Promise<void> {
-    console.log("draw tournament");
+    // console.log("draw tournament");
     let noGroups = 0;
     let no3Groups = 0;
     let no5Groups = 0;
@@ -1035,7 +1037,7 @@ function App() {
     }
 
     if (myClass && myClass.players && myClass.seededPlayersIds !== undefined) {
-      console.log("tournament. player length", myClass.players.length);
+      //console.log("tournament. player length", myClass.players.length);
       if (myClass.threeOrFive === "3") {
         if (myClass.players.length % 4 != 0) {
           noGroups = Math.floor(myClass?.players?.length / 4) + 1;
@@ -1241,7 +1243,7 @@ function App() {
 
       // Randomly assign unassigned players to groups with available space
 
-      console.log("unassignedPlayers", unassignedPlayers);
+      //console.log("unassignedPlayers", unassignedPlayers);
       for (const player of unassignedPlayers) {
         let searchGroup = true;
 
@@ -1269,7 +1271,7 @@ function App() {
     }
 
     // console.log(tournamentGroups);
-    console.log("before writeClass");
+    //console.log("before writeClass");
     await writeClass({
       ...myClass,
       groups: addGroups,
@@ -1419,7 +1421,7 @@ function App() {
 
   // function put tournament in start state after draw has been done.
   async function handleStartClass() {
-    console.log(currentClass);
+    // console.log(currentClass);
     setShowGroupsResultsAndUnreportedMatches(true);
     setShowClassInfo(false);
     setShowTournamentOverview(false);
@@ -1462,17 +1464,17 @@ function App() {
 
   // from the groups sets matches in every group according to order
   function assignMatchesInTournament(myClass: Class | undefined) {
-    console.log("assignMatchesInTournament");
+    //console.log("assignMatchesInTournament");
     if (myClass) {
-      console.log("inside if statement");
+      // console.log("inside if statement");
       let matchIdCounter = 1; // Variable to track match IDs
       const matches: Match[] = [];
 
       if (myClass.groups) {
-        console.log("inside 2nd if statement");
-        console.log("myClass.groups", myClass.groups);
+        // console.log("inside 2nd if statement");
+        // console.log("myClass.groups", myClass.groups);
         for (const group of myClass.groups) {
-          console.log("myClass.groups", myClass.groups);
+          //  console.log("myClass.groups", myClass.groups);
           const newMatches = createMatchesForGroup(group, matchIdCounter);
 
           matchIdCounter += newMatches.length; // Update the match ID counter
@@ -1481,7 +1483,7 @@ function App() {
           setMaxMatchId(matchIdCounter);
         }
       }
-      console.log("matches", matches);
+      // console.log("matches", matches);
       return matches;
     }
     //console.log("myClass.matches", myClass?.matches);
@@ -1559,7 +1561,7 @@ function App() {
   // function to check if input data is correct for match according to certain critera
   // only works for Bo5 at the moment
   function handleCheckWinner(bestOf: string) {
-    console.log(bestOf);
+    // console.log(bestOf);
 
     try {
       let wonSetsPlayer1 = 0;
@@ -1659,7 +1661,7 @@ function App() {
       if (winnerDeclared) {
         for (let j = setsWonBeforeWinner; j < sets.length; j++) {
           const remainingSet = sets[j];
-          console.log(remainingSet);
+          // console.log(remainingSet);
           if (
             (remainingSet && remainingSet.player1Score !== 0) ||
             remainingSet.player2Score !== 0
@@ -1715,7 +1717,7 @@ function App() {
 
   // sets the match scores for the sets to then be reported
   async function handleMatchScore() {
-    console.log("handleMatchScore");
+    // console.log("handleMatchScore");
     if (currentMatch !== null && currentMatch !== undefined) {
       const set1 = {
         player1Score: set1Player1,
@@ -1793,7 +1795,7 @@ function App() {
               }
               return groupMatch;
             });
-            console.log(updatedMatches);
+            // console.log(updatedMatches);
             return {
               ...group,
               matches: updatedMatches,
@@ -1801,7 +1803,7 @@ function App() {
           }),
         };
 
-        console.log(updatedClass);
+        // console.log(updatedClass);
         await writeClass(updatedClass);
         setCurrentClass(updatedClass);
 
@@ -1879,7 +1881,7 @@ function App() {
 
   // loads players with matching matchId
   function loadReportPlayers(matchID: number) {
-    console.log("loadReportPlayers");
+    // console.log("loadReportPlayers");
     setMatchIdError(0);
     if (currentClass !== undefined && currentClass !== null) {
       const match = currentClass.matches?.find(
@@ -1889,7 +1891,7 @@ function App() {
       if (match !== null && match !== undefined) {
         if (match.reported === true) {
           setMatchIdError(-2);
-          console.log("match already reported");
+          // console.log("match already reported");
         }
         setCurrentMatch(match);
 
@@ -1899,7 +1901,7 @@ function App() {
         setMatchIdError(-1);
       }
     } else {
-      console.log("currentTournament is undefined or null");
+      // console.log("currentTournament is undefined or null");
       setMatchIdError(-1);
     }
   }
@@ -1942,7 +1944,7 @@ function App() {
 
   // displays the scores for every player in every match
   function handleLookUpPlayerScore(playerToDisplay: Player) {
-    console.log("handleLookUpPlayerScore");
+    // console.log("handleLookUpPlayerScore");
     if (currentClass !== undefined && currentClass !== null) {
       const player = currentClass.players?.find(
         (player) => player.id === playerToDisplay.id
@@ -1952,7 +1954,7 @@ function App() {
         setCurrentPlayer(player);
       }
     }
-    console.log(currentPlayer);
+    // console.log(currentPlayer);
   }
 
   async function handleCheckIfStartBracket() {
@@ -1970,13 +1972,13 @@ function App() {
       }
       if (unreportedMatches === undefined || unreportedMatches === null) {
         setShowUnreportedMatches(true);
-        console.log("unreportedMatches is undefined or null");
+        // console.log("unreportedMatches is undefined or null");
       }
     }
   }
 
   function handleDeleteTournament(tournament: Tournament) {
-    console.log("handleDeleteTournament");
+    // console.log("handleDeleteTournament");
     if (tournament !== undefined && tournament !== null) {
       deleteTournament(tournament).then(() => {
         setCurrentTournament(undefined);
@@ -1990,8 +1992,8 @@ function App() {
   }
 
   function handleDeleteClass(thisClass: Class) {
-    console.log("handleDeleteClass");
-    console.log(thisClass.classId);
+    // console.log("handleDeleteClass");
+    // console.log(thisClass.classId);
     deleteClass(thisClass.classId!);
     deleteClass(-1);
     setCurrentClass(undefined);
@@ -2003,7 +2005,7 @@ function App() {
 
   function handleDeleteClasses(tournament: Tournament) {
     deleteClassesByTournamentId(tournament.tournamentId!);
-    console.log("handleDeleteClasses");
+    // console.log("handleDeleteClasses");
   }
 
   function handleShowOpenTournaments() {
@@ -2023,7 +2025,7 @@ function App() {
     const openTournaments = await getAllPublicTournaments();
     calculatePublicTournamentLength(openTournaments);
     setOpenTournaments(openTournaments);
-    console.log(openTournaments);
+    // console.log(openTournaments);
     setLoadingOpenTournaments(false);
   }
 
@@ -2043,7 +2045,7 @@ function App() {
   }
 
   function handleEditTournament(tournament: Tournament) {
-    console.log("handleEditTournament");
+    // console.log("handleEditTournament");
     setCurrentTournament(tournament);
     setTournamentDateFrom(tournament.dateFrom ? tournament.dateFrom : "");
     setTournamentDateTo(tournament.dateTo ? tournament.dateTo : "");
@@ -2059,7 +2061,7 @@ function App() {
   }
 
   function handleEditClass(myClass: Class) {
-    console.log("handleEditClass");
+    // console.log("handleEditClass");
     setCurrentClass(myClass);
     setClassName(myClass.name ? myClass.name : "");
     setClassId(myClass.classId ? myClass.classId : -1);
@@ -2072,12 +2074,12 @@ function App() {
   }
 
   function handleJoinTournament(tournament: Tournament) {
-    console.log("handleJoinTournament");
-    console.log(tournament);
+    // console.log("handleJoinTournament");
+     console.log(tournament);
   }
 
   function checkGroupAdvancement() {
-    console.log("checkGroupAdvancement");
+    // console.log("checkGroupAdvancement");
     if (currentClass !== undefined && currentClass !== null) {
       let newAdvancingPlayers: [Player, Player][] = [];
       for (const group of currentClass.groups!) {
@@ -2114,6 +2116,7 @@ function App() {
       setShowGroups(false);
       setShowBracketOverview(true);
       setShowBracketAdvancingPlayers(true);
+      console.log(newAdvancingPlayers);
     }
   }
 
@@ -2136,7 +2139,10 @@ function App() {
     setShowGroupResult(true);
   }
 
+  // This should work but check again if it works pleae
   function generateBracketNodes(matches: Match[]) {
+    console.log("within generateBracketNodes");
+    console.log(matches, "matches within generateBracketNodes");
     const nodeList: ClassBracketNode[] = [];
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];
@@ -2147,14 +2153,22 @@ function App() {
         up: null,
         down: null,
         level: level,
+        leftRight: undefined,
+        id: i,
       };
-      nodeList.push(bracketNode);
+      nodeList[i] = bracketNode;
+      // console.log(i);
     }
+
+    //console.log(nodeList, "nodes withing generateBracketNodes");
 
     linkBracketNodes(nodeList);
   }
 
+  // links the nodes in the bracket needs to be checked if it works
+
   function linkBracketNodes(nodes: ClassBracketNode[]) {
+    console.log("within linkBracketNodes");
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
 
@@ -2162,6 +2176,12 @@ function App() {
         node.parent = null;
       } else {
         node.parent = nodes[Math.floor((i - 1) / 2)];
+
+        if (i % 2 === 1) {
+          node.leftRight = "left";
+        } else {
+          node.leftRight = "right";
+        }
       }
 
       if (2 * i + 1 < nodes.length) {
@@ -2172,7 +2192,6 @@ function App() {
         node.down = nodes[2 * i + 2];
       }
     }
-    // console.log(nodes);
 
     const classBracket: ClassBracket = {
       root: nodes[0]!,
@@ -2181,6 +2200,7 @@ function App() {
       classId: currentClass?.classId,
       tournamentId: currentTournament?.tournamentId,
     };
+    console.log(classBracket, "classBracket within linkBracketNodes");
     setClassBracketGlobal(classBracket);
     setClassBracketNode(nodes[0]);
     assignSeededPlayersToBracket(matchesEachRoundGlobal, nodes);
@@ -2188,98 +2208,130 @@ function App() {
     //console.log(classBracketNode);
     //console.log(classBracketGlobal);
     //console.log(classBracketGlobal?.root?.match?.player1?.name);
+    // console.log(nodes , "nodes");
   }
 
-  function assignSeededPlayersToBracket(matchesEachRound: number[], classBracketNodeListInput: ClassBracketNode[]) {
+  // This function is the one that does not work properly
+
+  function assignSeededPlayersToBracket(
+    matchesEachRound: number[],
+    classBracketNodeListInput: ClassBracketNode[]
+  ) {
     let players = currentClass?.advancingPlayers;
     let semiSeed: boolean | null = null;
     let matchesFirstRound = matchesEachRound[0];
-    console.log("assignSeededPlayersToBracket", classBracketNodeListInput);
+    //console.log("assignSeededPlayersToBracket", classBracketNodeListInput);
     let topNode = classBracketNodeListInput[0];
     let newNodeListBU = classBracketNodeListInput.reverse();
-    let playerSide = new Set();
+    let playerSide = new Set<[Player, number]>();
 
     for (let i = 0; i < currentClass!.advancingPlayers!.length; i++) {
       const player = players![i][0];
-      console.log(player, "player");
+      //console.log(player, "player");
       let currentNode = topNode;
 
       if (i === 0) {
         // Traverse up the hierarchy until reaching the top node
-        console.log("here")
-       
+
         while (currentNode?.up !== null) {
-          
           currentNode = currentNode.up!;
-         
         }
         currentNode.match!.player1 = player;
         newNodeListBU[0] = currentNode;
-        while (currentNode?.parent !== null ) {
+        while (currentNode?.parent !== null) {
           currentNode.parent!.up = currentNode;
           currentNode = currentNode.parent!;
         }
         topNode = currentNode;
         playerSide.add([player, 0]);
       } else if (i === 1) {
-        console.log("i == 1")
+        //console.log("i == 1")
         // Traverse down the hierarchy until reaching the bottom node
-        while (currentNode?.down !== null ) {
+        while (currentNode?.down !== null) {
           currentNode = currentNode.down!;
         }
 
         currentNode.match!.player2 = player;
-        newNodeListBU[matchesFirstRound-1] = currentNode;
+        newNodeListBU[matchesFirstRound - 1] = currentNode;
         while (currentNode?.parent !== null) {
           currentNode.parent!.down = currentNode;
           currentNode = currentNode.parent!;
         }
         topNode = currentNode;
         playerSide.add([player, 1]);
-        
-      } else if (i === 2  && semiSeed === null) {
-        console.log("i == 2")
+      } else if (i === 2 && semiSeed === null) {
+        //console.log("i == 2")
         const random = Math.random() >= 0.5;
-        console.log(random, "random")
+        //console.log(random, "random")
         // Traverse down the hierarchy until reaching the bottom node
         if (random) {
           semiSeed = true;
-          console.log(currentNode, "currentNode")
+          //console.log(currentNode, "currentNode")
           currentNode = currentNode.up!;
-          
-          while (currentNode?.down !== null ) {
+
+          while (currentNode?.down !== null) {
             currentNode = currentNode.down!;
-            console.log(currentNode, "currentNode inside while")
+
+            //console.log(currentNode, "currentNode inside while")
           }
-          console.log("after while")
+          //console.log("after while")
           currentNode.match!.player2 = player;
-          newNodeListBU[(matchesFirstRound/2)-1] = currentNode;
+          newNodeListBU[matchesFirstRound / 2 - 1] = currentNode;
+
+          // HERE ITS FKING UP I NEED TO KNOW IF THE CHILD NODE IS UP OR DOWN
+          while (currentNode?.parent !== null) {
+            if (currentNode.leftRight === "left") {
+              currentNode.parent!.up = currentNode;
+            } else {
+              currentNode.parent!.down = currentNode;
+            }
+            currentNode = currentNode.parent!;
+          }
+          topNode = currentNode;
+
           playerSide.add([player, 0]);
-          {/** position 1 and 2 need to be assigned so we do matchesFirstRound/2 = 4/2 2   ----  matchesFirstRound = 8 --> 8/2 = 4 0,1,2,3*
+          {
+            /** position 1 and 2 need to be assigned so we do matchesFirstRound/2 = 4/2 2   ----  matchesFirstRound = 8 --> 8/2 = 4 0,1,2,3*
           
           What happens with 16 people? 16/2 = 8 0,1,2,3,4,5,6,7 works!
 
           
-        */}
-          
+        */
+          }
         } else {
           currentNode = currentNode.down!;
           semiSeed = false;
-          while (currentNode?.up !== null ) {
+          while (currentNode?.up !== null) {
             currentNode = currentNode.up!;
           }
           currentNode.match!.player1 = player;
-          newNodeListBU[matchesFirstRound/2] = currentNode;
+          newNodeListBU[matchesFirstRound / 2] = currentNode;
+          while (currentNode?.parent !== null) {
+            if (currentNode.leftRight === "left") {
+              currentNode.parent!.up = currentNode;
+            } else {
+              currentNode.parent!.down = currentNode;
+            }
+            currentNode = currentNode.parent!;
+          }
           playerSide.add([player, 1]);
         }
       } else if (i === 3) {
         if (semiSeed === true) {
           currentNode = currentNode.down!;
-          while (currentNode?.up !== null)  {
+          while (currentNode?.up !== null) {
             currentNode = currentNode.up!;
           }
           currentNode.match!.player1 = player;
-          newNodeListBU[(matchesFirstRound/2)] = currentNode;
+          newNodeListBU[matchesFirstRound / 2] = currentNode;
+          while (currentNode?.parent !== null) {
+            if (currentNode.leftRight === "left") {
+              currentNode.parent!.up = currentNode;
+            } else {
+              currentNode.parent!.down = currentNode;
+            }
+            currentNode = currentNode.parent!;
+          }
           playerSide.add([player, 1]);
         } else {
           currentNode = currentNode.up!;
@@ -2287,17 +2339,22 @@ function App() {
             currentNode = currentNode.down!;
           }
           currentNode.match!.player2 = player;
-          newNodeListBU[(matchesFirstRound/2)-1] = currentNode;
+          newNodeListBU[matchesFirstRound / 2 - 1] = currentNode;
+          while (currentNode?.parent !== null) {
+            if (currentNode.leftRight === "left") {
+              currentNode.parent!.up = currentNode;
+            } else {
+              currentNode.parent!.down = currentNode;
+            }
+            currentNode = currentNode.parent!;
+          }
           playerSide.add([player, 0]);
         }
       }
     }
 
-    for (let i = 0; i < currentClass!.advancingPlayers!.length; i++){
-      let player = players![i][1];
-    }
+    //console.log(newNodeListBU, "newNodeListBU + här jacob")
 
-    console.log(newNodeListBU, "newNodeListBU")
     setClassBracketNodeList(newNodeListBU);
     setClassBracketNode(topNode);
     updateMatchesInBracket(newNodeListBU);
@@ -2307,27 +2364,30 @@ function App() {
 
   function updateMatchesInBracket(nodeList: ClassBracketNode[]) {
     const matches = nodeList.map((node) => node.match!);
-    console.log(matches, "matches")
+    //console.log(matches, " update matches in bracket node")
     setBracketMatchesGlobal(matches);
+   
   }
-
 
   function generateBracket() {
     const numberOfPlayers = currentClass!.advancingPlayers!.length * 2;
+    // console.log(numberOfPlayers, "numberOfPlayers");
 
     const numberOfRounds = Math.ceil(Math.log2(numberOfPlayers));
+    // console.log(numberOfRounds, "numberOfRounds");
     {
       /**TODO */
     }
 
     const numberOfMatches = Math.pow(2, numberOfRounds) - 1;
+    // console.log(numberOfMatches, "numberOfMatches");
 
     const bracketMatches: Match[] = [];
     for (let i = 0; i < numberOfMatches; i++) {
       const matchId = maxMatchId + i + 1;
       const match: Match = {
         player1: null,
-        player2: null,
+        player2: null,  
         matchId: matchId,
         tournamentId: currentTournament?.tournamentId,
       };
@@ -2336,54 +2396,55 @@ function App() {
     setBracketMatchesGlobal(bracketMatches);
 
     generateBracketNodes(bracketMatches);
-    const matchesEachRound = calculateMatchesEachRounnd(bracketMatches);
-    console.log(matchesEachRound, "matchesEachRound");
+    const matchesEachRound = calculateMatchesEachRound(bracketMatches);
+    // console.log(matchesEachRound, "matchesEachRound");
     setMatchesEachRoundGlobal(matchesEachRound);
+    console.log(classBracketGlobal, "classBracketGlobal");
   }
 
-  function calculateMatchesEachRounnd(matches: Match[]) {
+  function calculateMatchesEachRound(matches: Match[]) {
     let matchesReversed = matches.reverse();
 
- // console.log(matchesReversed, "matches2");
-  let matchesPerRound = [512, 256, 128, 64, 32, 16, 8, 4, 2, 1];
-  let matchesEachRound = [];
+    // console.log(matchesReversed, "matches2");
+    let matchesPerRound = [512, 256, 128, 64, 32, 16, 8, 4, 2, 1];
+    let matchesEachRound = [];
 
-  let matchesLength = matchesReversed.length;
-  let isFullBracket = false;
-  for (let i = 0; i < matchesPerRound.length; i++) {
-    if (matchesLength === matchesPerRound[i] - 1) {
-      isFullBracket = true;
-      // never enters this loop because we alays generate whole bracket even though it is not full
-      break;
-    }
-  }
-
-  if (isFullBracket) {
+    let matchesLength = matchesReversed.length;
+    let isFullBracket = false;
     for (let i = 0; i < matchesPerRound.length; i++) {
-      if (matchesLength >= matchesPerRound[i]) {
-        matchesEachRound.push(matchesPerRound[i]);
-        matchesLength = matchesLength - matchesPerRound[i];
-       // console.log(matchesEachRound, "matchesEachRound");
-      }
-    }
-  } else {
-    console.log("should not else");
-    for (let i = 0; i < matchesPerRound.length; i++) {
-      if (matchesLength >= matchesPerRound[i]) {
-        matchesLength = matchesLength - (matchesLength - matchesPerRound[i]);
-        matchesEachRound.push(matchesLength);
+      if (matchesLength === matchesPerRound[i] - 1) {
+        isFullBracket = true;
+        // never enters this loop because we alays generate whole bracket even though it is not full
         break;
       }
     }
-    for (let i = 0; i < matchesPerRound.length; i++) {
-      if (matchesLength >= matchesPerRound[i]) {
-        matchesEachRound.push(matchesPerRound[i]);
-        matchesLength = matchesLength - matchesPerRound[i];
+
+    if (isFullBracket) {
+      for (let i = 0; i < matchesPerRound.length; i++) {
+        if (matchesLength >= matchesPerRound[i]) {
+          matchesEachRound.push(matchesPerRound[i]);
+          matchesLength = matchesLength - matchesPerRound[i];
+          // console.log(matchesEachRound, "matchesEachRound");
+        }
+      }
+    } else {
+      // console.log("should not else");
+      for (let i = 0; i < matchesPerRound.length; i++) {
+        if (matchesLength >= matchesPerRound[i]) {
+          matchesLength = matchesLength - (matchesLength - matchesPerRound[i]);
+          matchesEachRound.push(matchesLength);
+          break;
+        }
+      }
+      for (let i = 0; i < matchesPerRound.length; i++) {
+        if (matchesLength >= matchesPerRound[i]) {
+          matchesEachRound.push(matchesPerRound[i]);
+          matchesLength = matchesLength - matchesPerRound[i];
+        }
       }
     }
+    return matchesEachRound;
   }
-  return matchesEachRound;
-}
 
   // App start
   return (
@@ -2654,7 +2715,6 @@ function App() {
                       <RadioGroup
                         onChange={handleGenderSearch}
                         value={searchGender}
-                        defaultValue="female"
                       >
                         <Stack spacing="24px">
                           <Radio value="female">Female</Radio>
@@ -2666,6 +2726,7 @@ function App() {
                 </Center>
                 <Center>
                   <Box _hover={{ cursor: "pointer" }} m="10px">
+                  {searchGender !== "" ? (
                     <FontAwesomeIcon
                       aria-label="Arrow Back"
                       icon={faArrowLeft}
@@ -2681,9 +2742,11 @@ function App() {
                       }}
                       size={"2xl"}
                     />
+                    ) : null}
                   </Box>
 
                   <Box _hover={{ cursor: "pointer" }} m={"10px"}>
+                    {searchGender !== "" ? (
                     <FontAwesomeIcon
                       aria-label="Arrow Back"
                       icon={faArrowRight}
@@ -2701,12 +2764,22 @@ function App() {
                       }}
                       size={"2xl"}
                     />
+                  ) : null}
                   </Box>
+                    
                 </Center>
-                {filteredPlayersRanking.length === 0 ? (
+                {filteredPlayersRanking.length === 0 && searchGender !== "" ? (
                   <Center>
                     <Text fontWeight={"bold"} fontSize={"24px"}>
                       No players found!
+                    </Text>
+                  </Center>
+                ) : null}
+
+                {filteredPlayersRanking.length === 0 ? (
+                  <Center>
+                    <Text fontWeight={"bold"} fontSize={"24px"}>
+                      Select gender
                     </Text>
                   </Center>
                 ) : null}
@@ -2736,6 +2809,7 @@ function App() {
                 </Box>
                 <Center>
                   <Box _hover={{ cursor: "pointer" }} m="10px">
+                  {searchGender !== "" ? (
                     <FontAwesomeIcon
                       aria-label="Arrow Back"
                       icon={faArrowLeft}
@@ -2746,9 +2820,11 @@ function App() {
                       }}
                       size={"2xl"}
                     />
+                  ) : null}
                   </Box>
 
                   <Box _hover={{ cursor: "pointer" }} m={"10px"}>
+                  {searchGender !== "" ? (
                     <FontAwesomeIcon
                       aria-label="Arrow Back"
                       icon={faArrowRight}
@@ -2759,8 +2835,10 @@ function App() {
                       }}
                       size={"2xl"}
                     />
+                  ) : null}
                   </Box>
                 </Center>
+           
               </Box>
             )}
 
@@ -3507,10 +3585,10 @@ function App() {
                             onClick={() => {
                               if (editClass) {
                                 editClassNameAndPublicity(currentClass!);
-                                console.log("edit class");
+                                // console.log("edit class");
                               } else {
                                 createClass(currentTournament!);
-                                console.log("create class");
+                                // console.log("create class");
                               }
                               onCloseCreateClassModal();
                               setEditClass(false);
@@ -4036,8 +4114,8 @@ function App() {
                                   shadow={"md"}
                                   m="2"
                                   onClick={() => {
-                                    console.log(matchId);
-                                    console.log(matchIdError);
+                                    // console.log(matchId);
+                                    // console.log(matchIdError);
                                     loadReportPlayers(parseInt(matchId));
                                   }}
                                 >
@@ -4681,7 +4759,7 @@ function App() {
                         bg={"#FAF1E4"}
                         onClick={() => {
                           handleCheckGroupStatus();
-                          console.log(unreportedMatches);
+                          // console.log(unreportedMatches);
 
                           setShowGroupResult(false);
                           setShowGroups(false);
@@ -4762,7 +4840,7 @@ function App() {
                     {showUnreportedMatches &&
                       filteredMatches.map((match) => {
                         if (!match.matchId) {
-                          console.log("hllo");
+                          //  console.log("hllo");
                           return null; // Skip the iteration if there is no matchId
                         }
 
